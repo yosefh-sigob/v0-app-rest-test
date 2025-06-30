@@ -44,72 +44,96 @@
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.984 0.003 247.858);
-  --sidebar-foreground: oklch(0.129 0.042 264.695);
-  --sidebar-primary: oklch(0.208 0.042 265.755);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.968 0.007 247.896);
-  --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
-  --sidebar-border: oklch(0.929 0.013 255.508);
-  --sidebar-ring: oklch(0.704 0.04 256.788);
+  --radius: 0.75rem;
+
+  /* Paleta de colores para restaurante */
+  --background: #fefcf8; /* Crema muy suave */
+  --foreground: #3c2e26; /* Marrón oscuro para texto */
+
+  --card: #ffffff;
+  --card-foreground: #3c2e26;
+
+  --popover: #ffffff;
+  --popover-foreground: #3c2e26;
+
+  --primary: #d97706; /* Naranja terracota */
+  --primary-foreground: #ffffff;
+
+  --secondary: #f3f1ed; /* Beige claro */
+  --secondary-foreground: #3c2e26;
+
+  --muted: #f8f6f2; /* Crema suave */
+  --muted-foreground: #6b5b4f; /* Marrón medio */
+
+  --accent: #fbbf24; /* Amarillo dorado */
+  --accent-foreground: #3c2e26;
+
+  --destructive: #dc2626; /* Rojo para errores */
+
+  --border: #e7e3dd; /* Beige para bordes */
+  --input: #f3f1ed;
+  --ring: #d97706;
+
+  /* Colores para gráficos */
+  --chart-1: #d97706; /* Naranja principal */
+  --chart-2: #059669; /* Verde esmeralda */
+  --chart-3: #dc2626; /* Rojo */
+  --chart-4: #7c3aed; /* Púrpura */
+  --chart-5: #0891b2; /* Azul */
+
+  /* Sidebar con tema cálido */
+  --sidebar: #2d1b14; /* Marrón muy oscuro */
+  --sidebar-foreground: #f3f1ed;
+  --sidebar-primary: #d97706;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #3c2e26;
+  --sidebar-accent-foreground: #f3f1ed;
+  --sidebar-border: #3c2e26;
+  --sidebar-ring: #d97706;
 }
 
 .dark {
-  --background: oklch(0.129 0.042 264.695);
-  --foreground: oklch(0.984 0.003 247.858);
-  --card: oklch(0.208 0.042 265.755);
-  --card-foreground: oklch(0.984 0.003 247.858);
-  --popover: oklch(0.208 0.042 265.755);
-  --popover-foreground: oklch(0.984 0.003 247.858);
-  --primary: oklch(0.929 0.013 255.508);
-  --primary-foreground: oklch(0.208 0.042 265.755);
-  --secondary: oklch(0.279 0.041 260.031);
-  --secondary-foreground: oklch(0.984 0.003 247.858);
-  --muted: oklch(0.279 0.041 260.031);
-  --muted-foreground: oklch(0.704 0.04 256.788);
-  --accent: oklch(0.279 0.041 260.031);
-  --accent-foreground: oklch(0.984 0.003 247.858);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.551 0.027 264.364);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.208 0.042 265.755);
-  --sidebar-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.279 0.041 260.031);
-  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.551 0.027 264.364);
+  --background: #1a1410; /* Marrón muy oscuro */
+  --foreground: #f3f1ed;
+
+  --card: #2d1b14;
+  --card-foreground: #f3f1ed;
+
+  --popover: #2d1b14;
+  --popover-foreground: #f3f1ed;
+
+  --primary: #f59e0b; /* Naranja más brillante */
+  --primary-foreground: #1a1410;
+
+  --secondary: #3c2e26;
+  --secondary-foreground: #f3f1ed;
+
+  --muted: #2d1b14;
+  --muted-foreground: #a1917f;
+
+  --accent: #fbbf24;
+  --accent-foreground: #1a1410;
+
+  --destructive: #ef4444;
+
+  --border: #3c2e26;
+  --input: #3c2e26;
+  --ring: #f59e0b;
+
+  --chart-1: #f59e0b;
+  --chart-2: #10b981;
+  --chart-3: #ef4444;
+  --chart-4: #8b5cf6;
+  --chart-5: #06b6d4;
+
+  --sidebar: #0f0a08;
+  --sidebar-foreground: #f3f1ed;
+  --sidebar-primary: #f59e0b;
+  --sidebar-primary-foreground: #0f0a08;
+  --sidebar-accent: #2d1b14;
+  --sidebar-accent-foreground: #f3f1ed;
+  --sidebar-border: #2d1b14;
+  --sidebar-ring: #f59e0b;
 }
 
 @layer base {
@@ -118,5 +142,53 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
+}
+
+/* Clases personalizadas para el tema del restaurante */
+.restaurant-gradient {
+  background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+}
+
+.restaurant-card {
+  background: linear-gradient(145deg, #ffffff 0%, #fefcf8 100%);
+  border: 1px solid #e7e3dd;
+  box-shadow: 0 4px 6px -1px rgba(217, 119, 6, 0.1), 0 2px 4px -1px rgba(217, 119, 6, 0.06);
+}
+
+.restaurant-card:hover {
+  box-shadow: 0 10px 15px -3px rgba(217, 119, 6, 0.1), 0 4px 6px -2px rgba(217, 119, 6, 0.05);
+}
+
+.status-available {
+  @apply bg-emerald-100 text-emerald-800 border-emerald-200;
+}
+
+.status-occupied {
+  @apply bg-red-100 text-red-800 border-red-200;
+}
+
+.status-reserved {
+  @apply bg-amber-100 text-amber-800 border-amber-200;
+}
+
+.status-cleaning {
+  @apply bg-blue-100 text-blue-800 border-blue-200;
+}
+
+.dark .status-available {
+  @apply bg-emerald-900/50 text-emerald-300 border-emerald-800;
+}
+
+.dark .status-occupied {
+  @apply bg-red-900/50 text-red-300 border-red-800;
+}
+
+.dark .status-reserved {
+  @apply bg-amber-900/50 text-amber-300 border-amber-800;
+}
+
+.dark .status-cleaning {
+  @apply bg-blue-900/50 text-blue-300 border-blue-800;
 }

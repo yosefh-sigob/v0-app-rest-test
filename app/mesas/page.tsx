@@ -1,239 +1,406 @@
 "use client"
 
 import { useState } from "react"
-import { MainLayout } from "@/components/layout/main-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { Users, Clock, Plus, Edit, Eye } from "lucide-react"
-import { mockMesas } from "@/lib/data/mock-data"
-import { type Mesa, EstadoMesa } from "@/lib/types"
+import {
+  Utensils,
+  Users,
+  Clock,
+  Plus,
+  Search,
+  Filter,
+  Edit,
+  Eye,
+  CheckCircle,
+  AlertCircle,
+  Sparkles,
+} from "lucide-react"
 
 export default function MesasPage() {
-  const [mesas, setMesas] = useState<Mesa[]>(mockMesas)
-  const [mesaSeleccionada, setMesaSeleccionada] = useState<Mesa | null>(null)
-  const [dialogAbierto, setDialogAbierto] = useState(false)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [statusFilter, setStatusFilter] = useState("all")
+  const [selectedTable, setSelectedTable] = useState<any>(null)
 
-  const getEstadoColor = (estado: EstadoMesa) => {
-    switch (estado) {
-      case EstadoMesa.DISPONIBLE:
-        return "bg-green-500 hover:bg-green-600"
-      case EstadoMesa.OCUPADA:
-        return "bg-blue-500 hover:bg-blue-600"
-      case EstadoMesa.RESERVADA:
-        return "bg-orange-500 hover:bg-orange-600"
-      case EstadoMesa.FUERA_SERVICIO:
-        return "bg-red-500 hover:bg-red-600"
+  // Datos simulados de mesas
+  const mesas = [
+    {
+      id: 1,
+      number: 1,
+      capacity: 4,
+      status: "disponible",
+      waiter: null,
+      order: null,
+      area: "Terraza",
+      notes: "",
+      lastCleaned: "14:30",
+    },
+    {
+      id: 2,
+      number: 2,
+      capacity: 2,
+      status: "ocupada",
+      waiter: "Ana García",
+      order: { id: "ORD-001", total: 156, items: 3, time: "45 min" },
+      area: "Interior",
+      notes: "Cliente VIP",
+      lastCleaned: "13:15",
+    },
+    {
+      id: 3,
+      number: 3,
+      capacity: 6,
+      status: "ocupada",
+      waiter: "Carlos López",
+      order: { id: "ORD-002", total: 320, items: 5, time: "25 min" },
+      area: "Interior",
+      notes: "Celebración cumpleaños",
+      lastCleaned: "12:45",
+    },
+    {
+      id: 4,
+      number: 4,
+      capacity: 4,
+      status: "reservada",
+      waiter: null,
+      order: null,
+      area: "Ventana",
+      notes: "Reserva 19:30 - Familia Rodríguez",
+      lastCleaned: "14:00",
+    },
+    {
+      id: 5,
+      number: 5,
+      capacity: 4,
+      status: "ocupada",
+      waiter: "María Rodríguez",
+      order: { id: "ORD-003", total: 245, items: 4, time: "15 min" },
+      area: "Terraza",
+      notes: "",
+      lastCleaned: "13:30",
+    },
+    {
+      id: 6,
+      number: 6,
+      capacity: 2,
+      status: "limpieza",
+      waiter: null,
+      order: null,
+      area: "Interior",
+      notes: "Limpieza profunda",
+      lastCleaned: "En proceso",
+    },
+    {
+      id: 7,
+      number: 7,
+      capacity: 8,
+      status: "disponible",
+      waiter: null,
+      order: null,
+      area: "Salón Privado",
+      notes: "Mesa para grupos grandes",
+      lastCleaned: "14:15",
+    },
+    {
+      id: 8,
+      number: 8,
+      capacity: 4,
+      status: "ocupada",
+      waiter: "Luis Martín",
+      order: { id: "ORD-004", total: 189, items: 2, time: "35 min" },
+      area: "Ventana",
+      notes: "Mesa con vista",
+      lastCleaned: "13:00",
+    },
+  ]
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "disponible":
+        return "status-available"
+      case "ocupada":
+        return "status-occupied"
+      case "reservada":
+        return "status-reserved"
+      case "limpieza":
+        return "status-cleaning"
       default:
-        return "bg-gray-500 hover:bg-gray-600"
+        return "bg-gray-100 text-gray-800"
     }
   }
 
-  const cambiarEstadoMesa = (mesaId: string, nuevoEstado: EstadoMesa) => {
-    setMesas(mesas.map((mesa) => (mesa.id === mesaId ? { ...mesa, estado: nuevoEstado } : mesa)))
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "disponible":
+        return <CheckCircle className="h-4 w-4" />
+      case "ocupada":
+        return <Users className="h-4 w-4" />
+      case "reservada":
+        return <Clock className="h-4 w-4" />
+      case "limpieza":
+        return <Sparkles className="h-4 w-4" />
+      default:
+        return <AlertCircle className="h-4 w-4" />
+    }
   }
 
-  const abrirDetalleMesa = (mesa: Mesa) => {
-    setMesaSeleccionada(mesa)
-    setDialogAbierto(true)
+  const filteredMesas = mesas.filter((mesa) => {
+    const matchesSearch =
+      mesa.number.toString().includes(searchTerm) ||
+      mesa.area.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      mesa.waiter?.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesStatus = statusFilter === "all" || mesa.status === statusFilter
+    return matchesSearch && matchesStatus
+  })
+
+  const statusCounts = {
+    disponible: mesas.filter((m) => m.status === "disponible").length,
+    ocupada: mesas.filter((m) => m.status === "ocupada").length,
+    reservada: mesas.filter((m) => m.status === "reservada").length,
+    limpieza: mesas.filter((m) => m.status === "limpieza").length,
   }
 
   return (
-    <MainLayout title="Gestión de Mesas">
-      <div className="space-y-6">
-        {/* Header con acciones */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h2 className="text-2xl font-bold">Mesas del Restaurante</h2>
-            <p className="text-muted-foreground">Gestiona el estado y ocupación de las mesas</p>
+    <div className="space-y-8 p-6 bg-gradient-to-br from-orange-50/30 to-amber-50/30 min-h-screen">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Gestión de Mesas</h1>
+          <p className="text-gray-600">Control y administración de todas las mesas</p>
+        </div>
+        <Button className="restaurant-gradient text-white">
+          <Plus className="h-4 w-4 mr-2" />
+          Nueva Mesa
+        </Button>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="restaurant-card">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Disponibles</p>
+                <p className="text-2xl font-bold text-green-600">{statusCounts.disponible}</p>
+              </div>
+              <CheckCircle className="h-8 w-8 text-green-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="restaurant-card">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Ocupadas</p>
+                <p className="text-2xl font-bold text-red-600">{statusCounts.ocupada}</p>
+              </div>
+              <Users className="h-8 w-8 text-red-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="restaurant-card">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Reservadas</p>
+                <p className="text-2xl font-bold text-amber-600">{statusCounts.reservada}</p>
+              </div>
+              <Clock className="h-8 w-8 text-amber-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="restaurant-card">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">En Limpieza</p>
+                <p className="text-2xl font-bold text-blue-600">{statusCounts.limpieza}</p>
+              </div>
+              <Sparkles className="h-8 w-8 text-blue-600" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filters */}
+      <Card className="restaurant-card">
+        <CardContent className="p-4">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                placeholder="Buscar por número, área o mesero..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full sm:w-48">
+                <Filter className="h-4 w-4 mr-2" />
+                <SelectValue placeholder="Filtrar por estado" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los estados</SelectItem>
+                <SelectItem value="disponible">Disponible</SelectItem>
+                <SelectItem value="ocupada">Ocupada</SelectItem>
+                <SelectItem value="reservada">Reservada</SelectItem>
+                <SelectItem value="limpieza">En Limpieza</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            Nueva Mesa
-          </Button>
-        </div>
+        </CardContent>
+      </Card>
 
-        {/* Estadísticas rápidas */}
-        <div className="grid gap-4 md:grid-cols-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Mesas</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{mesas.length}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Disponibles</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">
-                {mesas.filter((m) => m.estado === EstadoMesa.DISPONIBLE).length}
+      {/* Mesas Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {filteredMesas.map((mesa) => (
+          <Card key={mesa.id} className="restaurant-card hover:shadow-lg transition-all duration-300">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">Mesa {mesa.number}</CardTitle>
+                <Badge className={getStatusColor(mesa.status)}>
+                  {getStatusIcon(mesa.status)}
+                  <span className="ml-1 capitalize">{mesa.status}</span>
+                </Badge>
               </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Ocupadas</CardTitle>
+              <CardDescription className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                {mesa.capacity} personas • {mesa.area}
+              </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-600">
-                {mesas.filter((m) => m.estado === EstadoMesa.OCUPADA).length}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Capacidad Total</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{mesas.reduce((total, mesa) => total + mesa.capacidad, 0)}</div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Grid de mesas */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {mesas.map((mesa) => (
-            <Card key={mesa.id} className="cursor-pointer hover:shadow-md transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">{mesa.numero}</CardTitle>
-                  <Badge className={getEstadoColor(mesa.estado)}>{mesa.estado}</Badge>
+            <CardContent className="space-y-3">
+              {mesa.waiter && (
+                <div className="flex items-center gap-2 text-sm">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span className="text-gray-600">Mesero:</span>
+                  <span className="font-medium">{mesa.waiter}</span>
                 </div>
-                <CardDescription>{mesa.area}</CardDescription>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="space-y-3">
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <Users className="h-4 w-4 mr-2" />
-                    {mesa.comensales || 0}/{mesa.capacidad} personas
+              )}
+
+              {mesa.order && (
+                <div className="bg-orange-50 p-3 rounded-lg border border-orange-200">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm font-medium text-orange-800">Orden Activa</span>
+                    <span className="text-sm font-bold text-orange-800">${mesa.order.total}</span>
                   </div>
+                  <div className="text-xs text-orange-600">
+                    {mesa.order.items} items • {mesa.order.time}
+                  </div>
+                </div>
+              )}
 
-                  {mesa.estado === EstadoMesa.OCUPADA && (
-                    <>
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <Clock className="h-4 w-4 mr-2" />
-                        {mesa.tiempoOcupada}
-                      </div>
-                      <div className="text-lg font-semibold">${mesa.total?.toFixed(2) || "0.00"}</div>
-                      <div className="text-sm text-muted-foreground">Mesero: {mesa.mesero}</div>
-                    </>
-                  )}
+              {mesa.notes && (
+                <div className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
+                  <span className="font-medium">Notas:</span> {mesa.notes}
+                </div>
+              )}
 
-                  <div className="flex gap-2 mt-4">
+              <div className="text-xs text-gray-500">Última limpieza: {mesa.lastCleaned}</div>
+
+              <div className="flex gap-2 pt-2">
+                <Dialog>
+                  <DialogTrigger asChild>
                     <Button
-                      size="sm"
                       variant="outline"
+                      size="sm"
                       className="flex-1 bg-transparent"
-                      onClick={() => abrirDetalleMesa(mesa)}
+                      onClick={() => setSelectedTable(mesa)}
                     >
                       <Eye className="h-3 w-3 mr-1" />
                       Ver
                     </Button>
-                    <Button size="sm" variant="outline">
-                      <Edit className="h-3 w-3" />
-                    </Button>
-                  </div>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Mesa {selectedTable?.number}</DialogTitle>
+                      <DialogDescription>Detalles completos de la mesa</DialogDescription>
+                    </DialogHeader>
+                    {selectedTable && (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label className="text-sm font-medium">Estado</Label>
+                            <Badge className={getStatusColor(selectedTable.status)}>{selectedTable.status}</Badge>
+                          </div>
+                          <div>
+                            <Label className="text-sm font-medium">Capacidad</Label>
+                            <p className="text-sm">{selectedTable.capacity} personas</p>
+                          </div>
+                          <div>
+                            <Label className="text-sm font-medium">Área</Label>
+                            <p className="text-sm">{selectedTable.area}</p>
+                          </div>
+                          <div>
+                            <Label className="text-sm font-medium">Última limpieza</Label>
+                            <p className="text-sm">{selectedTable.lastCleaned}</p>
+                          </div>
+                        </div>
 
-                  {/* Botones de cambio de estado */}
-                  <div className="grid grid-cols-2 gap-1 mt-2">
-                    {mesa.estado !== EstadoMesa.DISPONIBLE && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-xs bg-transparent"
-                        onClick={() => cambiarEstadoMesa(mesa.id, EstadoMesa.DISPONIBLE)}
-                      >
-                        Liberar
-                      </Button>
+                        {selectedTable.waiter && (
+                          <div>
+                            <Label className="text-sm font-medium">Mesero asignado</Label>
+                            <p className="text-sm">{selectedTable.waiter}</p>
+                          </div>
+                        )}
+
+                        {selectedTable.order && (
+                          <div className="bg-orange-50 p-3 rounded-lg">
+                            <Label className="text-sm font-medium text-orange-800">Orden Activa</Label>
+                            <div className="mt-1 space-y-1">
+                              <p className="text-sm">ID: {selectedTable.order.id}</p>
+                              <p className="text-sm">Total: ${selectedTable.order.total}</p>
+                              <p className="text-sm">Items: {selectedTable.order.items}</p>
+                              <p className="text-sm">Tiempo: {selectedTable.order.time}</p>
+                            </div>
+                          </div>
+                        )}
+
+                        {selectedTable.notes && (
+                          <div>
+                            <Label className="text-sm font-medium">Notas</Label>
+                            <p className="text-sm bg-gray-50 p-2 rounded">{selectedTable.notes}</p>
+                          </div>
+                        )}
+                      </div>
                     )}
-                    {mesa.estado === EstadoMesa.DISPONIBLE && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-xs bg-transparent"
-                        onClick={() => cambiarEstadoMesa(mesa.id, EstadoMesa.OCUPADA)}
-                      >
-                        Ocupar
-                      </Button>
-                    )}
-                    {mesa.estado !== EstadoMesa.RESERVADA && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-xs bg-transparent"
-                        onClick={() => cambiarEstadoMesa(mesa.id, EstadoMesa.RESERVADA)}
-                      >
-                        Reservar
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                  </DialogContent>
+                </Dialog>
 
-        {/* Dialog de detalles de mesa */}
-        <Dialog open={dialogAbierto} onOpenChange={setDialogAbierto}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Detalles de {mesaSeleccionada?.numero}</DialogTitle>
-              <DialogDescription>Información completa de la mesa</DialogDescription>
-            </DialogHeader>
-            {mesaSeleccionada && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Estado</Label>
-                    <Badge className={getEstadoColor(mesaSeleccionada.estado)}>{mesaSeleccionada.estado}</Badge>
-                  </div>
-                  <div>
-                    <Label>Área</Label>
-                    <p>{mesaSeleccionada.area}</p>
-                  </div>
-                  <div>
-                    <Label>Capacidad</Label>
-                    <p>{mesaSeleccionada.capacidad} personas</p>
-                  </div>
-                  <div>
-                    <Label>Comensales Actuales</Label>
-                    <p>{mesaSeleccionada.comensales || 0}</p>
-                  </div>
-                </div>
-
-                {mesaSeleccionada.estado === EstadoMesa.OCUPADA && (
-                  <div className="space-y-2">
-                    <div>
-                      <Label>Mesero Asignado</Label>
-                      <p>{mesaSeleccionada.mesero}</p>
-                    </div>
-                    <div>
-                      <Label>Tiempo Ocupada</Label>
-                      <p>{mesaSeleccionada.tiempoOcupada}</p>
-                    </div>
-                    <div>
-                      <Label>Total Cuenta</Label>
-                      <p className="text-lg font-semibold">${mesaSeleccionada.total?.toFixed(2)}</p>
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex gap-2 pt-4">
-                  <Button className="flex-1">Editar Mesa</Button>
-                  <Button variant="outline" className="flex-1 bg-transparent">
-                    Historial
-                  </Button>
-                </div>
+                <Button variant="outline" size="sm" className="flex-1 bg-transparent">
+                  <Edit className="h-3 w-3 mr-1" />
+                  Editar
+                </Button>
               </div>
-            )}
-          </DialogContent>
-        </Dialog>
+            </CardContent>
+          </Card>
+        ))}
       </div>
-    </MainLayout>
+
+      {filteredMesas.length === 0 && (
+        <Card className="restaurant-card">
+          <CardContent className="p-8 text-center">
+            <Utensils className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No se encontraron mesas</h3>
+            <p className="text-gray-600">Intenta ajustar los filtros de búsqueda</p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   )
 }
