@@ -1,103 +1,121 @@
-import Image from "next/image";
+import Link from "next/link"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { ChefHat, CreditCard, Users, Utensils } from "lucide-react"
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-6">
+            <div className="flex items-center space-x-3">
+              <ChefHat className="h-8 w-8 text-orange-600" />
+              <h1 className="text-2xl font-bold text-gray-900">AppRest</h1>
+            </div>
+            <div className="text-sm text-gray-500">Sistema de Gestión de Restaurante</div>
+          </div>
+        </div>
+      </header>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      {/* Main Content */}
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl font-bold text-gray-900 mb-4">Bienvenido a AppRest</h2>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Selecciona tu rol para acceder al sistema de gestión del restaurante
+          </p>
+        </div>
+
+        {/* Role Selection Cards */}
+        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          {/* Mesero Card */}
+          <Card className="hover:shadow-lg transition-shadow duration-300 border-2 hover:border-orange-200">
+            <CardHeader className="text-center pb-4">
+              <div className="mx-auto w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
+                <Utensils className="h-8 w-8 text-orange-600" />
+              </div>
+              <CardTitle className="text-2xl text-gray-900">Mesero</CardTitle>
+              <CardDescription className="text-gray-600">
+                Gestiona mesas, toma pedidos y atiende a los clientes
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="space-y-3 mb-6">
+                <div className="flex items-center text-sm text-gray-600">
+                  <Users className="h-4 w-4 mr-2 text-orange-500" />
+                  Gestión de mesas y clientes
+                </div>
+                <div className="flex items-center text-sm text-gray-600">
+                  <Utensils className="h-4 w-4 mr-2 text-orange-500" />
+                  Toma de pedidos
+                </div>
+                <div className="flex items-center text-sm text-gray-600">
+                  <ChefHat className="h-4 w-4 mr-2 text-orange-500" />
+                  Seguimiento de órdenes
+                </div>
+              </div>
+              <Link href="/mesero" className="block">
+                <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white">Acceder como Mesero</Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          {/* Cajero Card */}
+          <Card className="hover:shadow-lg transition-shadow duration-300 border-2 hover:border-blue-200">
+            <CardHeader className="text-center pb-4">
+              <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                <CreditCard className="h-8 w-8 text-blue-600" />
+              </div>
+              <CardTitle className="text-2xl text-gray-900">Cajero</CardTitle>
+              <CardDescription className="text-gray-600">
+                Procesa pagos, genera facturas y maneja el punto de venta
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="space-y-3 mb-6">
+                <div className="flex items-center text-sm text-gray-600">
+                  <CreditCard className="h-4 w-4 mr-2 text-blue-500" />
+                  Procesamiento de pagos
+                </div>
+                <div className="flex items-center text-sm text-gray-600">
+                  <Users className="h-4 w-4 mr-2 text-blue-500" />
+                  Facturación y recibos
+                </div>
+                <div className="flex items-center text-sm text-gray-600">
+                  <ChefHat className="h-4 w-4 mr-2 text-blue-500" />
+                  Reportes de ventas
+                </div>
+              </div>
+              <Link href="/cajero" className="block">
+                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">Acceder como Cajero</Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Additional Info */}
+        <div className="mt-16 text-center">
+          <div className="bg-white rounded-lg shadow-sm p-6 max-w-2xl mx-auto">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">¿Necesitas ayuda?</h3>
+            <p className="text-gray-600 mb-4">
+              Si tienes problemas para acceder al sistema o necesitas soporte técnico, contacta al administrador del
+              restaurante.
+            </p>
+            <Button variant="outline" className="text-gray-600 border-gray-300 bg-transparent">
+              Contactar Soporte
+            </Button>
+          </div>
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+
+      {/* Footer */}
+      <footer className="bg-white border-t mt-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="text-center text-sm text-gray-500">© 2024 AppRest - Sistema de Gestión de Restaurante</div>
+        </div>
       </footer>
     </div>
-  );
+  )
 }
