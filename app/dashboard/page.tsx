@@ -1,8 +1,11 @@
 import { MainLayout } from "@/components/layout/main-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BarChart3, DollarSign, ShoppingCart, Users } from "lucide-react"
+import { BarChart3, DollarSign, ShoppingCart, Users, TrendingUp, Clock } from "lucide-react"
+import { mockDashboardData } from "@/lib/data/mock-data"
 
 export default function DashboardPage() {
+  const { ventasHoy, ordenesHoy, clientesTotal, mesasOcupadas, mesasTotal, ventasRecientes } = mockDashboardData
+
   return (
     <MainLayout title="Dashboard">
       <div className="space-y-6">
@@ -14,8 +17,11 @@ export default function DashboardPage() {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">$12,345</div>
-              <p className="text-xs text-muted-foreground">+20.1% desde ayer</p>
+              <div className="text-2xl font-bold">${ventasHoy.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground">
+                <TrendingUp className="inline h-3 w-3 mr-1" />
+                +20.1% desde ayer
+              </p>
             </CardContent>
           </Card>
 
@@ -25,7 +31,7 @@ export default function DashboardPage() {
               <ShoppingCart className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">+89</div>
+              <div className="text-2xl font-bold">+{ordenesHoy}</div>
               <p className="text-xs text-muted-foreground">+15% desde ayer</p>
             </CardContent>
           </Card>
@@ -36,7 +42,7 @@ export default function DashboardPage() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">1,234</div>
+              <div className="text-2xl font-bold">{clientesTotal.toLocaleString()}</div>
               <p className="text-xs text-muted-foreground">+5.2% desde el mes pasado</p>
             </CardContent>
           </Card>
@@ -47,8 +53,12 @@ export default function DashboardPage() {
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">12/20</div>
-              <p className="text-xs text-muted-foreground">60% de ocupación</p>
+              <div className="text-2xl font-bold">
+                {mesasOcupadas}/{mesasTotal}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {Math.round((mesasOcupadas / mesasTotal) * 100)}% de ocupación
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -62,19 +72,17 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {[1, 2, 3, 4, 5].map((item) => (
-                  <div key={item} className="flex items-center">
+                {ventasRecientes.map((venta) => (
+                  <div key={venta.id} className="flex items-center">
                     <div className="ml-4 space-y-1">
-                      <p className="text-sm font-medium leading-none">Mesa {item}</p>
+                      <p className="text-sm font-medium leading-none">{venta.mesa}</p>
                       <p className="text-sm text-muted-foreground">
-                        Orden #{1000 + item} - ${(Math.random() * 100 + 50).toFixed(2)}
+                        Orden #{venta.orden} - ${venta.total.toFixed(2)}
                       </p>
                     </div>
-                    <div className="ml-auto font-medium">
-                      {new Date().toLocaleTimeString("es-MX", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                    <div className="ml-auto font-medium flex items-center">
+                      <Clock className="h-3 w-3 mr-1" />
+                      {venta.hora}
                     </div>
                   </div>
                 ))}
@@ -91,11 +99,11 @@ export default function DashboardPage() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-sm">Disponibles</span>
-                  <span className="text-sm font-medium text-green-600">8</span>
+                  <span className="text-sm font-medium text-green-600">{mesasTotal - mesasOcupadas}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm">Ocupadas</span>
-                  <span className="text-sm font-medium text-blue-600">12</span>
+                  <span className="text-sm font-medium text-blue-600">{mesasOcupadas}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm">Reservadas</span>

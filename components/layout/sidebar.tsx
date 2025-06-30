@@ -21,6 +21,17 @@ import {
   CreditCard,
   ClipboardList,
   MessageSquare,
+  ChevronDown,
+  ChevronRight,
+  Store,
+  UserCheck,
+  Clock,
+  Receipt,
+  FileText,
+  Star,
+  Send,
+  TrendingUp,
+  Cog,
 } from "lucide-react"
 
 const navigation = [
@@ -36,22 +47,22 @@ const navigation = [
     children: [
       { name: "Punto de Venta", href: "/ventas/pos", icon: CreditCard },
       { name: "Comandas", href: "/ventas/comandas", icon: ClipboardList },
-      { name: "Historial", href: "/ventas/historial", icon: BarChart3 },
+      { name: "Historial", href: "/ventas/historial", icon: Receipt },
     ],
   },
   {
     name: "Mesas",
     href: "/mesas",
     icon: Utensils,
-    description: "Gestión de mesas y reservaciones",
+    description: "Gestión de mesas y áreas",
   },
   {
     name: "Productos",
     icon: Package,
     children: [
-      { name: "Catálogo", href: "/productos/catalogo", icon: Package },
-      { name: "Grupos", href: "/productos/grupos", icon: Package },
-      { name: "Modificadores", href: "/productos/modificadores", icon: Package },
+      { name: "Catálogo", href: "/productos", icon: Package },
+      { name: "Categorías", href: "/productos/categorias", icon: Store },
+      { name: "Modificadores", href: "/productos/modificadores", icon: Settings },
     ],
   },
   {
@@ -67,24 +78,37 @@ const navigation = [
     description: "Sistema de reservaciones",
   },
   {
+    name: "Personal",
+    icon: UserCheck,
+    children: [
+      { name: "Meseros", href: "/personal/meseros", icon: UserCheck },
+      { name: "Turnos", href: "/personal/turnos", icon: Clock },
+      { name: "Usuarios", href: "/personal/usuarios", icon: Users },
+    ],
+  },
+  {
     name: "Encuestas",
     icon: MessageSquare,
     children: [
       { name: "Crear Encuesta", href: "/encuestas/crear", icon: MessageSquare },
-      { name: "Campañas SMS", href: "/encuestas/campanas", icon: MessageSquare },
-      { name: "Resultados", href: "/encuestas/resultados", icon: BarChart3 },
+      { name: "Campañas SMS", href: "/encuestas/campanas", icon: Send },
+      { name: "Resultados", href: "/encuestas/resultados", icon: Star },
     ],
   },
   {
     name: "Reportes",
-    href: "/reportes",
     icon: BarChart3,
-    description: "Reportes y análisis",
+    children: [
+      { name: "Ventas", href: "/reportes/ventas", icon: TrendingUp },
+      { name: "Productos", href: "/reportes/productos", icon: Package },
+      { name: "Clientes", href: "/reportes/clientes", icon: Users },
+      { name: "Financiero", href: "/reportes/financiero", icon: FileText },
+    ],
   },
   {
     name: "Configuración",
     href: "/configuracion",
-    icon: Settings,
+    icon: Cog,
     description: "Configuración del sistema",
   },
 ]
@@ -121,9 +145,12 @@ export function Sidebar({ className }: SidebarProps) {
               const isOpen = openGroups.includes(item.name)
               return (
                 <div key={item.name}>
-                  <Button variant="ghost" className="w-full justify-start" onClick={() => toggleGroup(item.name)}>
-                    <item.icon className="mr-2 h-4 w-4" />
-                    {item.name}
+                  <Button variant="ghost" className="w-full justify-between" onClick={() => toggleGroup(item.name)}>
+                    <div className="flex items-center">
+                      <item.icon className="mr-2 h-4 w-4" />
+                      {item.name}
+                    </div>
+                    {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                   </Button>
                   {isOpen && (
                     <div className="ml-6 mt-2 space-y-1">
