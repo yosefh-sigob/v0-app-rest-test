@@ -1,6 +1,8 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
+import { Toaster } from "@/components/ui/sonner"
+import { LicenseProvider } from "@/contexts/license-context"
 import "./globals.css"
 
 const geistSans = Geist({
@@ -25,8 +27,13 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>{children}</body>
+    <html lang="es">
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <LicenseProvider>
+          {children}
+          <Toaster />
+        </LicenseProvider>
+      </body>
     </html>
   )
 }

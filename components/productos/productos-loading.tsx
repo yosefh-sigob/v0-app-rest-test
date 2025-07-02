@@ -20,14 +20,15 @@ export function ProductosLoading() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-10 w-full" />
-            ))}
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
           </div>
         </CardContent>
       </Card>
 
-      {/* Controles skeleton */}
+      {/* Controles de vista skeleton */}
       <div className="flex justify-between items-center">
         <Skeleton className="h-4 w-32" />
         <div className="flex gap-2">
@@ -36,7 +37,7 @@ export function ProductosLoading() {
         </div>
       </div>
 
-      {/* Grid skeleton */}
+      {/* Grid de productos skeleton */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {Array.from({ length: 8 }).map((_, i) => (
           <Card key={i}>
@@ -49,7 +50,7 @@ export function ProductosLoading() {
                   <Skeleton className="h-4 w-2/3" />
                   <div className="flex gap-2">
                     <Skeleton className="h-6 w-16" />
-                    <Skeleton className="h-6 w-16" />
+                    <Skeleton className="h-6 w-20" />
                   </div>
                 </div>
               </div>

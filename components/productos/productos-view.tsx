@@ -60,9 +60,12 @@ import {
 import { ProductoForm } from "./producto-form"
 import { ProductoDetail } from "./producto-detail"
 import { LicenseGuard } from "@/components/license-guard"
+import { LicenseSelector } from "@/components/license-selector"
+import { useLicense } from "@/contexts/license-context"
 import { getProductos, deleteProducto, toggleFavoriteProducto } from "@/actions/productos.actions"
 import type { Producto } from "@/interfaces/database"
 import type { SearchProductosInput } from "@/schemas/productos.schemas"
+import { LicenseGuar } from "@/components/license-guar" // Import LicenseGuar component
 
 interface ProductosViewProps {
   initialData: {
@@ -93,6 +96,7 @@ export function ProductosView({
 }: ProductosViewProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { currentLicense, setLicense } = useLicense()
 
   // Estados con valores por defecto seguros
   const [data, setData] = useState(
@@ -273,13 +277,16 @@ export function ProductosView({
 
   return (
     <div className="space-y-6">
+      {/* Selector de Licencia */}
+      <LicenseSelector currentLicense={currentLicense} onLicenseChange={setLicense} />
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold">Productos</h1>
           <p className="text-muted-foreground">Gestiona tu catálogo de productos y platillos</p>
         </div>
-        <LicenseGuard requiredLicense="Lite" feature="Crear productos">
+        <LicenseGuard feature="gestionProductos">
           <Button
             onClick={() => {
               setSelectedProducto(null)
@@ -449,7 +456,7 @@ export function ProductosView({
               {hasActiveFilters ? "Intenta ajustar los filtros de búsqueda" : "Comienza agregando tu primer producto"}
             </p>
             {!hasActiveFilters && (
-              <LicenseGuard requiredLicense="Lite" feature="Crear productos">
+              <LicenseGuard feature="gestionProductos">
                 <Button
                   onClick={() => {
                     setSelectedProducto(null)
@@ -512,10 +519,18 @@ export function ProductosView({
                             <Eye className="h-4 w-4 mr-2" />
                             Ver detalles
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleEdit(producto)}>
-                            <Edit className="h-4 w-4 mr-2" />
-                            Editar
-                          </DropdownMenuItem>
+                          <LicenseGuar feature="gestionProductos">
+                            <DropdownMenuItem onClick={() => handleView(producto)}>
+                              <Eye className="h-4 w-4 mr-2" />
+                              Ver detalles
+                            </DropdownMenuItem>
+                          </LicenseGuar>
+                          <LicenseGuard feature="gestionProductos">
+                            <DropdownMenuItem onClick={() => handleEdit(producto)}>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Editar
+                            </DropdownMenuItem>
+                          </LicenseGuard>
                           <DropdownMenuItem onClick={() => handleToggleFavorite(producto)}>
                             {producto.Favorito ? (
                               <>
@@ -530,10 +545,12 @@ export function ProductosView({
                             )}
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => handleDelete(producto)} className="text-red-600">
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Eliminar
-                          </DropdownMenuItem>
+                          <LicenseGuard feature="gestionProductos">
+                            <DropdownMenuItem onClick={() => handleDelete(producto)} className="text-red-600">
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Eliminar
+                            </DropdownMenuItem>
+                          </LicenseGuard>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
@@ -627,10 +644,18 @@ export function ProductosView({
                               <Eye className="h-4 w-4 mr-2" />
                               Ver detalles
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleEdit(producto)}>
-                              <Edit className="h-4 w-4 mr-2" />
-                              Editar
-                            </DropdownMenuItem>
+                            <LicenseGuar feature="gestionProductos">
+                              <DropdownMenuItem onClick={() => handleView(producto)}>
+                                <Eye className="h-4 w-4 mr-2" />
+                                Ver detalles
+                              </DropdownMenuItem>
+                            </LicenseGuar>
+                            <LicenseGuard feature="gestionProductos">
+                              <DropdownMenuItem onClick={() => handleEdit(producto)}>
+                                <Edit className="h-4 w-4 mr-2" />
+                                Editar
+                              </DropdownMenuItem>
+                            </LicenseGuard>
                             <DropdownMenuItem onClick={() => handleToggleFavorite(producto)}>
                               {producto.Favorito ? (
                                 <>
@@ -645,10 +670,12 @@ export function ProductosView({
                               )}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => handleDelete(producto)} className="text-red-600">
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Eliminar
-                            </DropdownMenuItem>
+                            <LicenseGuard feature="gestionProductos">
+                              <DropdownMenuItem onClick={() => handleDelete(producto)} className="text-red-600">
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Eliminar
+                              </DropdownMenuItem>
+                            </LicenseGuard>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
