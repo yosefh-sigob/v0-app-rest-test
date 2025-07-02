@@ -1,30 +1,24 @@
-import { ulid } from "ulid"
-
+// Función simple para generar IDs únicos similares a ULID
 export function generateULID(): string {
-  return ulid()
+  const timestamp = Date.now().toString(36)
+  const randomPart = Math.random().toString(36).substring(2, 15)
+  return `${timestamp}${randomPart}`.toUpperCase().padEnd(26, "0").substring(0, 26)
 }
 
-export function isValidULID(id: string): boolean {
-  // ULID format: 26 characters, base32 encoded
-  const ulidRegex = /^[0123456789ABCDEFGHJKMNPQRSTVWXYZ]{26}$/
-  return ulidRegex.test(id)
+// Función para validar formato ULID
+export function isValidULID(ulid: string): boolean {
+  return /^[0-9A-HJKMNP-TV-Z]{26}$/.test(ulid)
 }
 
-export function extractTimestamp(ulidString: string): Date {
-  if (!isValidULID(ulidString)) {
-    throw new Error("Invalid ULID format")
+// Función para extraer timestamp de ULID
+export function getULIDTimestamp(ulid: string): Date | null {
+  if (!isValidULID(ulid)) return null
+
+  try {
+    const timestampPart = ulid.substring(0, 10)
+    const timestamp = Number.parseInt(timestampPart, 36)
+    return new Date(timestamp)
+  } catch {
+    return null
   }
-
-  // Extract timestamp from first 10 characters of ULID
-  const timestampPart = ulidString.substring(0, 10)
-  const timestamp = Number.parseInt(timestampPart, 32)
-  return new Date(timestamp)
-}
-
-export function compareULIDs(a: string, b: string): number {
-  if (!isValidULID(a) || !isValidULID(b)) {
-    throw new Error("Invalid ULID format")
-  }
-
-  return a.localeCompare(b)
 }

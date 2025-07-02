@@ -1,71 +1,206 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Plus, Search, Grid, List, Star, Edit, Trash2, Eye, Filter, MoreHorizontal } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
 import { toast } from "sonner"
+import {
+  Plus,
+  Search,
+  Filter,
+  Grid3X3,
+  List,
+  Star,
+  MoreVertical,
+  Edit,
+  Trash2,
+  Eye,
+  Heart,
+  HeartOff,
+  Package,
+  Utensils,
+  Wine,
+  ShoppingCart,
+  Home,
+  Truck,
+  Smartphone,
+  QrCode,
+  X,
+} from "lucide-react"
+import { ProductoForm } from "./producto-form"
+import { ProductoDetail } from "./producto-detail"
 import { LicenseGuard } from "@/components/license-guard"
-import { ProductoForm } from "@/components/productos/producto-form"
-import { ProductoDetail } from "@/components/productos/producto-detail"
-import { toggleFavoriteProducto, deleteProducto } from "@/actions/productos.actions"
+import { getProductos, deleteProducto, toggleFavoriteProducto } from "@/actions/productos.actions"
 import type { Producto } from "@/interfaces/database"
-import { NivelLicencia } from "@/interfaces/database"
 import type { SearchProductosInput } from "@/schemas/productos.schemas"
 
 interface ProductosViewProps {
-  productosData: {
+  initialData: {
     productos: Producto[]
     total: number
     page: number
     totalPages: number
+    limit: number
   }
   gruposProductos: Array<{ id: number; nombre: string }>
   unidades: Array<{ id: number; nombre: string; abreviacion: string }>
   areasProduccion: Array<{ id: number; nombre: string }>
   almacenes: Array<{ id: number; nombre: string }>
-  searchParams: SearchProductosInput
+}
+
+const TIPO_ICONS = {
+  Platillo: <Utensils className="h-4 w-4" />,
+  Producto: <Package className="h-4 w-4" />,
+  Botella: <Wine className="h-4 w-4" />,
 }
 
 export function ProductosView({
-  productosData,
+  initialData,
   gruposProductos,
   unidades,
   areasProduccion,
   almacenes,
-  searchParams,
 }: ProductosViewProps) {
   const router = useRouter()
-  const urlSearchParams = useSearchParams()
+  const searchParams = useSearchParams()
+
+  // Estados
+  const [data, setData] = useState(initialData)
+  const [loading, setLoading] = useState(false)
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
+  const [showForm, setShowForm] = useState(false)
+  const [showDetail, setShowDetail] = useState(false)
   const [selectedProducto, setSelectedProducto] = useState<Producto | null>(null)
-  const [isFormOpen, setIsFormOpen] = useState(false)
-  const [isDetailOpen, setIsDetailOpen] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [productoToDelete, setProductoToDelete] = useState<Producto | null>(null)
 
-  // En producción, esto vendría de la sesión del usuario
-  const currentLicense = NivelLicencia.PRO
+  // Filtros
+  const [filters, setFilters] = useState<SearchProductosInput>({
+    search: searchParams.get("search") || "",
+    tipo: (searchParams.get("tipo") as any) || undefined,
+    favorito:
+      searchParams.get("favorito") === "true" ? true : searchParams.get("favorito") === "false" ? false : undefined,
+    suspendido:
+      searchParams.get("suspendido") === "true" ? true : searchParams.get("suspendido") === "false" ? false : undefined,
+    grupoId: searchParams.get("grupoId") ? Number(searchParams.get("grupoId")) : undefined,
+    page: Number(searchParams.get("page")) || 1,
+    limit: Number(searchParams.get("limit")) || 20,
+  })
 
-  const { productos, total, page, totalPages } = productosData
+  // Actualizar URL cuando cambien los filtros
+  useEffect(() => {
+    const params = new URLSearchParams()
 
-  const productosActivos = productos.filter((p) => !p.Suspendido)
-  const productosSuspendidos = productos.filter((p) => p.Suspendido)
+    if (filters.search) params.set("search", filters.search)
+    if (filters.tipo) params.set("tipo", filters.tipo)
+    if (filters.favorito !== undefined) params.set("favorito", filters.favorito.toString())
+    if (filters.suspendido !== undefined) params.set("suspendido", filters.suspendido.toString())
+    if (filters.grupoId) params.set("grupoId", filters.grupoId.toString())
+    if (filters.page > 1) params.set("page", filters.page.toString())
+    if (filters.limit !== 20) params.set("limit", filters.limit.toString())
 
-  const updateSearchParams = (key: string, value: string | null) => {
-    const params = new URLSearchParams(urlSearchParams.toString())
-    if (value) {
-      params.set(key, value)
-    } else {
-      params.delete(key)
+    const newUrl = params.toString() ? `?${params.toString()}` : ""
+    router.replace(`/productos${newUrl}`, { scroll: false })
+  }, [filters, router])
+
+  // Cargar productos cuando cambien los filtros
+  useEffect(() => {
+    const loadProductos = async () => {
+      setLoading(true)
+      try {
+        const result = await getProductos(filters)
+        if (result.success) {
+          setData(result.data)
+        }
+      } catch (error) {
+        toast.error("Error al cargar productos")
+      } finally {
+        setLoading(false)
+      }
     }
-    params.delete("page") // Reset page when filtering
-    router.push(`/productos?${params.toString()}`)
+
+    loadProductos()
+  }, [filters])
+
+  // Handlers
+  const handleSearch = (value: string) => {
+    setFilters((prev) => ({ ...prev, search: value, page: 1 }))
+  }
+
+  const handleFilterChange = (key: keyof SearchProductosInput, value: any) => {
+    setFilters((prev) => ({ ...prev, [key]: value, page: 1 }))
+  }
+
+  const handlePageChange = (page: number) => {
+    setFilters((prev) => ({ ...prev, page }))
+  }
+
+  const handleEdit = (producto: Producto) => {
+    setSelectedProducto(producto)
+    setShowForm(true)
+  }
+
+  const handleView = (producto: Producto) => {
+    setSelectedProducto(producto)
+    setShowDetail(true)
+  }
+
+  const handleDelete = (producto: Producto) => {
+    setProductoToDelete(producto)
+    setDeleteDialogOpen(true)
+  }
+
+  const confirmDelete = async () => {
+    if (!productoToDelete) return
+
+    try {
+      const result = await deleteProducto(productoToDelete.ProductoULID)
+      if (result.success) {
+        toast.success(result.message)
+        // Recargar datos
+        const newResult = await getProductos(filters)
+        if (newResult.success) {
+          setData(newResult.data)
+        }
+      } else {
+        toast.error(result.message)
+      }
+    } catch (error) {
+      toast.error("Error al eliminar producto")
+    } finally {
+      setDeleteDialogOpen(false)
+      setProductoToDelete(null)
+    }
   }
 
   const handleToggleFavorite = async (producto: Producto) => {
@@ -73,6 +208,11 @@ export function ProductosView({
       const result = await toggleFavoriteProducto(producto.ProductoULID)
       if (result.success) {
         toast.success(result.message)
+        // Recargar datos
+        const newResult = await getProductos(filters)
+        if (newResult.success) {
+          setData(newResult.data)
+        }
       } else {
         toast.error(result.message)
       }
@@ -81,490 +221,539 @@ export function ProductosView({
     }
   }
 
-  const handleDelete = async (producto: Producto) => {
-    if (!confirm(`¿Estás seguro de eliminar el producto "${producto.Nombredelproducto}"?`)) {
-      return
-    }
-
-    try {
-      const result = await deleteProducto(producto.ProductoULID)
-      if (result.success) {
-        toast.success(result.message)
-      } else {
-        toast.error(result.message)
-      }
-    } catch (error) {
-      toast.error("Error al eliminar producto")
+  const handleFormSuccess = async () => {
+    setShowForm(false)
+    setSelectedProducto(null)
+    // Recargar datos
+    const result = await getProductos(filters)
+    if (result.success) {
+      setData(result.data)
     }
   }
 
-  const handleEdit = (producto: Producto) => {
-    setSelectedProducto(producto)
-    setIsFormOpen(true)
+  const clearFilters = () => {
+    setFilters({
+      search: "",
+      tipo: undefined,
+      favorito: undefined,
+      suspendido: undefined,
+      grupoId: undefined,
+      page: 1,
+      limit: 20,
+    })
   }
 
-  const handleView = (producto: Producto) => {
-    setSelectedProducto(producto)
-    setIsDetailOpen(true)
-  }
+  const hasActiveFilters = useMemo(() => {
+    return !!(
+      filters.search ||
+      filters.tipo ||
+      filters.favorito !== undefined ||
+      filters.suspendido !== undefined ||
+      filters.grupoId
+    )
+  }, [filters])
 
-  const handlePageChange = (newPage: number) => {
-    const params = new URLSearchParams(urlSearchParams.toString())
-    params.set("page", newPage.toString())
-    router.push(`/productos?${params.toString()}`)
+  const getChannelBadges = (producto: Producto) => {
+    const channels = []
+    if (producto.Comedor) channels.push({ icon: <Home className="h-3 w-3" />, label: "Comedor" })
+    if (producto.ADomicilio) channels.push({ icon: <Truck className="h-3 w-3" />, label: "Domicilio" })
+    if (producto.Mostrador) channels.push({ icon: <ShoppingCart className="h-3 w-3" />, label: "Mostrador" })
+    if (producto.Enlinea) channels.push({ icon: <Smartphone className="h-3 w-3" />, label: "En línea" })
+    if (producto.EnMenuQR) channels.push({ icon: <QrCode className="h-3 w-3" />, label: "QR" })
+    return channels
   }
 
   return (
-    <div className="container mx-auto py-8 space-y-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Catálogo de Productos</h1>
-          <p className="text-muted-foreground">
-            Gestiona el catálogo completo de productos de tu restaurante ({total} productos)
-          </p>
+          <h1 className="text-3xl font-bold">Productos</h1>
+          <p className="text-muted-foreground">Gestiona tu catálogo de productos y platillos</p>
         </div>
-
-        <LicenseGuard currentLicense={currentLicense} requiredFeature="gestionProductos">
-          <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={() => setSelectedProducto(null)} className="bg-orange-600 hover:bg-orange-700">
-                <Plus className="w-4 h-4 mr-2" />
-                Nuevo Producto
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-              <ProductoForm
-                producto={selectedProducto}
-                gruposProductos={gruposProductos}
-                unidades={unidades}
-                areasProduccion={areasProduccion}
-                almacenes={almacenes}
-                onSuccess={() => {
-                  setIsFormOpen(false)
-                  setSelectedProducto(null)
-                }}
-                onCancel={() => {
-                  setIsFormOpen(false)
-                  setSelectedProducto(null)
-                }}
-              />
-            </DialogContent>
-          </Dialog>
+        <LicenseGuard requiredLicense="Lite" feature="Crear productos">
+          <Button
+            onClick={() => {
+              setSelectedProducto(null)
+              setShowForm(true)
+            }}
+            className="bg-orange-600 hover:bg-orange-700"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Nuevo Producto
+          </Button>
         </LicenseGuard>
       </div>
 
-      {/* Filtros y búsqueda */}
+      {/* Filtros */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="w-5 h-5" />
-            Filtros y Búsqueda
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Filter className="h-5 w-5" />
+            Filtros
+            {hasActiveFilters && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearFilters}
+                className="ml-auto text-orange-600 hover:text-orange-700"
+              >
+                <X className="h-4 w-4 mr-1" />
+                Limpiar
+              </Button>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Búsqueda */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar por nombre, descripción o código..."
-                defaultValue={searchParams.search || ""}
-                onChange={(e) => {
-                  const value = e.target.value
-                  setTimeout(() => updateSearchParams("search", value || null), 500)
-                }}
+                placeholder="Buscar productos..."
+                value={filters.search}
+                onChange={(e) => handleSearch(e.target.value)}
                 className="pl-10"
               />
             </div>
 
-            <div className="flex flex-wrap gap-2">
-              <Select
-                defaultValue={searchParams.tipo || ""}
-                onValueChange={(value) => updateSearchParams("tipo", value || null)}
-              >
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Todos los tipos</SelectItem>
-                  <SelectItem value="Platillo">Platillo</SelectItem>
-                  <SelectItem value="Producto">Producto</SelectItem>
-                  <SelectItem value="Botella">Botella</SelectItem>
-                </SelectContent>
-              </Select>
+            {/* Tipo */}
+            <Select
+              value={filters.tipo || "all"}
+              onValueChange={(value) => handleFilterChange("tipo", value === "all" ? undefined : value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Tipo de producto" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los tipos</SelectItem>
+                <SelectItem value="Platillo">Platillo</SelectItem>
+                <SelectItem value="Producto">Producto</SelectItem>
+                <SelectItem value="Botella">Botella</SelectItem>
+              </SelectContent>
+            </Select>
 
-              <Select
-                defaultValue={searchParams.grupoId?.toString() || ""}
-                onValueChange={(value) => updateSearchParams("grupoId", value || null)}
-              >
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Categoría" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Todas las categorías</SelectItem>
-                  {gruposProductos.map((grupo) => (
-                    <SelectItem key={grupo.id} value={grupo.id.toString()}>
-                      {grupo.nombre}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            {/* Grupo */}
+            <Select
+              value={filters.grupoId?.toString() || "all"}
+              onValueChange={(value) => handleFilterChange("grupoId", value === "all" ? undefined : Number(value))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Categoría" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas las categorías</SelectItem>
+                {gruposProductos.map((grupo) => (
+                  <SelectItem key={grupo.id} value={grupo.id.toString()}>
+                    {grupo.nombre}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-              <Select
-                defaultValue={searchParams.favorito?.toString() || ""}
-                onValueChange={(value) => updateSearchParams("favorito", value || null)}
-              >
-                <SelectTrigger className="w-32">
-                  <SelectValue placeholder="Favoritos" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Todos</SelectItem>
-                  <SelectItem value="true">Favoritos</SelectItem>
-                  <SelectItem value="false">No favoritos</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <div className="flex border rounded-md">
-                <Button
-                  variant={viewMode === "grid" ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setViewMode("grid")}
-                  className="rounded-r-none"
-                >
-                  <Grid className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant={viewMode === "list" ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setViewMode("list")}
-                  className="rounded-l-none"
-                >
-                  <List className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
+            {/* Estado */}
+            <Select
+              value={
+                filters.favorito === true
+                  ? "favoritos"
+                  : filters.suspendido === true
+                    ? "suspendidos"
+                    : filters.suspendido === false
+                      ? "activos"
+                      : "all"
+              }
+              onValueChange={(value) => {
+                if (value === "favoritos") {
+                  handleFilterChange("favorito", true)
+                  handleFilterChange("suspendido", undefined)
+                } else if (value === "suspendidos") {
+                  handleFilterChange("favorito", undefined)
+                  handleFilterChange("suspendido", true)
+                } else if (value === "activos") {
+                  handleFilterChange("favorito", undefined)
+                  handleFilterChange("suspendido", false)
+                } else {
+                  handleFilterChange("favorito", undefined)
+                  handleFilterChange("suspendido", undefined)
+                }
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Estado" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="activos">Activos</SelectItem>
+                <SelectItem value="favoritos">Favoritos</SelectItem>
+                <SelectItem value="suspendidos">Suspendidos</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
 
-      {/* Contenido */}
-      <Tabs defaultValue="activos" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="activos" className="flex items-center gap-2">
-            Productos Activos
-            <Badge variant="secondary">{productosActivos.length}</Badge>
-          </TabsTrigger>
-          <TabsTrigger value="suspendidos" className="flex items-center gap-2">
-            Suspendidos
-            <Badge variant="destructive">{productosSuspendidos.length}</Badge>
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="activos" className="space-y-4">
-          {productosActivos.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <div className="text-center space-y-2">
-                  <h3 className="text-lg font-semibold">No hay productos activos</h3>
-                  <p className="text-muted-foreground">Comienza agregando productos a tu catálogo</p>
-                  <Button onClick={() => setIsFormOpen(true)} className="mt-4">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Agregar Primer Producto
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <>
-              <div
-                className={
-                  viewMode === "grid"
-                    ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4"
-                    : "space-y-4"
-                }
-              >
-                {productosActivos.map((producto) => (
-                  <ProductoCard
-                    key={producto.ProductoULID}
-                    producto={producto}
-                    viewMode={viewMode}
-                    onToggleFavorite={handleToggleFavorite}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                    onView={handleView}
-                  />
-                ))}
-              </div>
-
-              {/* Paginación */}
-              {totalPages > 1 && (
-                <div className="flex justify-center items-center space-x-2 mt-8">
-                  <Button variant="outline" onClick={() => handlePageChange(page - 1)} disabled={page <= 1}>
-                    Anterior
-                  </Button>
-                  <div className="flex items-center space-x-1">
-                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                      const pageNum = i + 1
-                      return (
-                        <Button
-                          key={pageNum}
-                          variant={page === pageNum ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => handlePageChange(pageNum)}
-                        >
-                          {pageNum}
-                        </Button>
-                      )
-                    })}
-                  </div>
-                  <Button variant="outline" onClick={() => handlePageChange(page + 1)} disabled={page >= totalPages}>
-                    Siguiente
-                  </Button>
-                </div>
-              )}
-            </>
+      {/* Controles de vista */}
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">
+            {data.total} producto{data.total !== 1 ? "s" : ""} encontrado{data.total !== 1 ? "s" : ""}
+          </span>
+          {hasActiveFilters && (
+            <Badge variant="secondary" className="text-xs">
+              Filtrado
+            </Badge>
           )}
-        </TabsContent>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant={viewMode === "grid" ? "default" : "outline"} size="sm" onClick={() => setViewMode("grid")}>
+            <Grid3X3 className="h-4 w-4" />
+          </Button>
+          <Button variant={viewMode === "list" ? "default" : "outline"} size="sm" onClick={() => setViewMode("list")}>
+            <List className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
 
-        <TabsContent value="suspendidos" className="space-y-4">
-          {productosSuspendidos.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <div className="text-center space-y-2">
-                  <h3 className="text-lg font-semibold">No hay productos suspendidos</h3>
-                  <p className="text-muted-foreground">Los productos suspendidos aparecerán aquí</p>
+      {/* Lista de productos */}
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Card key={i} className="animate-pulse">
+              <CardContent className="p-4">
+                <div className="space-y-3">
+                  <div className="h-32 bg-gray-200 rounded-md" />
+                  <div className="space-y-2">
+                    <div className="h-5 bg-gray-200 rounded w-3/4" />
+                    <div className="h-4 bg-gray-200 rounded w-full" />
+                    <div className="h-4 bg-gray-200 rounded w-2/3" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
-          ) : (
-            <div
-              className={
-                viewMode === "grid"
-                  ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4"
-                  : "space-y-4"
-              }
+          ))}
+        </div>
+      ) : data.productos.length === 0 ? (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <Package className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No se encontraron productos</h3>
+            <p className="text-muted-foreground text-center mb-4">
+              {hasActiveFilters ? "Intenta ajustar los filtros de búsqueda" : "Comienza agregando tu primer producto"}
+            </p>
+            {!hasActiveFilters && (
+              <LicenseGuard requiredLicense="Lite" feature="Crear productos">
+                <Button
+                  onClick={() => {
+                    setSelectedProducto(null)
+                    setShowForm(true)
+                  }}
+                  className="bg-orange-600 hover:bg-orange-700"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Crear Primer Producto
+                </Button>
+              </LicenseGuard>
+            )}
+          </CardContent>
+        </Card>
+      ) : viewMode === "grid" ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {data.productos.map((producto) => (
+            <Card
+              key={producto.ProductoULID}
+              className={`group hover:shadow-md transition-shadow ${
+                producto.Suspendido ? "opacity-60 border-dashed" : ""
+              }`}
             >
-              {productosSuspendidos.map((producto) => (
-                <ProductoCard
+              <CardContent className="p-4">
+                <div className="space-y-3">
+                  {/* Imagen */}
+                  <div className="relative">
+                    <img
+                      src={`/placeholder.svg?height=120&width=160&text=${encodeURIComponent(producto.Nombredelproducto)}`}
+                      alt={producto.Nombredelproducto}
+                      className="w-full h-30 object-cover rounded-md"
+                    />
+                    {producto.Favorito && (
+                      <div className="absolute top-2 left-2">
+                        <Badge className="bg-yellow-500 hover:bg-yellow-600">
+                          <Star className="h-3 w-3 mr-1" />
+                          Favorito
+                        </Badge>
+                      </div>
+                    )}
+                    {producto.Suspendido && (
+                      <div className="absolute top-2 right-2">
+                        <Badge variant="destructive">Suspendido</Badge>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Información */}
+                  <div className="space-y-2">
+                    <div className="flex items-start justify-between">
+                      <h3 className="font-semibold text-sm leading-tight">{producto.Nombredelproducto}</h3>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleView(producto)}>
+                            <Eye className="h-4 w-4 mr-2" />
+                            Ver detalles
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleEdit(producto)}>
+                            <Edit className="h-4 w-4 mr-2" />
+                            Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleToggleFavorite(producto)}>
+                            {producto.Favorito ? (
+                              <>
+                                <HeartOff className="h-4 w-4 mr-2" />
+                                Quitar de favoritos
+                              </>
+                            ) : (
+                              <>
+                                <Heart className="h-4 w-4 mr-2" />
+                                Agregar a favoritos
+                              </>
+                            )}
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => handleDelete(producto)} className="text-red-600">
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Eliminar
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+
+                    <p className="text-xs text-muted-foreground line-clamp-2">
+                      {producto.Descripcion || "Sin descripción"}
+                    </p>
+
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-xs">
+                        {TIPO_ICONS[producto.TipoProducto]}
+                        {producto.TipoProducto}
+                      </Badge>
+                      <Badge variant="outline" className="text-xs">
+                        {producto.ClaveProducto}
+                      </Badge>
+                    </div>
+
+                    {/* Canales de venta */}
+                    <div className="flex flex-wrap gap-1">
+                      {getChannelBadges(producto)
+                        .slice(0, 3)
+                        .map((channel, index) => (
+                          <Badge key={index} variant="secondary" className="text-xs">
+                            {channel.icon}
+                            {channel.label}
+                          </Badge>
+                        ))}
+                      {getChannelBadges(producto).length > 3 && (
+                        <Badge variant="secondary" className="text-xs">
+                          +{getChannelBadges(producto).length - 3}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <Card>
+          <CardContent className="p-0">
+            <div className="divide-y">
+              {data.productos.map((producto) => (
+                <div
                   key={producto.ProductoULID}
-                  producto={producto}
-                  viewMode={viewMode}
-                  onToggleFavorite={handleToggleFavorite}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                  onView={handleView}
-                />
+                  className={`p-4 hover:bg-muted/50 transition-colors ${producto.Suspendido ? "opacity-60" : ""}`}
+                >
+                  <div className="flex items-center gap-4">
+                    {/* Imagen pequeña */}
+                    <img
+                      src={`/placeholder.svg?height=64&width=64&text=${encodeURIComponent(producto.Nombredelproducto)}`}
+                      alt={producto.Nombredelproducto}
+                      className="w-16 h-16 object-cover rounded-md flex-shrink-0"
+                    />
+
+                    {/* Información */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold">{producto.Nombredelproducto}</h3>
+                            {producto.Favorito && <Star className="h-4 w-4 text-yellow-500 fill-current" />}
+                            {producto.Suspendido && (
+                              <Badge variant="destructive" className="text-xs">
+                                Suspendido
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground">{producto.Descripcion || "Sin descripción"}</p>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="text-xs">
+                              {TIPO_ICONS[producto.TipoProducto]}
+                              {producto.TipoProducto}
+                            </Badge>
+                            <Badge variant="outline" className="text-xs">
+                              {producto.ClaveProducto}
+                            </Badge>
+                          </div>
+                        </div>
+
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleView(producto)}>
+                              <Eye className="h-4 w-4 mr-2" />
+                              Ver detalles
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleEdit(producto)}>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Editar
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleToggleFavorite(producto)}>
+                              {producto.Favorito ? (
+                                <>
+                                  <HeartOff className="h-4 w-4 mr-2" />
+                                  Quitar de favoritos
+                                </>
+                              ) : (
+                                <>
+                                  <Heart className="h-4 w-4 mr-2" />
+                                  Agregar a favoritos
+                                </>
+                              )}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => handleDelete(producto)} className="text-red-600">
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Eliminar
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               ))}
             </div>
-          )}
-        </TabsContent>
-      </Tabs>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Dialog para ver detalles */}
-      <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      {/* Paginación */}
+      {data.totalPages > 1 && (
+        <div className="flex justify-center">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() => handlePageChange(Math.max(1, data.page - 1))}
+                  className={data.page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                />
+              </PaginationItem>
+
+              {Array.from({ length: Math.min(5, data.totalPages) }, (_, i) => {
+                const pageNum = i + 1
+                return (
+                  <PaginationItem key={pageNum}>
+                    <PaginationLink
+                      onClick={() => handlePageChange(pageNum)}
+                      isActive={data.page === pageNum}
+                      className="cursor-pointer"
+                    >
+                      {pageNum}
+                    </PaginationLink>
+                  </PaginationItem>
+                )
+              })}
+
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() => handlePageChange(Math.min(data.totalPages, data.page + 1))}
+                  className={data.page === data.totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
+
+      {/* Diálogos */}
+      <Dialog open={showForm} onOpenChange={setShowForm}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{selectedProducto ? "Editar Producto" : "Nuevo Producto"}</DialogTitle>
+          </DialogHeader>
+          <ProductoForm
+            producto={selectedProducto}
+            gruposProductos={gruposProductos}
+            unidades={unidades}
+            areasProduccion={areasProduccion}
+            almacenes={almacenes}
+            onSuccess={handleFormSuccess}
+            onCancel={() => {
+              setShowForm(false)
+              setSelectedProducto(null)
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showDetail} onOpenChange={setShowDetail}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Detalles del Producto</DialogTitle>
+          </DialogHeader>
           {selectedProducto && (
             <ProductoDetail
               producto={selectedProducto}
-              onClose={() => setIsDetailOpen(false)}
+              gruposProductos={gruposProductos}
+              unidades={unidades}
+              areasProduccion={areasProduccion}
+              almacenes={almacenes}
               onEdit={() => {
-                setIsDetailOpen(false)
-                setIsFormOpen(true)
+                setShowDetail(false)
+                setShowForm(true)
+              }}
+              onClose={() => {
+                setShowDetail(false)
+                setSelectedProducto(null)
               }}
             />
           )}
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción marcará el producto "{productoToDelete?.Nombredelproducto}" como suspendido. Podrás
+              reactivarlo más tarde si es necesario.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
-  )
-}
-
-interface ProductoCardProps {
-  producto: Producto
-  viewMode: "grid" | "list"
-  onToggleFavorite: (producto: Producto) => void
-  onEdit: (producto: Producto) => void
-  onDelete: (producto: Producto) => void
-  onView: (producto: Producto) => void
-}
-
-function ProductoCard({ producto, viewMode, onToggleFavorite, onEdit, onDelete, onView }: ProductoCardProps) {
-  if (viewMode === "list") {
-    return (
-      <Card className={`transition-all hover:shadow-md ${producto.Suspendido ? "opacity-60" : ""}`}>
-        <CardContent className="flex items-center justify-between p-4">
-          <div className="flex items-center space-x-4">
-            <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center overflow-hidden">
-              <img
-                src={`/placeholder.svg?height=64&width=64&query=${encodeURIComponent(producto.Nombredelproducto)}`}
-                alt={producto.Nombredelproducto}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="flex-1">
-              <div className="flex items-center space-x-2">
-                <h3 className="font-semibold">{producto.Nombredelproducto}</h3>
-                <Badge variant="outline" className="text-xs">
-                  {producto.ClaveProducto}
-                </Badge>
-                {producto.Favorito && <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />}
-              </div>
-              <p className="text-sm text-muted-foreground line-clamp-1">{producto.Descripcion}</p>
-              <div className="flex items-center space-x-2 mt-1">
-                <Badge variant={producto.Suspendido ? "destructive" : "default"} className="text-xs">
-                  {producto.TipoProducto}
-                </Badge>
-                <div className="flex space-x-1">
-                  {producto.Comedor && (
-                    <Badge variant="outline" className="text-xs">
-                      Comedor
-                    </Badge>
-                  )}
-                  {producto.ADomicilio && (
-                    <Badge variant="outline" className="text-xs">
-                      Domicilio
-                    </Badge>
-                  )}
-                  {producto.Mostrador && (
-                    <Badge variant="outline" className="text-xs">
-                      Mostrador
-                    </Badge>
-                  )}
-                  {producto.EnMenuQR && (
-                    <Badge variant="outline" className="text-xs">
-                      QR
-                    </Badge>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center space-x-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm">
-                  <MoreHorizontal className="w-4 h-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => onView(producto)}>
-                  <Eye className="w-4 h-4 mr-2" />
-                  Ver detalles
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onEdit(producto)}>
-                  <Edit className="w-4 h-4 mr-2" />
-                  Editar
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onToggleFavorite(producto)}>
-                  <Star className="w-4 h-4 mr-2" />
-                  {producto.Favorito ? "Quitar de favoritos" : "Agregar a favoritos"}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onDelete(producto)} className="text-red-600">
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Eliminar
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  return (
-    <Card className={`overflow-hidden transition-all hover:shadow-lg ${producto.Suspendido ? "opacity-60" : ""}`}>
-      <div className="aspect-[4/3] bg-muted flex items-center justify-center relative overflow-hidden">
-        <img
-          src={`/placeholder.svg?height=120&width=160&query=${encodeURIComponent(producto.Nombredelproducto)}`}
-          alt={producto.Nombredelproducto}
-          className="w-full h-full object-cover"
-        />
-        {producto.Favorito && (
-          <Star className="absolute top-2 right-2 w-5 h-5 fill-yellow-400 text-yellow-400 drop-shadow-sm" />
-        )}
-        {producto.Suspendido && (
-          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-            <Badge variant="destructive">Suspendido</Badge>
-          </div>
-        )}
-      </div>
-      <CardHeader className="pb-2">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <CardTitle className="text-base line-clamp-1">{producto.Nombredelproducto}</CardTitle>
-            <div className="flex items-center space-x-2 mt-1">
-              <Badge variant="outline" className="text-xs">
-                {producto.ClaveProducto}
-              </Badge>
-              <Badge variant={producto.Suspendido ? "destructive" : "default"} className="text-xs">
-                {producto.TipoProducto}
-              </Badge>
-            </div>
-          </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <MoreHorizontal className="w-4 h-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onView(producto)}>
-                <Eye className="w-4 h-4 mr-2" />
-                Ver detalles
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onEdit(producto)}>
-                <Edit className="w-4 h-4 mr-2" />
-                Editar
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onToggleFavorite(producto)}>
-                <Star className="w-4 h-4 mr-2" />
-                {producto.Favorito ? "Quitar de favoritos" : "Agregar a favoritos"}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onDelete(producto)} className="text-red-600">
-                <Trash2 className="w-4 h-4 mr-2" />
-                Eliminar
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-        {producto.Descripcion && (
-          <CardDescription className="line-clamp-2 text-xs">{producto.Descripcion}</CardDescription>
-        )}
-      </CardHeader>
-      <CardContent className="pt-0">
-        <div className="flex flex-wrap gap-1">
-          {producto.Comedor && (
-            <Badge variant="outline" className="text-xs">
-              Comedor
-            </Badge>
-          )}
-          {producto.ADomicilio && (
-            <Badge variant="outline" className="text-xs">
-              Domicilio
-            </Badge>
-          )}
-          {producto.Mostrador && (
-            <Badge variant="outline" className="text-xs">
-              Mostrador
-            </Badge>
-          )}
-          {producto.EnMenuQR && (
-            <Badge variant="outline" className="text-xs">
-              QR
-            </Badge>
-          )}
-          {producto.Enlinea && (
-            <Badge variant="outline" className="text-xs">
-              Online
-            </Badge>
-          )}
-          {producto.EnAPP && (
-            <Badge variant="outline" className="text-xs">
-              APP
-            </Badge>
-          )}
-        </div>
-      </CardContent>
-    </Card>
   )
 }
