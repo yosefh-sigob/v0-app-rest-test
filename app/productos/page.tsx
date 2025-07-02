@@ -39,19 +39,25 @@ export default async function ProductosPage({ searchParams }: ProductosPageProps
     getAlmacenes(),
   ])
 
-  if (!productosResult.success) {
-    throw new Error(productosResult.message)
-  }
+  // Manejar error de productos
+  const productosData = productosResult.success
+    ? productosResult.data
+    : {
+        productos: [],
+        total: 0,
+        page: 1,
+        totalPages: 0,
+        limit: 20,
+      }
 
   return (
     <Suspense fallback={<ProductosLoading />}>
       <ProductosView
-        productosData={productosResult.data}
+        initialData={productosData}
         gruposProductos={gruposProductos}
         unidades={unidades}
         areasProduccion={areasProduccion}
         almacenes={almacenes}
-        searchParams={validatedParams}
       />
     </Suspense>
   )

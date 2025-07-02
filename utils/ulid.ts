@@ -1,24 +1,22 @@
-// Función simple para generar IDs únicos similares a ULID
+// Función simple para generar ULIDs mock
+// En producción se usaría una librería como 'ulid'
 export function generateULID(): string {
-  const timestamp = Date.now().toString(36)
-  const randomPart = Math.random().toString(36).substring(2, 15)
-  return `${timestamp}${randomPart}`.toUpperCase().padEnd(26, "0").substring(0, 26)
+  const timestamp = Date.now().toString(36).toUpperCase()
+  const randomPart = Math.random().toString(36).substring(2, 12).toUpperCase()
+  return `${timestamp}${randomPart}`.padEnd(26, "0").substring(0, 26)
 }
 
-// Función para validar formato ULID
 export function isValidULID(ulid: string): boolean {
-  return /^[0-9A-HJKMNP-TV-Z]{26}$/.test(ulid)
+  return typeof ulid === "string" && ulid.length === 26
 }
 
-// Función para extraer timestamp de ULID
-export function getULIDTimestamp(ulid: string): Date | null {
-  if (!isValidULID(ulid)) return null
-
-  try {
-    const timestampPart = ulid.substring(0, 10)
-    const timestamp = Number.parseInt(timestampPart, 36)
-    return new Date(timestamp)
-  } catch {
-    return null
+export function extractTimestamp(ulid: string): Date {
+  if (!isValidULID(ulid)) {
+    throw new Error("Invalid ULID")
   }
+
+  // Extraer los primeros 10 caracteres que representan el timestamp
+  const timestampPart = ulid.substring(0, 10)
+  const timestamp = Number.parseInt(timestampPart, 36)
+  return new Date(timestamp)
 }

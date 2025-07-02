@@ -94,8 +94,16 @@ export function ProductosView({
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  // Estados
-  const [data, setData] = useState(initialData)
+  // Estados con valores por defecto seguros
+  const [data, setData] = useState(
+    initialData || {
+      productos: [],
+      total: 0,
+      page: 1,
+      totalPages: 0,
+      limit: 20,
+    },
+  )
   const [loading, setLoading] = useState(false)
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [showForm, setShowForm] = useState(false)
@@ -104,7 +112,7 @@ export function ProductosView({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [productoToDelete, setProductoToDelete] = useState<Producto | null>(null)
 
-  // Filtros
+  // Filtros con valores por defecto seguros
   const [filters, setFilters] = useState<SearchProductosInput>({
     search: searchParams.get("search") || "",
     tipo: (searchParams.get("tipo") as any) || undefined,
