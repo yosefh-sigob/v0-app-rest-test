@@ -519,7 +519,7 @@ export function ProductosView({
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                            <MoreVertical className="h-4 w-4" />
+                            <MoreVertical className="h-4 w-4 bg-red-500" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
