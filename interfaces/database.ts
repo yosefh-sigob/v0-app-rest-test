@@ -22,6 +22,41 @@ export enum TipoPago {
   ANUAL = "Anual",
 }
 
+export enum TipoPersona {
+  FISICA = "Fisica",
+  MORAL = "Moral",
+}
+
+export enum EstadoVenta {
+  PENDIENTE = "Pendiente",
+  PAGADA = "Pagada",
+  CANCELADA = "Cancelada",
+  DEVUELTA = "Devuelta",
+}
+
+export enum TipoVenta {
+  COMEDOR = "Comedor",
+  DOMICILIO = "Domicilio",
+  MOSTRADOR = "Mostrador",
+  ONLINE = "Online",
+}
+
+export enum EstadoReservacion {
+  PENDIENTE = "Pendiente",
+  CONFIRMADA = "Confirmada",
+  SENTADO = "Sentado",
+  CANCELADA = "Cancelada",
+  NO_SHOW = "NoShow",
+}
+
+export enum CanalReservacion {
+  TELEFONO = "Telefono",
+  PRESENCIAL = "Presencial",
+  ONLINE = "Online",
+  APP = "App",
+  WHATSAPP = "WhatsApp",
+}
+
 export interface Empresa {
   EmpresaULID: string
   TipoEmpresa: TipoEmpresa

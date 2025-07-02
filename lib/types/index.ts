@@ -54,6 +54,14 @@ export interface Reservacion {
   createdAt: string
 }
 
+export enum EstadoReservacion {
+  PENDIENTE = "pendiente",
+  CONFIRMADA = "confirmada",
+  SENTADO = "sentado",
+  CANCELADA = "cancelada",
+  NO_SHOW = "no_show",
+}
+
 export interface Encuesta {
   id: string
   title: string
