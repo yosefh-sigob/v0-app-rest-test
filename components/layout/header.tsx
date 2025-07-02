@@ -1,8 +1,8 @@
 "use client"
 
-import { Bell, Search, Settings, User, Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Home, Bell, User, Settings } from "lucide-react"
+import Link from "next/link"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,78 +11,52 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Badge } from "@/components/ui/badge"
-import { useSidebar } from "@/components/ui/sidebar"
 
-export function Header() {
-  const { toggleSidebar } = useSidebar()
+interface HeaderProps {
+  title?: string
+}
 
+export function Header({ title }: HeaderProps) {
   return (
-    <header className="header-restaurant sticky top-0 z-40 w-full">
-      <div className="flex h-16 items-center justify-between px-4">
-        {/* Left Section */}
+    <header className="restaurant-header px-6 py-4">
+      <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="icon" onClick={toggleSidebar} className="md:hidden">
-            <Menu className="h-5 w-5" />
+          {/* Botón para regresar al selector */}
+          <Link href="/">
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-orange-200 text-orange-600 hover:bg-orange-50 bg-transparent"
+            >
+              <Home className="h-4 w-4 mr-2" />
+              Inicio
+            </Button>
+          </Link>
+
+          {title && (
+            <>
+              <div className="h-6 w-px bg-orange-200" />
+              <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+            </>
+          )}
+        </div>
+
+        <div className="flex items-center space-x-4">
+          {/* Notificaciones */}
+          <Button variant="ghost" size="sm" className="relative">
+            <Bell className="h-5 w-5 text-gray-600" />
+            <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full text-xs"></span>
           </Button>
 
-          <div className="hidden md:flex items-center space-x-2">
-            <div className="relative">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Buscar productos, mesas..." className="pl-8 w-64" />
-            </div>
-          </div>
-        </div>
-
-        {/* Center Section - Logo/Title */}
-        <div className="flex items-center space-x-2">
-          <h1 className="text-xl font-bold text-restaurant-primary">RestApp</h1>
-        </div>
-
-        {/* Right Section */}
-        <div className="flex items-center space-x-2">
-          {/* Notifications */}
+          {/* Menú de usuario */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative">
-                <Bell className="h-5 w-5" />
-                <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs">
-                  3
-                </Badge>
+              <Button variant="ghost" size="sm" className="flex items-center space-x-2">
+                <User className="h-5 w-5 text-gray-600" />
+                <span className="text-sm text-gray-700">Usuario</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-80">
-              <DropdownMenuLabel>Notificaciones</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium">Mesa 5 - Tiempo de espera alto</p>
-                  <p className="text-xs text-muted-foreground">45 minutos desde el pedido</p>
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium">Nueva reservación</p>
-                  <p className="text-xs text-muted-foreground">Mesa para 4 - 19:30</p>
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium">Stock bajo</p>
-                  <p className="text-xs text-muted-foreground">Cerveza Corona - 5 unidades</p>
-                </div>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {/* User Menu */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <User className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>
@@ -94,8 +68,11 @@ export function Header() {
                 <span>Configuración</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-600">
-                <span>Cerrar Sesión</span>
+              <DropdownMenuItem>
+                <Home className="mr-2 h-4 w-4" />
+                <Link href="/" className="w-full">
+                  Volver al Inicio
+                </Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

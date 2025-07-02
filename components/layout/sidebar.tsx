@@ -1,185 +1,113 @@
 "use client"
 
-import {
-  Home,
-  Users,
-  ChefHat,
-  MapPin,
-  DollarSign,
-  Calendar,
-  MessageSquare,
-  BarChart3,
-  Settings,
-  User,
-  CreditCard,
-  Package,
-} from "lucide-react"
+import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarRail,
-} from "@/components/ui/sidebar"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+  LayoutDashboard,
+  Users,
+  Package,
+  UserCheck,
+  Calendar,
+  MessageSquare,
+  CreditCard,
+  ChefHat,
+  Home,
+  Menu,
+  X,
+} from "lucide-react"
 
-const menuItems = [
-  {
-    title: "Principal",
-    items: [
-      {
-        title: "Inicio",
-        url: "/",
-        icon: Home,
-      },
-      {
-        title: "Dashboard",
-        url: "/dashboard",
-        icon: BarChart3,
-      },
-    ],
-  },
-  {
-    title: "Operaciones",
-    items: [
-      {
-        title: "Punto de Venta",
-        url: "/ventas/pos",
-        icon: DollarSign,
-      },
-      {
-        title: "Mesas",
-        url: "/mesas",
-        icon: MapPin,
-      },
-      {
-        title: "Productos",
-        url: "/productos",
-        icon: Package,
-      },
-      {
-        title: "Clientes",
-        url: "/clientes",
-        icon: Users,
-      },
-      {
-        title: "Reservaciones",
-        url: "/reservaciones",
-        icon: Calendar,
-      },
-    ],
-  },
-  {
-    title: "Roles",
-    items: [
-      {
-        title: "Mesero",
-        url: "/mesero",
-        icon: ChefHat,
-      },
-      {
-        title: "Cajero",
-        url: "/cajero",
-        icon: CreditCard,
-      },
-    ],
-  },
-  {
-    title: "Marketing",
-    items: [
-      {
-        title: "Crear Encuesta",
-        url: "/encuestas/crear",
-        icon: MessageSquare,
-      },
-      {
-        title: "Campañas SMS",
-        url: "/encuestas/campanas",
-        icon: MessageSquare,
-      },
-    ],
-  },
-  {
-    title: "Configuración",
-    items: [
-      {
-        title: "Configuración",
-        url: "/configuracion",
-        icon: Settings,
-      },
-    ],
-  },
+const navigation = [
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Mesas", href: "/mesas", icon: Users },
+  { name: "Productos", href: "/productos", icon: Package },
+  { name: "Clientes", href: "/clientes", icon: UserCheck },
+  { name: "Reservaciones", href: "/reservaciones", icon: Calendar },
+  { name: "Encuestas", href: "/encuestas/crear", icon: MessageSquare },
+  { name: "Punto de Venta", href: "/ventas/pos", icon: CreditCard },
 ]
 
-export function AppSidebar() {
+export function Sidebar() {
   const pathname = usePathname()
+  const [isCollapsed, setIsCollapsed] = useState(false)
 
   return (
-    <Sidebar className="sidebar-restaurant">
-      <SidebarHeader className="p-4">
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-restaurant-primary rounded-lg flex items-center justify-center">
-            <ChefHat className="h-5 w-5 text-white" />
+    <>
+      {/* Mobile menu button */}
+      <div className="lg:hidden fixed top-4 left-4 z-50">
+        <Button variant="outline" size="sm" onClick={() => setIsCollapsed(!isCollapsed)} className="bg-white shadow-md">
+          {isCollapsed ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+        </Button>
+      </div>
+
+      {/* Sidebar */}
+      <div
+        className={cn(
+          "restaurant-sidebar fixed inset-y-0 left-0 z-40 w-64 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0",
+          isCollapsed ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
+        )}
+      >
+        <div className="flex h-full flex-col">
+          {/* Logo */}
+          <div className="flex items-center justify-between px-6 py-6 border-b border-amber-800">
+            <div className="flex items-center space-x-3">
+              <ChefHat className="h-8 w-8 text-amber-300" />
+              <div>
+                <h2 className="text-xl font-bold text-amber-100">AppRest</h2>
+                <p className="text-xs text-amber-300">Gestión Restaurante</p>
+              </div>
+            </div>
           </div>
-          <div>
-            <h2 className="text-lg font-bold text-white">RestApp</h2>
-            <p className="text-xs text-gray-300">Sistema de Gestión</p>
+
+          {/* Botón de regreso al inicio */}
+          <div className="px-4 py-4 border-b border-amber-800">
+            <Link href="/">
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full border-amber-300 text-amber-100 hover:bg-amber-800 bg-transparent"
+              >
+                <Home className="h-4 w-4 mr-2" />
+                Volver al Inicio
+              </Button>
+            </Link>
+          </div>
+
+          {/* Navigation */}
+          <nav className="flex-1 px-4 py-6 space-y-2">
+            {navigation.map((item) => {
+              const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors",
+                    isActive
+                      ? "bg-amber-800 text-amber-100 shadow-lg"
+                      : "text-amber-200 hover:bg-amber-800/50 hover:text-amber-100",
+                  )}
+                >
+                  <item.icon className="mr-3 h-5 w-5" />
+                  {item.name}
+                </Link>
+              )
+            })}
+          </nav>
+
+          {/* Footer */}
+          <div className="px-6 py-4 border-t border-amber-800">
+            <p className="text-xs text-amber-300 text-center">© 2024 AppRest v1.0</p>
           </div>
         </div>
-      </SidebarHeader>
+      </div>
 
-      <SidebarContent className="scrollbar-restaurant">
-        {menuItems.map((group) => (
-          <SidebarGroup key={group.title}>
-            <SidebarGroupLabel className="text-gray-300 text-xs uppercase tracking-wider">
-              {group.title}
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {group.items.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={pathname === item.url}
-                      className="text-gray-200 hover:text-white hover:bg-white/10 data-[active=true]:bg-restaurant-primary data-[active=true]:text-white"
-                    >
-                      <Link href={item.url}>
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
-      </SidebarContent>
-
-      <SidebarFooter className="p-4">
-        <div className="flex items-center space-x-3">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src="/placeholder-avatar.jpg" />
-            <AvatarFallback className="bg-restaurant-primary text-white">
-              <User className="h-4 w-4" />
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-white truncate">Admin Usuario</p>
-            <p className="text-xs text-gray-300 truncate">Administrador</p>
-          </div>
-        </div>
-      </SidebarFooter>
-
-      <SidebarRail />
-    </Sidebar>
+      {/* Overlay for mobile */}
+      {isCollapsed && (
+        <div className="fixed inset-0 z-30 bg-black bg-opacity-50 lg:hidden" onClick={() => setIsCollapsed(false)} />
+      )}
+    </>
   )
 }

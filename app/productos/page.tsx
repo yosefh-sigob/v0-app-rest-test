@@ -1,5 +1,8 @@
 "use client"
 
+"use server"
+
+import { obtenerProductosPorEmpresa } from "@/actions/productos.actions"
 import { useState } from "react"
 import { MainLayout } from "@/components/layout/main-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,15 +15,34 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { Plus, Search, Edit, Star, Package } from "lucide-react"
-import { mockProductos } from "@/lib/data/mock-data"
 import type { Producto } from "@/lib/types"
 
-export default function ProductosPage() {
-  const [productos, setProductos] = useState<Producto[]>(mockProductos)
+// Simulamos obtener la empresa del usuario autenticado
+const EMPRESA_ID = "01HKQZX8Y9Z2M3N4P5Q6R7S8T9" // En producción vendría de la sesión
+
+export default async function ProductosPage() {
+  const [productos, setProductos] = useState<Producto[]>([])
   const [busqueda, setBusqueda] = useState("")
   const [categoriaFiltro, setCategoriaFiltro] = useState("todas")
   const [dialogAbierto, setDialogAbierto] = useState(false)
   const [productoEditando, setProductoEditando] = useState<Producto | null>(null)
+
+  const result = await obtenerProductosPorEmpresa(EMPRESA_ID)
+
+  if (!result.success) {
+    return (
+      <MainLayout title="Catálogo de Productos">
+        <div className="container mx-auto py-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-red-600">Error</h1>
+            <p className="text-muted-foreground mt-2">{result.error}</p>
+          </div>
+        </div>
+      </MainLayout>
+    )
+  }
+
+  setProductos(result.data || [])
 
   const categorias = [...new Set(productos.map((p) => p.categoria))]
 
