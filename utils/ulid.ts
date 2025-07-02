@@ -1,4 +1,4 @@
-// Implementación simple de ULID para el proyecto
+// Implementación simple de ULID para el demo
 // En producción se usaría una librería como 'ulid'
 
 const ENCODING = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
@@ -18,6 +18,7 @@ function encodeTime(now: number, len: number): string {
     str = ENCODING.charAt(mod) + str
     now = Math.floor(now / ENCODING_LEN)
   }
+
   return str
 }
 
@@ -32,24 +33,23 @@ function encodeRandom(len: number): string {
 
 export function generateULID(): string {
   const now = Date.now()
-  return encodeTime(now, TIME_LEN) + encodeRandom(RANDOM_LEN)
+  const timeStr = encodeTime(now, TIME_LEN)
+  const randomStr = encodeRandom(RANDOM_LEN)
+
+  return timeStr + randomStr
 }
 
 export function isValidULID(ulid: string): boolean {
-  if (typeof ulid !== "string") return false
   if (ulid.length !== 26) return false
 
-  // Verificar que todos los caracteres sean válidos
-  for (let i = 0; i < ulid.length; i++) {
-    if (ENCODING.indexOf(ulid.charAt(i)) === -1) {
-      return false
-    }
+  for (const char of ulid) {
+    if (!ENCODING.includes(char)) return false
   }
 
   return true
 }
 
-export function extractTimestamp(ulid: string): number {
+export function getULIDTimestamp(ulid: string): number {
   if (!isValidULID(ulid)) {
     throw new Error("Invalid ULID")
   }
@@ -64,18 +64,4 @@ export function extractTimestamp(ulid: string): number {
   }
 
   return timestamp
-}
-
-export function createULIDFromTimestamp(timestamp: number): string {
-  return encodeTime(timestamp, TIME_LEN) + encodeRandom(RANDOM_LEN)
-}
-
-// Función helper para generar IDs únicos para el mock
-export function generateMockId(): string {
-  return generateULID()
-}
-
-// Función para generar IDs secuenciales para testing
-export function generateSequentialId(prefix: string, number: number): string {
-  return `${prefix}${number.toString().padStart(6, "0")}`
 }

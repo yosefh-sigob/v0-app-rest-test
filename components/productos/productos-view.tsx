@@ -56,6 +56,7 @@ import {
   Smartphone,
   QrCode,
   X,
+  RefreshCw,
 } from "lucide-react"
 import { ProductoForm } from "./producto-form"
 import { ProductoDetail } from "./producto-detail"
@@ -199,10 +200,7 @@ export function ProductosView({
       if (result.success) {
         toast.success(result.message)
         // Recargar datos
-        const newResult = await getProductos(filters)
-        if (newResult.success) {
-          setData(newResult.data)
-        }
+        await refreshData()
       } else {
         toast.error(result.message)
       }
@@ -220,10 +218,7 @@ export function ProductosView({
       if (result.success) {
         toast.success(result.message)
         // Recargar datos
-        const newResult = await getProductos(filters)
-        if (newResult.success) {
-          setData(newResult.data)
-        }
+        await refreshData()
       } else {
         toast.error(result.message)
       }
@@ -232,14 +227,22 @@ export function ProductosView({
     }
   }
 
-  const handleFormSuccess = async () => {
-    setShowForm(false)
-    setSelectedProducto(null)
-    // Recargar datos
+  const refreshData = async () => {
     const result = await getProductos(filters)
     if (result.success) {
       setData(result.data)
     }
+  }
+
+  const handleFormSuccess = async () => {
+    // No cerrar el modal automáticamente, solo recargar datos
+    await refreshData()
+    toast.success("¡Producto guardado! Puedes seguir agregando más productos o cerrar el modal.")
+  }
+
+  const handleCloseForm = () => {
+    setShowForm(false)
+    setSelectedProducto(null)
   }
 
   const clearFilters = () => {
@@ -285,18 +288,24 @@ export function ProductosView({
           <h1 className="text-3xl font-bold">Productos</h1>
           <p className="text-muted-foreground">Gestiona tu catálogo de productos y platillos</p>
         </div>
-        <LicenseGuard feature="gestionProductos">
-          <Button
-            onClick={() => {
-              setSelectedProducto(null)
-              setShowForm(true)
-            }}
-            className="bg-orange-600 hover:bg-orange-700"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Nuevo Producto
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={refreshData} disabled={loading}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+            Actualizar
           </Button>
-        </LicenseGuard>
+          <LicenseGuard feature="gestionProductos">
+            <Button
+              onClick={() => {
+                setSelectedProducto(null)
+                setShowForm(true)
+              }}
+              className="bg-orange-600 hover:bg-orange-700"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Nuevo Producto
+            </Button>
+          </LicenseGuard>
+        </div>
       </div>
 
       {/* Filtros */}
@@ -519,12 +528,6 @@ export function ProductosView({
                             Ver detalles
                           </DropdownMenuItem>
                           <LicenseGuard feature="gestionProductos">
-                            <DropdownMenuItem onClick={() => handleView(producto)}>
-                              <Eye className="h-4 w-4 mr-2" />
-                              Ver detalles
-                            </DropdownMenuItem>
-                          </LicenseGuard>
-                          <LicenseGuard feature="gestionProductos">
                             <DropdownMenuItem onClick={() => handleEdit(producto)}>
                               <Edit className="h-4 w-4 mr-2" />
                               Editar
@@ -643,18 +646,10 @@ export function ProductosView({
                               <Eye className="h-4 w-4 mr-2" />
                               Ver detalles
                             </DropdownMenuItem>
-                            <LicenseGuard feature="gestionProductos">
-                              <DropdownMenuItem onClick={() => handleView(producto)}>
-                                <Eye className="h-4 w-4 mr-2" />
-                                Ver detalles
-                              </DropdownMenuItem>
-                            </LicenseGuard>
-                            <LicenseGuard feature="gestionProductos">
-                              <DropdownMenuItem onClick={() => handleEdit(producto)}>
-                                <Edit className="h-4 w-4 mr-2" />
-                                Editar
-                              </DropdownMenuItem>
-                            </LicenseGuard>
+                            <DropdownMenuItem onClick={() => handleEdit(producto)}>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Editar
+                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleToggleFavorite(producto)}>
                               {producto.Favorito ? (
                                 <>
@@ -669,12 +664,10 @@ export function ProductosView({
                               )}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <LicenseGuard feature="gestionProductos">
-                              <DropdownMenuItem onClick={() => handleDelete(producto)} className="text-red-600">
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Eliminar
-                              </DropdownMenuItem>
-                            </LicenseGuard>
+                            <DropdownMenuItem onClick={() => handleDelete(producto)} className="text-red-600">
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Eliminar
+                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
@@ -725,11 +718,23 @@ export function ProductosView({
         </div>
       )}
 
-      {/* Diálogos */}
+      {/* Modal de Formulario - Más ancho */}
       <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{selectedProducto ? "Editar Producto" : "Nuevo Producto"}</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              {selectedProducto ? (
+                <>
+                  <Edit className="h-5 w-5" />
+                  Editar Producto: {selectedProducto.Nombredelproducto}
+                </>
+              ) : (
+                <>
+                  <Plus className="h-5 w-5" />
+                  Nuevo Producto
+                </>
+              )}
+            </DialogTitle>
           </DialogHeader>
           <ProductoForm
             producto={selectedProducto}
@@ -738,16 +743,14 @@ export function ProductosView({
             areasProduccion={areasProduccion}
             almacenes={almacenes}
             onSuccess={handleFormSuccess}
-            onCancel={() => {
-              setShowForm(false)
-              setSelectedProducto(null)
-            }}
+            onCancel={handleCloseForm}
           />
         </DialogContent>
       </Dialog>
 
+      {/* Modal de Detalles */}
       <Dialog open={showDetail} onOpenChange={setShowDetail}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Detalles del Producto</DialogTitle>
           </DialogHeader>
@@ -771,6 +774,7 @@ export function ProductosView({
         </DialogContent>
       </Dialog>
 
+      {/* Diálogo de Confirmación de Eliminación */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

@@ -1,89 +1,98 @@
-import { NivelLicencia } from "@/interfaces/database"
+export type LicenseType = "Gratis" | "Lite" | "Pro" | "Franquicia"
 
-export interface LicenseFeature {
-  name: string
-  description: string
-  requiredLicense: NivelLicencia
+export interface LicenseFeatures {
+  gestionProductos: boolean
+  ventaComedor: boolean
+  ventaMostrador: boolean
+  ventaDomicilio: boolean
+  menuQR: boolean
+  reportesBasicos: boolean
+  reportesAvanzados: boolean
+  controlInventario: boolean
+  integracionesAPI: boolean
+  campanasSMS: boolean
+  multiSucursal: boolean
+  usuariosIlimitados: boolean
+  soportePrioritario: boolean
+  maxProductos: number
+  maxUsuarios: number
 }
 
-export const LICENSE_FEATURES: Record<string, LicenseFeature> = {
-  // Características básicas
-  gestionProductos: {
-    name: "Gestión de Productos",
-    description: "Crear y editar productos básicos",
-    requiredLicense: NivelLicencia.GRATIS,
+export const LICENSE_FEATURES: Record<LicenseType, LicenseFeatures> = {
+  Gratis: {
+    gestionProductos: true,
+    ventaComedor: true,
+    ventaMostrador: false,
+    ventaDomicilio: false,
+    menuQR: false,
+    reportesBasicos: false,
+    reportesAvanzados: false,
+    controlInventario: false,
+    integracionesAPI: false,
+    campanasSMS: false,
+    multiSucursal: false,
+    usuariosIlimitados: false,
+    soportePrioritario: false,
+    maxProductos: 50,
+    maxUsuarios: 1,
   },
-  ventaComedor: {
-    name: "Venta en Comedor",
-    description: "Gestión de mesas y órdenes en comedor",
-    requiredLicense: NivelLicencia.LITE,
+  Lite: {
+    gestionProductos: true,
+    ventaComedor: true,
+    ventaMostrador: true,
+    ventaDomicilio: true,
+    menuQR: true,
+    reportesBasicos: true,
+    reportesAvanzados: false,
+    controlInventario: false,
+    integracionesAPI: false,
+    campanasSMS: false,
+    multiSucursal: false,
+    usuariosIlimitados: false,
+    soportePrioritario: false,
+    maxProductos: 200,
+    maxUsuarios: 3,
   },
-  ventaDomicilio: {
-    name: "Venta a Domicilio",
-    description: "Gestión de entregas a domicilio",
-    requiredLicense: NivelLicencia.LITE,
+  Pro: {
+    gestionProductos: true,
+    ventaComedor: true,
+    ventaMostrador: true,
+    ventaDomicilio: true,
+    menuQR: true,
+    reportesBasicos: true,
+    reportesAvanzados: true,
+    controlInventario: true,
+    integracionesAPI: true,
+    campanasSMS: true,
+    multiSucursal: false,
+    usuariosIlimitados: false,
+    soportePrioritario: false,
+    maxProductos: -1, // Ilimitado
+    maxUsuarios: 10,
   },
-
-  // Características Pro
-  gestionInventario: {
-    name: "Gestión de Inventario",
-    description: "Control de stock y almacenes",
-    requiredLicense: NivelLicencia.PRO,
-  },
-  reportesAvanzados: {
-    name: "Reportes Avanzados",
-    description: "Reportes detallados y análisis",
-    requiredLicense: NivelLicencia.PRO,
-  },
-  integraccionesAPI: {
-    name: "Integraciones API",
-    description: "Conectar con sistemas externos",
-    requiredLicense: NivelLicencia.PRO,
-  },
-
-  // Características Franquicia
-  multiSucursal: {
-    name: "Multi-sucursal",
-    description: "Gestión de múltiples sucursales",
-    requiredLicense: NivelLicencia.FRANQUICIA,
-  },
-  reportesCorporativos: {
-    name: "Reportes Corporativos",
-    description: "Reportes consolidados de todas las sucursales",
-    requiredLicense: NivelLicencia.FRANQUICIA,
+  Franquicia: {
+    gestionProductos: true,
+    ventaComedor: true,
+    ventaMostrador: true,
+    ventaDomicilio: true,
+    menuQR: true,
+    reportesBasicos: true,
+    reportesAvanzados: true,
+    controlInventario: true,
+    integracionesAPI: true,
+    campanasSMS: true,
+    multiSucursal: true,
+    usuariosIlimitados: true,
+    soportePrioritario: true,
+    maxProductos: -1, // Ilimitado
+    maxUsuarios: -1, // Ilimitado
   },
 }
 
-export function hasLicenseAccess(currentLicense: NivelLicencia, requiredLicense: NivelLicencia): boolean {
-  const licenseOrder = {
-    [NivelLicencia.GRATIS]: 0,
-    [NivelLicencia.LITE]: 1,
-    [NivelLicencia.PRO]: 2,
-    [NivelLicencia.FRANQUICIA]: 3,
-  }
-
-  return licenseOrder[currentLicense] >= licenseOrder[requiredLicense]
+export function hasFeature(license: LicenseType, feature: keyof LicenseFeatures): boolean {
+  return LICENSE_FEATURES[license][feature] as boolean
 }
 
-export function getFeatureByName(featureName: string): LicenseFeature | undefined {
-  return LICENSE_FEATURES[featureName]
-}
-
-export function getLicenseUpgradeMessage(currentLicense: NivelLicencia, requiredLicense: NivelLicencia): string {
-  const upgradeMessages = {
-    [NivelLicencia.GRATIS]: {
-      [NivelLicencia.LITE]: "Actualiza a Lite para acceder a esta funcionalidad",
-      [NivelLicencia.PRO]: "Actualiza a Pro para acceder a esta funcionalidad",
-      [NivelLicencia.FRANQUICIA]: "Actualiza a Franquicia para acceder a esta funcionalidad",
-    },
-    [NivelLicencia.LITE]: {
-      [NivelLicencia.PRO]: "Actualiza a Pro para acceder a esta funcionalidad",
-      [NivelLicencia.FRANQUICIA]: "Actualiza a Franquicia para acceder a esta funcionalidad",
-    },
-    [NivelLicencia.PRO]: {
-      [NivelLicencia.FRANQUICIA]: "Actualiza a Franquicia para acceder a esta funcionalidad",
-    },
-  }
-
-  return upgradeMessages[currentLicense]?.[requiredLicense] || "Actualiza tu licencia para acceder a esta funcionalidad"
+export function getFeatureValue(license: LicenseType, feature: keyof LicenseFeatures): boolean | number {
+  return LICENSE_FEATURES[license][feature]
 }
