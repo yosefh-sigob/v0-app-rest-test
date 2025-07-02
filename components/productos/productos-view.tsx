@@ -65,7 +65,6 @@ import { useLicense } from "@/contexts/license-context"
 import { getProductos, deleteProducto, toggleFavoriteProducto } from "@/actions/productos.actions"
 import type { Producto } from "@/interfaces/database"
 import type { SearchProductosInput } from "@/schemas/productos.schemas"
-import { LicenseGuar } from "@/components/license-guar" // Import LicenseGuar component
 
 interface ProductosViewProps {
   initialData: {
@@ -519,12 +518,12 @@ export function ProductosView({
                             <Eye className="h-4 w-4 mr-2" />
                             Ver detalles
                           </DropdownMenuItem>
-                          <LicenseGuar feature="gestionProductos">
+                          <LicenseGuard feature="gestionProductos">
                             <DropdownMenuItem onClick={() => handleView(producto)}>
                               <Eye className="h-4 w-4 mr-2" />
                               Ver detalles
                             </DropdownMenuItem>
-                          </LicenseGuar>
+                          </LicenseGuard>
                           <LicenseGuard feature="gestionProductos">
                             <DropdownMenuItem onClick={() => handleEdit(producto)}>
                               <Edit className="h-4 w-4 mr-2" />
@@ -644,12 +643,12 @@ export function ProductosView({
                               <Eye className="h-4 w-4 mr-2" />
                               Ver detalles
                             </DropdownMenuItem>
-                            <LicenseGuar feature="gestionProductos">
+                            <LicenseGuard feature="gestionProductos">
                               <DropdownMenuItem onClick={() => handleView(producto)}>
                                 <Eye className="h-4 w-4 mr-2" />
                                 Ver detalles
                               </DropdownMenuItem>
-                            </LicenseGuar>
+                            </LicenseGuard>
                             <LicenseGuard feature="gestionProductos">
                               <DropdownMenuItem onClick={() => handleEdit(producto)}>
                                 <Edit className="h-4 w-4 mr-2" />

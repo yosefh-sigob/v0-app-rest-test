@@ -1,255 +1,175 @@
 "use client"
 
-import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Star, Zap, Crown, Building, Check, Info } from "lucide-react"
 import { NivelLicencia } from "@/interfaces/database"
-import { Crown, Zap, Building, Star, Check, X } from "lucide-react"
 
 interface LicenseSelectorProps {
   currentLicense: NivelLicencia
   onLicenseChange: (license: NivelLicencia) => void
 }
 
-const LICENSE_INFO = {
+const LICENSE_CONFIG = {
   [NivelLicencia.GRATIS]: {
     name: "Gratis",
     icon: <Star className="h-5 w-5" />,
-    color: "bg-gray-100 text-gray-800 border-gray-200",
-    price: "$0",
-    period: "Gratis para siempre",
+    color: "bg-gray-100 text-gray-800 border-gray-300",
+    buttonColor: "bg-gray-600 hover:bg-gray-700",
     description: "Perfecto para empezar",
-    features: ["Hasta 10 productos", "1 usuario", "Venta básica en comedor", "Reportes básicos", "Soporte por email"],
-    limitations: ["Sin venta a domicilio", "Sin control de inventario", "Sin reportes avanzados", "Sin integraciones"],
+    price: "$0",
+    features: [
+      "Gestión básica de productos",
+      "Venta en comedor",
+      "Hasta 50 productos",
+      "1 usuario",
+      "Soporte por email",
+    ],
   },
   [NivelLicencia.LITE]: {
     name: "Lite",
     icon: <Zap className="h-5 w-5" />,
-    color: "bg-blue-100 text-blue-800 border-blue-200",
-    price: "$29",
-    period: "por mes",
+    color: "bg-blue-100 text-blue-800 border-blue-300",
+    buttonColor: "bg-blue-600 hover:bg-blue-700",
     description: "Para restaurantes pequeños",
+    price: "$29",
     features: [
-      "Hasta 50 productos",
-      "Hasta 3 usuarios",
-      "Venta en comedor y mostrador",
-      "Venta a domicilio",
+      "Todo lo de Gratis +",
+      "Venta mostrador y domicilio",
       "Menú digital QR",
       "Reportes básicos",
-      "Soporte prioritario",
+      "Hasta 200 productos",
+      "3 usuarios",
     ],
-    limitations: ["Sin control de inventario avanzado", "Sin multi-sucursal", "Sin API personalizada"],
   },
   [NivelLicencia.PRO]: {
     name: "Pro",
     icon: <Crown className="h-5 w-5" />,
-    color: "bg-purple-100 text-purple-800 border-purple-200",
+    color: "bg-purple-100 text-purple-800 border-purple-300",
+    buttonColor: "bg-purple-600 hover:bg-purple-700",
+    description: "Para restaurantes establecidos",
     price: "$79",
-    period: "por mes",
-    description: "Para restaurantes en crecimiento",
     features: [
-      "Hasta 200 productos",
-      "Hasta 10 usuarios",
-      "Todos los canales de venta",
-      "Control de inventario completo",
-      "Reportes avanzados y analytics",
+      "Todo lo de Lite +",
+      "Reportes avanzados",
+      "Control de inventario",
       "Integraciones API",
       "Campañas SMS",
-      "Programa de lealtad",
-      "Soporte 24/7",
+      "Productos ilimitados",
+      "10 usuarios",
     ],
-    limitations: ["Sin gestión multi-sucursal"],
   },
   [NivelLicencia.FRANQUICIA]: {
     name: "Franquicia",
     icon: <Building className="h-5 w-5" />,
-    color: "bg-orange-100 text-orange-800 border-orange-200",
-    price: "$199",
-    period: "por mes",
+    color: "bg-orange-100 text-orange-800 border-orange-300",
+    buttonColor: "bg-orange-600 hover:bg-orange-700",
     description: "Para cadenas y franquicias",
+    price: "$199",
     features: [
-      "Productos ilimitados",
-      "Usuarios ilimitados",
+      "Todo lo de Pro +",
       "Multi-sucursal",
       "Reportes corporativos",
       "Dashboard centralizado",
-      "API completa",
-      "Personalización avanzada",
-      "Soporte dedicado",
-      "Capacitación incluida",
+      "Usuarios ilimitados",
+      "Soporte prioritario",
     ],
-    limitations: [],
   },
 }
 
 export function LicenseSelector({ currentLicense, onLicenseChange }: LicenseSelectorProps) {
-  const [showDetails, setShowDetails] = useState(false)
-  const [selectedLicense, setSelectedLicense] = useState<NivelLicencia | null>(null)
-
-  const handleLicenseSelect = (license: string) => {
-    onLicenseChange(license as NivelLicencia)
-  }
-
-  const showLicenseDetails = (license: NivelLicencia) => {
-    setSelectedLicense(license)
-    setShowDetails(true)
-  }
+  const currentConfig = LICENSE_CONFIG[currentLicense]
 
   return (
-    <div className="space-y-4">
-      <Card className="border-orange-200 bg-orange-50">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-orange-800">
-            <Crown className="h-5 w-5" />
-            Selector de Licencia (Demo)
-          </CardTitle>
-          <CardDescription className="text-orange-700">
-            Cambia el tipo de licencia para probar diferentes funcionalidades del sistema
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">Licencia actual:</span>
-              <Badge className={LICENSE_INFO[currentLicense].color}>
-                {LICENSE_INFO[currentLicense].icon}
-                {LICENSE_INFO[currentLicense].name}
-              </Badge>
+    <Card className="border-2 border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+              <Info className="h-5 w-5 text-orange-600" />
             </div>
-
-            <Select value={currentLicense} onValueChange={handleLicenseSelect}>
-              <SelectTrigger className="w-48">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={NivelLicencia.GRATIS}>
-                  <div className="flex items-center gap-2">
-                    <Star className="h-4 w-4" />
-                    Gratis
-                  </div>
-                </SelectItem>
-                <SelectItem value={NivelLicencia.LITE}>
-                  <div className="flex items-center gap-2">
-                    <Zap className="h-4 w-4" />
-                    Lite
-                  </div>
-                </SelectItem>
-                <SelectItem value={NivelLicencia.PRO}>
-                  <div className="flex items-center gap-2">
-                    <Crown className="h-4 w-4" />
-                    Pro
-                  </div>
-                </SelectItem>
-                <SelectItem value={NivelLicencia.FRANQUICIA}>
-                  <div className="flex items-center gap-2">
-                    <Building className="h-4 w-4" />
-                    Franquicia
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
+            <div>
+              <CardTitle className="text-lg text-orange-800">Modo Demo - Selector de Licencia</CardTitle>
+              <CardDescription className="text-orange-600">
+                Cambia entre planes para probar diferentes funcionalidades
+              </CardDescription>
+            </div>
           </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-            {Object.entries(LICENSE_INFO).map(([license, info]) => (
+          <Dialog>
+            <DialogTrigger asChild>
               <Button
-                key={license}
                 variant="outline"
                 size="sm"
-                onClick={() => showLicenseDetails(license as NivelLicencia)}
-                className="h-auto p-3 flex flex-col items-center gap-2"
+                className="text-orange-600 border-orange-300 hover:bg-orange-50 bg-transparent"
               >
-                {info.icon}
-                <div className="text-center">
-                  <div className="font-medium text-xs">{info.name}</div>
-                  <div className="text-xs text-muted-foreground">{info.price}</div>
-                </div>
+                Ver Planes
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl">
+              <DialogHeader>
+                <DialogTitle>Planes y Precios</DialogTitle>
+              </DialogHeader>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+                {Object.entries(LICENSE_CONFIG).map(([license, config]) => (
+                  <Card
+                    key={license}
+                    className={`relative ${license === currentLicense ? "ring-2 ring-orange-500" : ""}`}
+                  >
+                    <CardHeader className="text-center pb-2">
+                      <div className="flex justify-center mb-2">
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center ${config.color}`}>
+                          {config.icon}
+                        </div>
+                      </div>
+                      <CardTitle className="text-lg">{config.name}</CardTitle>
+                      <CardDescription>{config.description}</CardDescription>
+                      <div className="text-2xl font-bold text-gray-900">
+                        {config.price}
+                        <span className="text-sm font-normal text-gray-500">/mes</span>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      {config.features.map((feature, index) => (
+                        <div key={index} className="flex items-center gap-2 text-sm">
+                          <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
+                          <span>{feature}</span>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-orange-700">Plan Actual:</span>
+            <Badge className={`${currentConfig.color} border`}>
+              {currentConfig.icon}
+              {currentConfig.name}
+            </Badge>
+          </div>
+          <div className="flex gap-2">
+            {Object.entries(LICENSE_CONFIG).map(([license, config]) => (
+              <Button
+                key={license}
+                variant={license === currentLicense ? "default" : "outline"}
+                size="sm"
+                onClick={() => onLicenseChange(license as NivelLicencia)}
+                className={license === currentLicense ? config.buttonColor : ""}
+              >
+                {config.icon}
+                {config.name}
               </Button>
             ))}
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Dialog con detalles de licencia */}
-      <Dialog open={showDetails} onOpenChange={setShowDetails}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              {selectedLicense && LICENSE_INFO[selectedLicense].icon}
-              Plan {selectedLicense && LICENSE_INFO[selectedLicense].name}
-            </DialogTitle>
-          </DialogHeader>
-
-          {selectedLicense && (
-            <div className="space-y-6">
-              <div className="text-center space-y-2">
-                <div className="text-3xl font-bold">
-                  {LICENSE_INFO[selectedLicense].price}
-                  <span className="text-lg font-normal text-muted-foreground">
-                    {LICENSE_INFO[selectedLicense].period}
-                  </span>
-                </div>
-                <p className="text-muted-foreground">{LICENSE_INFO[selectedLicense].description}</p>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <h4 className="font-semibold text-green-700 mb-3 flex items-center gap-2">
-                    <Check className="h-4 w-4" />
-                    Incluye
-                  </h4>
-                  <ul className="space-y-2">
-                    {LICENSE_INFO[selectedLicense].features.map((feature, index) => (
-                      <li key={index} className="flex items-center gap-2 text-sm">
-                        <Check className="h-3 w-3 text-green-600 flex-shrink-0" />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {LICENSE_INFO[selectedLicense].limitations.length > 0 && (
-                  <div>
-                    <h4 className="font-semibold text-red-700 mb-3 flex items-center gap-2">
-                      <X className="h-4 w-4" />
-                      Limitaciones
-                    </h4>
-                    <ul className="space-y-2">
-                      {LICENSE_INFO[selectedLicense].limitations.map((limitation, index) => (
-                        <li key={index} className="flex items-center gap-2 text-sm">
-                          <X className="h-3 w-3 text-red-600 flex-shrink-0" />
-                          {limitation}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => {
-                    onLicenseChange(selectedLicense)
-                    setShowDetails(false)
-                  }}
-                  className="flex-1"
-                  disabled={currentLicense === selectedLicense}
-                >
-                  {currentLicense === selectedLicense
-                    ? "Plan Actual"
-                    : `Cambiar a ${LICENSE_INFO[selectedLicense].name}`}
-                </Button>
-                <Button variant="outline" onClick={() => setShowDetails(false)}>
-                  Cerrar
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-    </div>
+        </div>
+      </CardContent>
+    </Card>
   )
 }
