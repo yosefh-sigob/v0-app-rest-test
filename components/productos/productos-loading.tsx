@@ -1,7 +1,5 @@
-"use client"
-
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 
 export function ProductosLoading() {
   return (
@@ -19,7 +17,7 @@ export function ProductosLoading() {
       <div className="flex flex-col sm:flex-row gap-4">
         <Skeleton className="h-10 flex-1" />
         <div className="flex gap-2">
-          <Skeleton className="h-10 w-32" />
+          <Skeleton className="h-10 w-40" />
           <Skeleton className="h-10 w-32" />
           <Skeleton className="h-10 w-20" />
         </div>
@@ -35,21 +33,23 @@ export function ProductosLoading() {
         {/* Grid skeleton */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {Array.from({ length: 8 }).map((_, i) => (
-            <Card key={i} className="overflow-hidden">
-              <Skeleton className="aspect-square" />
+            <Card key={i}>
+              <Skeleton className="aspect-square w-full" />
               <CardHeader className="pb-2">
                 <Skeleton className="h-5 w-3/4" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-2/3" />
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-3 w-full" />
+                <Skeleton className="h-3 w-2/3" />
               </CardHeader>
               <CardContent className="pt-0">
-                <div className="flex items-center justify-between mb-2">
-                  <Skeleton className="h-6 w-20" />
+                <div className="flex justify-between items-center">
+                  <Skeleton className="h-6 w-16" />
+                  <Skeleton className="h-8 w-8 rounded-full" />
                 </div>
-                <div className="flex gap-1">
+                <div className="flex flex-wrap gap-1 mt-2">
                   <Skeleton className="h-5 w-16" />
-                  <Skeleton className="h-5 w-16" />
-                  <Skeleton className="h-5 w-16" />
+                  <Skeleton className="h-5 w-20" />
+                  <Skeleton className="h-5 w-12" />
                 </div>
               </CardContent>
             </Card>

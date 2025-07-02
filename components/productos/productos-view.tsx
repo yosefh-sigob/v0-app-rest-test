@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Plus, Search, Grid, List, Star, Edit, Trash2, Eye } from "lucide-react"
+import { Plus, Search, Grid, List, Star, Edit, Trash2, Eye, Filter, MoreHorizontal } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -119,16 +119,16 @@ export function ProductosView({
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Productos</h1>
+          <h1 className="text-3xl font-bold">Catálogo de Productos</h1>
           <p className="text-muted-foreground">
-            Gestiona el catálogo de productos de tu restaurante ({total} productos)
+            Gestiona el catálogo completo de productos de tu restaurante ({total} productos)
           </p>
         </div>
 
-        <LicenseGuard currentLicense={currentLicense} requiredFeature="ventaComedor">
+        <LicenseGuard currentLicense={currentLicense} requiredFeature="gestionProductos">
           <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
             <DialogTrigger asChild>
-              <Button onClick={() => setSelectedProducto(null)}>
+              <Button onClick={() => setSelectedProducto(null)} className="bg-orange-600 hover:bg-orange-700">
                 <Plus className="w-4 h-4 mr-2" />
                 Nuevo Producto
               </Button>
@@ -155,74 +155,109 @@ export function ProductosView({
       </div>
 
       {/* Filtros y búsqueda */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-          <Input
-            placeholder="Buscar productos..."
-            defaultValue={searchParams.search || ""}
-            onChange={(e) => {
-              const value = e.target.value
-              setTimeout(() => updateSearchParams("search", value || null), 500)
-            }}
-            className="pl-10"
-          />
-        </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Filter className="w-5 h-5" />
+            Filtros y Búsqueda
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col lg:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <Input
+                placeholder="Buscar por nombre, descripción o código..."
+                defaultValue={searchParams.search || ""}
+                onChange={(e) => {
+                  const value = e.target.value
+                  setTimeout(() => updateSearchParams("search", value || null), 500)
+                }}
+                className="pl-10"
+              />
+            </div>
 
-        <div className="flex gap-2">
-          <Select
-            defaultValue={searchParams.tipo || "Platillo"}
-            onValueChange={(value) => updateSearchParams("tipo", value || null)}
-          >
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="Tipo" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Platillo">Platillo</SelectItem>
-              <SelectItem value="Producto">Producto</SelectItem>
-              <SelectItem value="Botella">Botella</SelectItem>
-            </SelectContent>
-          </Select>
+            <div className="flex flex-wrap gap-2">
+              <Select
+                defaultValue={searchParams.tipo || ""}
+                onValueChange={(value) => updateSearchParams("tipo", value || null)}
+              >
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Todos los tipos</SelectItem>
+                  <SelectItem value="Platillo">Platillo</SelectItem>
+                  <SelectItem value="Producto">Producto</SelectItem>
+                  <SelectItem value="Botella">Botella</SelectItem>
+                </SelectContent>
+              </Select>
 
-          <Select
-            defaultValue={searchParams.favorito?.toString() || "true"}
-            onValueChange={(value) => updateSearchParams("favorito", value || null)}
-          >
-            <SelectTrigger className="w-32">
-              <SelectValue placeholder="Favoritos" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="true">Favoritos</SelectItem>
-              <SelectItem value="false">No favoritos</SelectItem>
-            </SelectContent>
-          </Select>
+              <Select
+                defaultValue={searchParams.grupoId?.toString() || ""}
+                onValueChange={(value) => updateSearchParams("grupoId", value || null)}
+              >
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Categoría" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Todas las categorías</SelectItem>
+                  {gruposProductos.map((grupo) => (
+                    <SelectItem key={grupo.id} value={grupo.id.toString()}>
+                      {grupo.nombre}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-          <div className="flex border rounded-md">
-            <Button
-              variant={viewMode === "grid" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setViewMode("grid")}
-              className="rounded-r-none"
-            >
-              <Grid className="w-4 h-4" />
-            </Button>
-            <Button
-              variant={viewMode === "list" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setViewMode("list")}
-              className="rounded-l-none"
-            >
-              <List className="w-4 h-4" />
-            </Button>
+              <Select
+                defaultValue={searchParams.favorito?.toString() || ""}
+                onValueChange={(value) => updateSearchParams("favorito", value || null)}
+              >
+                <SelectTrigger className="w-32">
+                  <SelectValue placeholder="Favoritos" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Todos</SelectItem>
+                  <SelectItem value="true">Favoritos</SelectItem>
+                  <SelectItem value="false">No favoritos</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <div className="flex border rounded-md">
+                <Button
+                  variant={viewMode === "grid" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("grid")}
+                  className="rounded-r-none"
+                >
+                  <Grid className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant={viewMode === "list" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("list")}
+                  className="rounded-l-none"
+                >
+                  <List className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Contenido */}
       <Tabs defaultValue="activos" className="w-full">
-        <TabsList>
-          <TabsTrigger value="activos">Activos ({productosActivos.length})</TabsTrigger>
-          <TabsTrigger value="suspendidos">Suspendidos ({productosSuspendidos.length})</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="activos" className="flex items-center gap-2">
+            Productos Activos
+            <Badge variant="secondary">{productosActivos.length}</Badge>
+          </TabsTrigger>
+          <TabsTrigger value="suspendidos" className="flex items-center gap-2">
+            Suspendidos
+            <Badge variant="destructive">{productosSuspendidos.length}</Badge>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="activos" className="space-y-4">
@@ -232,6 +267,10 @@ export function ProductosView({
                 <div className="text-center space-y-2">
                   <h3 className="text-lg font-semibold">No hay productos activos</h3>
                   <p className="text-muted-foreground">Comienza agregando productos a tu catálogo</p>
+                  <Button onClick={() => setIsFormOpen(true)} className="mt-4">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Agregar Primer Producto
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -240,7 +279,7 @@ export function ProductosView({
               <div
                 className={
                   viewMode === "grid"
-                    ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+                    ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4"
                     : "space-y-4"
                 }
               >
@@ -263,9 +302,21 @@ export function ProductosView({
                   <Button variant="outline" onClick={() => handlePageChange(page - 1)} disabled={page <= 1}>
                     Anterior
                   </Button>
-                  <span className="text-sm text-muted-foreground">
-                    Página {page} de {totalPages}
-                  </span>
+                  <div className="flex items-center space-x-1">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      const pageNum = i + 1
+                      return (
+                        <Button
+                          key={pageNum}
+                          variant={page === pageNum ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => handlePageChange(pageNum)}
+                        >
+                          {pageNum}
+                        </Button>
+                      )
+                    })}
+                  </div>
                   <Button variant="outline" onClick={() => handlePageChange(page + 1)} disabled={page >= totalPages}>
                     Siguiente
                   </Button>
@@ -289,7 +340,7 @@ export function ProductosView({
             <div
               className={
                 viewMode === "grid"
-                  ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+                  ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4"
                   : "space-y-4"
               }
             >
@@ -311,7 +362,7 @@ export function ProductosView({
 
       {/* Dialog para ver detalles */}
       <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           {selectedProducto && (
             <ProductoDetail
               producto={selectedProducto}
@@ -340,11 +391,15 @@ interface ProductoCardProps {
 function ProductoCard({ producto, viewMode, onToggleFavorite, onEdit, onDelete, onView }: ProductoCardProps) {
   if (viewMode === "list") {
     return (
-      <Card className={producto.Suspendido ? "opacity-60" : ""}>
+      <Card className={`transition-all hover:shadow-md ${producto.Suspendido ? "opacity-60" : ""}`}>
         <CardContent className="flex items-center justify-between p-4">
           <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
-              <span className="text-lg font-semibold">{producto.Nombredelproducto.charAt(0).toUpperCase()}</span>
+            <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center overflow-hidden">
+              <img
+                src={`/placeholder.svg?height=64&width=64&query=${encodeURIComponent(producto.Nombredelproducto)}`}
+                alt={producto.Nombredelproducto}
+                className="w-full h-full object-cover"
+              />
             </div>
             <div className="flex-1">
               <div className="flex items-center space-x-2">
@@ -375,6 +430,11 @@ function ProductoCard({ producto, viewMode, onToggleFavorite, onEdit, onDelete, 
                       Mostrador
                     </Badge>
                   )}
+                  {producto.EnMenuQR && (
+                    <Badge variant="outline" className="text-xs">
+                      QR
+                    </Badge>
+                  )}
                 </div>
               </div>
             </div>
@@ -383,7 +443,7 @@ function ProductoCard({ producto, viewMode, onToggleFavorite, onEdit, onDelete, 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm">
-                  •••
+                  <MoreHorizontal className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -412,25 +472,39 @@ function ProductoCard({ producto, viewMode, onToggleFavorite, onEdit, onDelete, 
   }
 
   return (
-    <Card className={`overflow-hidden ${producto.Suspendido ? "opacity-60" : ""}`}>
-      <div className="aspect-square bg-muted flex items-center justify-center relative">
-        <span className="text-2xl font-bold text-muted-foreground">
-          {producto.Nombredelproducto.charAt(0).toUpperCase()}
-        </span>
-        {producto.Favorito && <Star className="absolute top-2 right-2 w-5 h-5 fill-yellow-400 text-yellow-400" />}
+    <Card className={`overflow-hidden transition-all hover:shadow-lg ${producto.Suspendido ? "opacity-60" : ""}`}>
+      <div className="aspect-[4/3] bg-muted flex items-center justify-center relative overflow-hidden">
+        <img
+          src={`/placeholder.svg?height=120&width=160&query=${encodeURIComponent(producto.Nombredelproducto)}`}
+          alt={producto.Nombredelproducto}
+          className="w-full h-full object-cover"
+        />
+        {producto.Favorito && (
+          <Star className="absolute top-2 right-2 w-5 h-5 fill-yellow-400 text-yellow-400 drop-shadow-sm" />
+        )}
+        {producto.Suspendido && (
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+            <Badge variant="destructive">Suspendido</Badge>
+          </div>
+        )}
       </div>
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <CardTitle className="text-base line-clamp-1">{producto.Nombredelproducto}</CardTitle>
-            <Badge variant="outline" className="text-xs mt-1">
-              {producto.ClaveProducto}
-            </Badge>
+            <div className="flex items-center space-x-2 mt-1">
+              <Badge variant="outline" className="text-xs">
+                {producto.ClaveProducto}
+              </Badge>
+              <Badge variant={producto.Suspendido ? "destructive" : "default"} className="text-xs">
+                {producto.TipoProducto}
+              </Badge>
+            </div>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                •••
+                <MoreHorizontal className="w-4 h-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -453,12 +527,11 @@ function ProductoCard({ producto, viewMode, onToggleFavorite, onEdit, onDelete, 
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        {producto.Descripcion && <CardDescription className="line-clamp-2">{producto.Descripcion}</CardDescription>}
+        {producto.Descripcion && (
+          <CardDescription className="line-clamp-2 text-xs">{producto.Descripcion}</CardDescription>
+        )}
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="flex items-center justify-between mb-2">
-          <Badge variant={producto.Suspendido ? "destructive" : "default"}>{producto.TipoProducto}</Badge>
-        </div>
         <div className="flex flex-wrap gap-1">
           {producto.Comedor && (
             <Badge variant="outline" className="text-xs">
@@ -478,6 +551,16 @@ function ProductoCard({ producto, viewMode, onToggleFavorite, onEdit, onDelete, 
           {producto.EnMenuQR && (
             <Badge variant="outline" className="text-xs">
               QR
+            </Badge>
+          )}
+          {producto.Enlinea && (
+            <Badge variant="outline" className="text-xs">
+              Online
+            </Badge>
+          )}
+          {producto.EnAPP && (
+            <Badge variant="outline" className="text-xs">
+              APP
             </Badge>
           )}
         </div>
