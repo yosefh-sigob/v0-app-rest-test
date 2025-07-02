@@ -2,15 +2,8 @@
 
 import { revalidatePath } from "next/cache"
 import { generateULID } from "@/utils/ulid"
-import {
-  createProductoSchema,
-  updateProductoSchema,
-  deleteProductoSchema,
-  searchProductosSchema,
-  type CreateProductoInput,
-  type UpdateProductoInput,
-  type SearchProductosInput,
-} from "@/schemas/productos.schemas"
+import { createProductoSchema, updateProductoSchema, searchProductosSchema } from "@/schemas/productos.schemas"
+import type { CreateProductoInput, UpdateProductoInput, SearchProductosInput } from "@/schemas/productos.schemas"
 import type { Producto } from "@/interfaces/database"
 
 // Mock data - En producción esto vendría de la base de datos
@@ -19,18 +12,18 @@ const mockProductos: Producto[] = [
     ProductoULID: "01HKQM5Z8X9Y2W3V4U5T6S7R8Q",
     GrupoProductoULID: 1,
     SubgrupoProductoULID: 1,
-    ClaveProducto: "HAM001",
+    ClaveProducto: "TACO001",
     TipoProducto: "Platillo" as const,
-    Nombredelproducto: "Hamburguesa Clásica",
+    Nombredelproducto: "Tacos al Pastor",
     Favorito: true,
-    Descripcion: "Hamburguesa de carne con lechuga, tomate y cebolla",
+    Descripcion: "Deliciosos tacos al pastor con piña y cebolla",
     ExentoImpuesto: false,
     PrecioAbierto: false,
     UnidadesULID: 1,
     AreaProduccionULID: 1,
     AlmacenULID: 1,
     ControlStock: true,
-    PrecioxUtilidad: false,
+    PrecioxUtilidadad: false,
     Facturable: true,
     ClaveTributaria: "50211503",
     Suspendido: false,
@@ -50,141 +43,122 @@ const mockProductos: Producto[] = [
   },
   {
     ProductoULID: "01HKQM5Z8X9Y2W3V4U5T6S7R8R",
-    GrupoProductoULID: 2,
-    SubgrupoProductoULID: 2,
-    ClaveProducto: "PIZ001",
+    GrupoProductoULID: 1,
+    ClaveProducto: "BURG001",
     TipoProducto: "Platillo" as const,
-    Nombredelproducto: "Pizza Margherita",
+    Nombredelproducto: "Hamburguesa Clásica",
     Favorito: false,
-    Descripcion: "Pizza con salsa de tomate, mozzarella y albahaca",
+    Descripcion: "Hamburguesa con carne, lechuga, tomate y queso",
     ExentoImpuesto: false,
     PrecioAbierto: false,
     UnidadesULID: 1,
-    AreaProduccionULID: 2,
-    AlmacenULID: 1,
-    ControlStock: true,
-    PrecioxUtilidad: false,
+    AreaProduccionULID: 1,
+    ControlStock: false,
+    PrecioxUtilidadad: true,
     Facturable: true,
-    ClaveTributaria: "50211503",
     Suspendido: false,
     Comedor: true,
     ADomicilio: true,
     Mostrador: false,
-    Enlinea: true,
-    EnAPP: true,
-    CanalesVenta: true,
+    Enlinea: false,
+    EnAPP: false,
+    CanalesVenta: false,
     EnMenuQR: true,
-    ClasificacionQRULID: 1,
-    DatosDinamicos: null,
     Fecha_UltimoCambio: new Date(),
-    Fecha_Sync: new Date(),
     UsuarioULID: 1,
     EmpresaULID: "01HKQM5Z8X9Y2W3V4U5T6S7R8P",
   },
   {
     ProductoULID: "01HKQM5Z8X9Y2W3V4U5T6S7R8S",
-    GrupoProductoULID: 3,
-    SubgrupoProductoULID: 3,
-    ClaveProducto: "BEB001",
+    GrupoProductoULID: 2,
+    ClaveProducto: "COCA001",
     TipoProducto: "Producto" as const,
     Nombredelproducto: "Coca Cola",
-    Favorito: false,
+    Favorito: true,
     Descripcion: "Refresco de cola 355ml",
     ExentoImpuesto: false,
     PrecioAbierto: false,
-    UnidadesULID: 2,
-    AreaProduccionULID: 3,
-    AlmacenULID: 2,
+    UnidadesULID: 1,
     ControlStock: true,
-    PrecioxUtilidad: true,
+    PrecioxUtilidadad: false,
     Facturable: true,
-    ClaveTributaria: "50202306",
     Suspendido: false,
     Comedor: true,
     ADomicilio: true,
     Mostrador: true,
-    Enlinea: true,
-    EnAPP: true,
-    CanalesVenta: true,
-    EnMenuQR: true,
-    ClasificacionQRULID: 2,
-    DatosDinamicos: null,
+    Enlinea: false,
+    EnAPP: false,
+    CanalesVenta: false,
+    EnMenuQR: false,
     Fecha_UltimoCambio: new Date(),
-    Fecha_Sync: new Date(),
     UsuarioULID: 1,
     EmpresaULID: "01HKQM5Z8X9Y2W3V4U5T6S7R8P",
   },
 ]
 
-export async function getProductos(params?: SearchProductosInput): Promise<{
-  productos: Producto[]
-  total: number
-  page: number
-  totalPages: number
-}> {
+export async function getProductos(params: SearchProductosInput) {
   try {
-    const validatedParams = searchProductosSchema.parse(params || {})
+    const validatedParams = searchProductosSchema.parse(params)
 
+    // Simular filtrado
     let filteredProductos = [...mockProductos]
 
-    // Aplicar filtros
     if (validatedParams.search) {
       const searchTerm = validatedParams.search.toLowerCase()
       filteredProductos = filteredProductos.filter(
-        (producto) =>
-          producto.Nombredelproducto.toLowerCase().includes(searchTerm) ||
-          producto.Descripcion?.toLowerCase().includes(searchTerm) ||
-          producto.ClaveProducto.toLowerCase().includes(searchTerm),
+        (p) =>
+          p.Nombredelproducto.toLowerCase().includes(searchTerm) ||
+          p.Descripcion?.toLowerCase().includes(searchTerm) ||
+          p.ClaveProducto.toLowerCase().includes(searchTerm),
       )
     }
 
     if (validatedParams.tipo) {
-      filteredProductos = filteredProductos.filter((producto) => producto.TipoProducto === validatedParams.tipo)
-    }
-
-    if (validatedParams.activo !== undefined) {
-      filteredProductos = filteredProductos.filter((producto) => !producto.Suspendido === validatedParams.activo)
+      filteredProductos = filteredProductos.filter((p) => p.TipoProducto === validatedParams.tipo)
     }
 
     if (validatedParams.favorito !== undefined) {
-      filteredProductos = filteredProductos.filter((producto) => producto.Favorito === validatedParams.favorito)
+      filteredProductos = filteredProductos.filter((p) => p.Favorito === validatedParams.favorito)
     }
 
-    // Paginación
+    if (validatedParams.suspendido !== undefined) {
+      filteredProductos = filteredProductos.filter((p) => p.Suspendido === validatedParams.suspendido)
+    }
+
+    // Simular paginación
     const total = filteredProductos.length
     const totalPages = Math.ceil(total / validatedParams.limit)
     const startIndex = (validatedParams.page - 1) * validatedParams.limit
     const endIndex = startIndex + validatedParams.limit
-
     const productos = filteredProductos.slice(startIndex, endIndex)
 
     return {
-      productos,
-      total,
-      page: validatedParams.page,
-      totalPages,
+      success: true,
+      data: {
+        productos,
+        total,
+        page: validatedParams.page,
+        totalPages,
+        limit: validatedParams.limit,
+      },
     }
   } catch (error) {
-    console.error("Error al obtener productos:", error)
-    throw new Error("Error al obtener productos")
+    console.error("Error getting productos:", error)
+    return {
+      success: false,
+      message: "Error al obtener productos",
+      data: {
+        productos: [],
+        total: 0,
+        page: 1,
+        totalPages: 0,
+        limit: 20,
+      },
+    }
   }
 }
 
-export async function getProductoById(id: string): Promise<Producto | null> {
-  try {
-    const producto = mockProductos.find((p) => p.ProductoULID === id)
-    return producto || null
-  } catch (error) {
-    console.error("Error al obtener producto:", error)
-    throw new Error("Error al obtener producto")
-  }
-}
-
-export async function createProducto(data: CreateProductoInput): Promise<{
-  success: boolean
-  message: string
-  producto?: Producto
-}> {
+export async function createProducto(data: CreateProductoInput) {
   try {
     const validatedData = createProductoSchema.parse(data)
 
@@ -197,7 +171,7 @@ export async function createProducto(data: CreateProductoInput): Promise<{
       EmpresaULID: "01HKQM5Z8X9Y2W3V4U5T6S7R8P", // En producción vendría de la sesión
     }
 
-    // En producción: guardar en base de datos
+    // Simular guardado en base de datos
     mockProductos.push(newProducto)
 
     revalidatePath("/productos")
@@ -205,10 +179,10 @@ export async function createProducto(data: CreateProductoInput): Promise<{
     return {
       success: true,
       message: "Producto creado exitosamente",
-      producto: newProducto,
+      data: newProducto,
     }
   } catch (error) {
-    console.error("Error al crear producto:", error)
+    console.error("Error creating producto:", error)
     return {
       success: false,
       message: "Error al crear producto",
@@ -216,15 +190,11 @@ export async function createProducto(data: CreateProductoInput): Promise<{
   }
 }
 
-export async function updateProducto(data: UpdateProductoInput): Promise<{
-  success: boolean
-  message: string
-  producto?: Producto
-}> {
+export async function updateProducto(id: string, data: UpdateProductoInput) {
   try {
     const validatedData = updateProductoSchema.parse(data)
 
-    const index = mockProductos.findIndex((p) => p.ProductoULID === validatedData.ProductoULID)
+    const index = mockProductos.findIndex((p) => p.ProductoULID === id)
     if (index === -1) {
       return {
         success: false,
@@ -232,24 +202,21 @@ export async function updateProducto(data: UpdateProductoInput): Promise<{
       }
     }
 
-    const updatedProducto = {
+    mockProductos[index] = {
       ...mockProductos[index],
       ...validatedData,
       Fecha_UltimoCambio: new Date(),
     }
-
-    // En producción: actualizar en base de datos
-    mockProductos[index] = updatedProducto
 
     revalidatePath("/productos")
 
     return {
       success: true,
       message: "Producto actualizado exitosamente",
-      producto: updatedProducto,
+      data: mockProductos[index],
     }
   } catch (error) {
-    console.error("Error al actualizar producto:", error)
+    console.error("Error updating producto:", error)
     return {
       success: false,
       message: "Error al actualizar producto",
@@ -257,14 +224,9 @@ export async function updateProducto(data: UpdateProductoInput): Promise<{
   }
 }
 
-export async function deleteProducto(id: string): Promise<{
-  success: boolean
-  message: string
-}> {
+export async function deleteProducto(id: string) {
   try {
-    const validatedData = deleteProductoSchema.parse({ ProductoULID: id })
-
-    const index = mockProductos.findIndex((p) => p.ProductoULID === validatedData.ProductoULID)
+    const index = mockProductos.findIndex((p) => p.ProductoULID === id)
     if (index === -1) {
       return {
         success: false,
@@ -272,7 +234,7 @@ export async function deleteProducto(id: string): Promise<{
       }
     }
 
-    // En producción: eliminar de base de datos (soft delete)
+    // Eliminación suave - marcar como suspendido
     mockProductos[index].Suspendido = true
     mockProductos[index].Fecha_UltimoCambio = new Date()
 
@@ -283,7 +245,7 @@ export async function deleteProducto(id: string): Promise<{
       message: "Producto eliminado exitosamente",
     }
   } catch (error) {
-    console.error("Error al eliminar producto:", error)
+    console.error("Error deleting producto:", error)
     return {
       success: false,
       message: "Error al eliminar producto",
@@ -291,10 +253,7 @@ export async function deleteProducto(id: string): Promise<{
   }
 }
 
-export async function toggleFavoriteProducto(id: string): Promise<{
-  success: boolean
-  message: string
-}> {
+export async function toggleFavoriteProducto(id: string) {
   try {
     const index = mockProductos.findIndex((p) => p.ProductoULID === id)
     if (index === -1) {
@@ -311,10 +270,10 @@ export async function toggleFavoriteProducto(id: string): Promise<{
 
     return {
       success: true,
-      message: `Producto ${mockProductos[index].Favorito ? "agregado a" : "removido de"} favoritos`,
+      message: mockProductos[index].Favorito ? "Agregado a favoritos" : "Removido de favoritos",
     }
   } catch (error) {
-    console.error("Error al actualizar favorito:", error)
+    console.error("Error toggling favorite:", error)
     return {
       success: false,
       message: "Error al actualizar favorito",
@@ -322,68 +281,40 @@ export async function toggleFavoriteProducto(id: string): Promise<{
   }
 }
 
-// Datos auxiliares para formularios
 export async function getGruposProductos() {
+  // Mock data - En producción vendría de la base de datos
   return [
-    { id: 1, nombre: "Hamburguesas" },
-    { id: 2, nombre: "Pizzas" },
-    { id: 3, nombre: "Bebidas" },
-    { id: 4, nombre: "Postres" },
-    { id: 5, nombre: "Ensaladas" },
+    { id: 1, nombre: "Platillos Principales" },
+    { id: 2, nombre: "Bebidas" },
+    { id: 3, nombre: "Postres" },
+    { id: 4, nombre: "Entradas" },
   ]
 }
 
-export async function getSubgruposProductos(grupoId: number) {
-  const subgrupos = {
-    1: [
-      { id: 1, nombre: "Hamburguesas Clásicas" },
-      { id: 2, nombre: "Hamburguesas Gourmet" },
-    ],
-    2: [
-      { id: 3, nombre: "Pizzas Tradicionales" },
-      { id: 4, nombre: "Pizzas Especiales" },
-    ],
-    3: [
-      { id: 5, nombre: "Refrescos" },
-      { id: 6, nombre: "Jugos" },
-      { id: 7, nombre: "Cervezas" },
-    ],
-    4: [
-      { id: 8, nombre: "Helados" },
-      { id: 9, nombre: "Pasteles" },
-    ],
-    5: [
-      { id: 10, nombre: "Ensaladas Verdes" },
-      { id: 11, nombre: "Ensaladas de Frutas" },
-    ],
-  }
-
-  return subgrupos[grupoId as keyof typeof subgrupos] || []
-}
-
 export async function getUnidades() {
+  // Mock data - En producción vendría de la base de datos
   return [
     { id: 1, nombre: "Pieza", abreviacion: "pza" },
-    { id: 2, nombre: "Litro", abreviacion: "lt" },
-    { id: 3, nombre: "Kilogramo", abreviacion: "kg" },
+    { id: 2, nombre: "Kilogramo", abreviacion: "kg" },
+    { id: 3, nombre: "Litro", abreviacion: "lt" },
     { id: 4, nombre: "Gramo", abreviacion: "gr" },
-    { id: 5, nombre: "Porción", abreviacion: "porción" },
   ]
 }
 
 export async function getAreasProduccion() {
+  // Mock data - En producción vendría de la base de datos
   return [
     { id: 1, nombre: "Cocina Principal" },
-    { id: 2, nombre: "Horno de Pizza" },
+    { id: 2, nombre: "Parrilla" },
     { id: 3, nombre: "Barra de Bebidas" },
     { id: 4, nombre: "Repostería" },
-    { id: 5, nombre: "Parrilla" },
   ]
 }
 
 export async function getAlmacenes() {
+  // Mock data - En producción vendría de la base de datos
   return [
-    { id: 1, nombre: "Almacén Principal" },
+    { id: 1, nombre: "Almacén General" },
     { id: 2, nombre: "Refrigerador" },
     { id: 3, nombre: "Congelador" },
     { id: 4, nombre: "Bodega Seca" },
