@@ -1,7 +1,14 @@
 "use server"
 
+import { revalidatePath } from "next/cache"
 import { createProductoSchema, updateProductoSchema, type SearchProductosInput } from "@/schemas/productos.schemas"
-import { searchProductos } from "@/lib/data/mock-data"
+import {
+  searchProductos,
+  addProducto,
+  updateProducto as updateProductoMock,
+  deleteProducto as deleteProductoMock,
+  toggleFavoriteProducto as toggleFavoriteMock,
+} from "@/lib/data/mock-data"
 
 // Simular delay de red
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -12,16 +19,15 @@ export async function createProducto(data: unknown) {
   try {
     const validatedData = createProductoSchema.parse(data)
 
-    // Simular creación exitosa
+    // Usar la función mock para agregar el producto
+    const newProducto = addProducto(validatedData)
+
+    revalidatePath("/productos")
+
     return {
       success: true,
       message: "Producto creado exitosamente",
-      data: {
-        ProductoULID: `01HKQR8X9M2N3P4Q5R6S7T8U9${Date.now()}`,
-        ...validatedData,
-        FechaCreacion: new Date(),
-        FechaActualizacion: new Date(),
-      },
+      data: newProducto,
     }
   } catch (error) {
     return {
@@ -38,14 +44,22 @@ export async function updateProducto(id: string, data: unknown) {
   try {
     const validatedData = updateProductoSchema.parse(data)
 
+    // Usar la función mock para actualizar el producto
+    const updatedProducto = updateProductoMock(id, validatedData)
+
+    if (!updatedProducto) {
+      return {
+        success: false,
+        message: "Producto no encontrado",
+      }
+    }
+
+    revalidatePath("/productos")
+
     return {
       success: true,
       message: "Producto actualizado exitosamente",
-      data: {
-        ProductoULID: id,
-        ...validatedData,
-        FechaActualizacion: new Date(),
-      },
+      data: updatedProducto,
     }
   } catch (error) {
     return {
@@ -85,7 +99,18 @@ export async function deleteProducto(id: string) {
   await delay(600)
 
   try {
-    // Simular eliminación (soft delete)
+    // Usar la función mock para eliminar (suspender) el producto
+    const success = deleteProductoMock(id)
+
+    if (!success) {
+      return {
+        success: false,
+        message: "Producto no encontrado",
+      }
+    }
+
+    revalidatePath("/productos")
+
     return {
       success: true,
       message: "Producto eliminado exitosamente",
@@ -102,9 +127,22 @@ export async function toggleFavoriteProducto(id: string) {
   await delay(400)
 
   try {
+    // Usar la función mock para alternar favorito
+    const updatedProducto = toggleFavoriteMock(id)
+
+    if (!updatedProducto) {
+      return {
+        success: false,
+        message: "Producto no encontrado",
+      }
+    }
+
+    revalidatePath("/productos")
+
     return {
       success: true,
-      message: "Estado de favorito actualizado",
+      message: `Producto ${updatedProducto.Favorito ? "agregado a" : "removido de"} favoritos`,
+      data: updatedProducto,
     }
   } catch (error) {
     return {

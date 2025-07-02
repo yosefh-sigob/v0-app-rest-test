@@ -14,10 +14,13 @@ interface ProductosPageProps {
 }
 
 export default async function ProductosPage({ searchParams }: ProductosPageProps) {
-  // Convertir searchParams a filtros
+  // Convertir searchParams a filtros con tipos seguros
   const filters: SearchProductosInput = {
     search: typeof searchParams.search === "string" ? searchParams.search : "",
-    tipo: typeof searchParams.tipo === "string" ? (searchParams.tipo as any) : undefined,
+    tipo:
+      typeof searchParams.tipo === "string" && ["Platillo", "Producto", "Botella"].includes(searchParams.tipo)
+        ? (searchParams.tipo as "Platillo" | "Producto" | "Botella")
+        : undefined,
     favorito: searchParams.favorito === "true" ? true : searchParams.favorito === "false" ? false : undefined,
     suspendido: searchParams.suspendido === "true" ? true : searchParams.suspendido === "false" ? false : undefined,
     grupoId: typeof searchParams.grupoId === "string" ? Number(searchParams.grupoId) : undefined,
