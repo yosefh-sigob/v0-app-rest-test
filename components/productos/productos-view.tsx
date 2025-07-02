@@ -708,9 +708,9 @@ export function ProductosView({
 
       {/* Modal de formulario - ANCHO 80% */}
       <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className="w-[80vw] max-w-none max-h-[95vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+        <DialogContent className="w-[80vw] max-w-[80vw] max-h-[90vh] overflow-y-auto p-0">
+          <DialogHeader className="px-6 py-4 border-b">
+            <DialogTitle className="flex items-center gap-2 text-xl">
               {selectedProducto ? (
                 <>
                   <Edit className="h-5 w-5" />
@@ -724,49 +724,53 @@ export function ProductosView({
               )}
             </DialogTitle>
           </DialogHeader>
-          <ProductoForm
-            producto={selectedProducto}
-            gruposProductos={gruposProductos}
-            unidades={unidades}
-            areasProduccion={areasProduccion}
-            almacenes={almacenes}
-            onSuccess={handleFormSuccess}
-            onCancel={handleCloseForm}
-          />
-          {!selectedProducto && (
-            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-sm text-blue-800">
-                💡 <strong>Tip:</strong> Puedes seguir agregando productos sin cerrar este modal. Haz clic en
-                &quot;Actualizar&quot; para ver los cambios en la lista.
-              </p>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Modal de detalles */}
-      <Dialog open={showDetail} onOpenChange={setShowDetail}>
-        <DialogContent className="w-[80vw] max-w-none max-h-[95vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Eye className="h-5 w-5" />
-              Detalles del Producto
-            </DialogTitle>
-          </DialogHeader>
-          {selectedProducto && (
-            <ProductoDetail
+          <div className="px-6 py-4">
+            <ProductoForm
               producto={selectedProducto}
               gruposProductos={gruposProductos}
               unidades={unidades}
               areasProduccion={areasProduccion}
               almacenes={almacenes}
-              onEdit={() => {
-                setShowDetail(false)
-                setShowForm(true)
-              }}
-              onClose={() => setShowDetail(false)}
+              onSuccess={handleFormSuccess}
+              onCancel={handleCloseForm}
             />
-          )}
+            {!selectedProducto && (
+              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  💡 <strong>Tip:</strong> Puedes seguir agregando productos sin cerrar este modal. Haz clic en
+                  &quot;Actualizar&quot; para ver los cambios en la lista.
+                </p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de detalles */}
+      <Dialog open={showDetail} onOpenChange={setShowDetail}>
+        <DialogContent className="w-[80vw] max-w-[80vw] max-h-[90vh] overflow-y-auto p-0">
+          <DialogHeader className="px-6 py-4 border-b">
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <Eye className="h-5 w-5" />
+              Detalles del Producto
+            </DialogTitle>
+          </DialogHeader>
+          <div className="px-6 py-4">
+            {selectedProducto && (
+              <ProductoDetail
+                producto={selectedProducto}
+                gruposProductos={gruposProductos}
+                unidades={unidades}
+                areasProduccion={areasProduccion}
+                almacenes={almacenes}
+                onEdit={() => {
+                  setShowDetail(false)
+                  setShowForm(true)
+                }}
+                onClose={() => setShowDetail(false)}
+              />
+            )}
+          </div>
         </DialogContent>
       </Dialog>
 

@@ -149,170 +149,199 @@ export function ProductoForm({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <Tabs defaultValue="general" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="general">General</TabsTrigger>
-            <TabsTrigger value="configuracion">Configuración</TabsTrigger>
-            <TabsTrigger value="canales">Canales de Venta</TabsTrigger>
-            <TabsTrigger value="avanzado">Avanzado</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-4 mb-6">
+            <TabsTrigger value="general" className="text-sm">
+              General
+            </TabsTrigger>
+            <TabsTrigger value="configuracion" className="text-sm">
+              Configuración
+            </TabsTrigger>
+            <TabsTrigger value="canales" className="text-sm">
+              Canales de Venta
+            </TabsTrigger>
+            <TabsTrigger value="avanzado" className="text-sm">
+              Avanzado
+            </TabsTrigger>
           </TabsList>
 
           {/* Tab General */}
-          <TabsContent value="general" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Información Básica</CardTitle>
-                <CardDescription>Datos principales del producto</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <TabsContent value="general" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Información Básica</CardTitle>
+                  <CardDescription>Datos principales del producto</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="Nombredelproducto"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nombre del Producto *</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Ej: Hamburguesa Clásica" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="ClaveProducto"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Clave del Producto *</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Ej: HAM001" {...field} />
+                          </FormControl>
+                          <FormDescription>Código único para identificar el producto</FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="TipoProducto"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Tipo de Producto *</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecciona el tipo" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {TIPO_OPTIONS.map((option) => (
+                                <SelectItem key={option.value} value={option.value}>
+                                  <div className="flex items-center gap-2">
+                                    {option.icon}
+                                    {option.label}
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="Descripcion"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Descripción</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Describe el producto, ingredientes, características..."
+                              className="min-h-[100px]"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Imagen del Producto</CardTitle>
+                  <CardDescription>Sube una imagen representativa</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
                   <FormField
                     control={form.control}
-                    name="Nombredelproducto"
-                    render={({ field }) => (
+                    name="Imagen"
+                    render={() => (
                       <FormItem>
-                        <FormLabel>Nombre del Producto *</FormLabel>
                         <FormControl>
-                          <Input placeholder="Ej: Hamburguesa Clásica" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                          <div className="space-y-4">
+                            {/* Vista previa de la imagen */}
+                            <div className="flex justify-center">
+                              {currentImage ? (
+                                <div className="relative inline-block">
+                                  <img
+                                    src={getImageSrc(currentImage) || "/placeholder.svg"}
+                                    alt="Vista previa"
+                                    className="w-48 h-48 object-cover rounded-lg border shadow-sm"
+                                  />
+                                  <Button
+                                    type="button"
+                                    variant="destructive"
+                                    size="sm"
+                                    className="absolute -top-2 -right-2 h-8 w-8 rounded-full p-0"
+                                    onClick={handleRemoveImage}
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              ) : (
+                                <div className="w-48 h-48 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center bg-gray-50">
+                                  <ImageIcon className="h-12 w-12 text-gray-400 mb-2" />
+                                  <p className="text-sm text-gray-500 text-center">
+                                    Arrastra una imagen aquí
+                                    <br />o haz clic para seleccionar
+                                  </p>
+                                </div>
+                              )}
+                            </div>
 
-                  <FormField
-                    control={form.control}
-                    name="ClaveProducto"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Clave del Producto *</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Ej: HAM001" {...field} />
-                        </FormControl>
-                        <FormDescription>Código único para identificar el producto</FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="TipoProducto"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tipo de Producto *</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecciona el tipo" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {TIPO_OPTIONS.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
-                              <div className="flex items-center gap-2">
-                                {option.icon}
-                                {option.label}
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="Descripcion"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Descripción</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Describe el producto, ingredientes, características..."
-                          className="min-h-[100px]"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Sección de imagen */}
-                <FormField
-                  control={form.control}
-                  name="Imagen"
-                  render={() => (
-                    <FormItem>
-                      <FormLabel>Imagen del Producto</FormLabel>
-                      <FormControl>
-                        <div className="space-y-4">
-                          {/* Vista previa de la imagen */}
-                          {currentImage ? (
-                            <div className="relative inline-block">
-                              <img
-                                src={getImageSrc(currentImage) || "/placeholder.svg"}
-                                alt="Vista previa"
-                                className="w-32 h-32 object-cover rounded-lg border"
-                              />
+                            {/* Botones de carga */}
+                            <div className="flex justify-center gap-2">
                               <Button
                                 type="button"
-                                variant="destructive"
-                                size="sm"
-                                className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
-                                onClick={handleRemoveImage}
+                                variant="outline"
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={imageLoading}
+                                className="w-full max-w-xs"
                               >
-                                <X className="h-3 w-3" />
+                                {imageLoading ? (
+                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                ) : (
+                                  <Upload className="h-4 w-4 mr-2" />
+                                )}
+                                {currentImage ? "Cambiar Imagen" : "Subir Imagen"}
                               </Button>
-                            </div>
-                          ) : (
-                            <div className="w-32 h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
-                              <ImageIcon className="h-8 w-8 text-gray-400" />
-                            </div>
-                          )}
-
-                          {/* Botón de carga */}
-                          <div className="flex gap-2">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              onClick={() => fileInputRef.current?.click()}
-                              disabled={imageLoading}
-                            >
-                              {imageLoading ? (
-                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                              ) : (
-                                <Upload className="h-4 w-4 mr-2" />
+                              {currentImage && (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  onClick={handleRemoveImage}
+                                  className="px-3 bg-transparent"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
                               )}
-                              {currentImage ? "Cambiar Imagen" : "Subir Imagen"}
-                            </Button>
-                            {currentImage && (
-                              <Button type="button" variant="outline" onClick={handleRemoveImage}>
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Eliminar
-                              </Button>
-                            )}
-                          </div>
+                            </div>
 
-                          <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept="image/jpeg,image/jpg,image/png,image/webp"
-                            onChange={handleImageUpload}
-                            className="hidden"
-                          />
-                        </div>
-                      </FormControl>
-                      <FormDescription>Formatos soportados: JPG, PNG, WebP. Tamaño máximo: 5MB.</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </CardContent>
-            </Card>
+                            <input
+                              ref={fileInputRef}
+                              type="file"
+                              accept="image/jpeg,image/jpg,image/png,image/webp"
+                              onChange={handleImageUpload}
+                              className="hidden"
+                            />
+                          </div>
+                        </FormControl>
+                        <FormDescription className="text-center">
+                          Formatos soportados: JPG, PNG, WebP. Tamaño máximo: 5MB.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+              </Card>
+            </div>
 
             <Card>
               <CardHeader>
@@ -320,7 +349,7 @@ export function ProductoForm({
                 <CardDescription>Categorización y unidades</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <FormField
                     control={form.control}
                     name="GrupoProductoID"
@@ -378,9 +407,7 @@ export function ProductoForm({
                       </FormItem>
                     )}
                   />
-                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
                     name="AreaProduccionID"
@@ -531,7 +558,7 @@ export function ProductoForm({
                 <CardDescription>Selecciona dónde estará disponible este producto</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <FormField
                     control={form.control}
                     name="Comedor"
@@ -687,7 +714,7 @@ export function ProductoForm({
         </Tabs>
 
         {/* Botones de acción */}
-        <div className="flex justify-end gap-3 pt-6 border-t">
+        <div className="flex justify-end gap-3 pt-6 border-t bg-white sticky bottom-0">
           <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
             <X className="h-4 w-4 mr-2" />
             Cancelar
