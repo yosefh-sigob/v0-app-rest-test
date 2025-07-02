@@ -19,25 +19,20 @@ export const FEATURES: Record<string, LicenseFeature> = {
     description: "Crear, editar y eliminar productos",
     requiredLicense: "Lite",
   },
-  inventarioAvanzado: {
-    name: "Inventario Avanzado",
-    description: "Control de stock y alertas",
-    requiredLicense: "Pro",
-  },
   reportesAvanzados: {
     name: "Reportes Avanzados",
-    description: "Análisis detallado de ventas",
+    description: "Análisis detallado de ventas y productos",
     requiredLicense: "Pro",
   },
-  multiUbicacion: {
-    name: "Múltiples Ubicaciones",
-    description: "Gestionar varias sucursales",
-    requiredLicense: "Pro",
-  },
-  franquicia: {
-    name: "Gestión de Franquicia",
-    description: "Dashboard centralizado para franquicias",
+  multiSucursal: {
+    name: "Multi-sucursal",
+    description: "Gestión de múltiples ubicaciones",
     requiredLicense: "Franquicia",
+  },
+  integrationPOS: {
+    name: "Integración POS",
+    description: "Conexión con sistemas de punto de venta",
+    requiredLicense: "Pro",
   },
 }
 
@@ -45,16 +40,16 @@ export function hasAccess(currentLicense: LicenseType, requiredLicense: LicenseT
   return LICENSE_HIERARCHY[currentLicense] >= LICENSE_HIERARCHY[requiredLicense]
 }
 
-export function getUpgradeMessage(featureName: string, requiredLicense: LicenseType): string {
-  return `Esta funcionalidad requiere el plan ${requiredLicense}. Actualiza tu plan para acceder a ${featureName}.`
+export function getUpgradeMessage(feature: string, requiredLicense: LicenseType): string {
+  return `Esta funcionalidad requiere el plan ${requiredLicense}. Actualiza tu plan para acceder a ${feature}.`
 }
 
 export function getLicenseColor(license: LicenseType): string {
   const colors = {
     Gratis: "bg-gray-500",
     Lite: "bg-blue-500",
-    Pro: "bg-orange-500",
-    Franquicia: "bg-purple-500",
+    Pro: "bg-purple-500",
+    Franquicia: "bg-orange-500",
   }
   return colors[license]
 }

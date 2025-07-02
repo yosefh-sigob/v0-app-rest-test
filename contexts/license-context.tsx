@@ -1,8 +1,7 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
-
-export type LicenseType = "Gratis" | "Lite" | "Pro" | "Franquicia"
+import type { LicenseType } from "@/utils/license"
 
 interface LicenseContextType {
   currentLicense: LicenseType

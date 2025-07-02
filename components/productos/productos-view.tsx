@@ -9,13 +9,6 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -41,7 +34,6 @@ import {
   Grid3X3,
   List,
   Star,
-  MoreVertical,
   Edit,
   Trash2,
   Eye,
@@ -199,7 +191,6 @@ export function ProductosView({
       const result = await deleteProducto(productoToDelete.ProductoULID)
       if (result.success) {
         toast.success(result.message)
-        // Recargar datos
         await refreshData()
       } else {
         toast.error(result.message)
@@ -217,7 +208,6 @@ export function ProductosView({
       const result = await toggleFavoriteProducto(producto.ProductoULID)
       if (result.success) {
         toast.success(result.message)
-        // Recargar datos
         await refreshData()
       } else {
         toast.error(result.message)
@@ -235,7 +225,6 @@ export function ProductosView({
   }
 
   const handleFormSuccess = async () => {
-    // No cerrar el modal automáticamente, solo recargar datos
     await refreshData()
     toast.success("¡Producto guardado! Puedes seguir agregando más productos o cerrar el modal.")
   }
@@ -514,78 +503,7 @@ export function ProductosView({
 
                   {/* Información */}
                   <div className="space-y-2">
-                    <div className="flex items-start justify-between">
-                      <h3 className="font-semibold text-sm leading-tight">{producto.Nombredelproducto}</h3>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0 hover:bg-gray-100 focus:bg-gray-100 data-[state=open]:bg-gray-100"
-                          >
-                            <MoreVertical className="h-4 w-4" />
-                            <span className="sr-only">Abrir menú de opciones</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48" sideOffset={5}>
-                          <DropdownMenuItem
-                            onClick={(e) => {
-                              e.preventDefault()
-                              handleView(producto)
-                            }}
-                            className="cursor-pointer"
-                          >
-                            <Eye className="h-4 w-4 mr-2" />
-                            Ver detalles
-                          </DropdownMenuItem>
-                          <LicenseGuard feature="gestionProductos" fallback={null}>
-                            <DropdownMenuItem
-                              onClick={(e) => {
-                                e.preventDefault()
-                                handleEdit(producto)
-                              }}
-                              className="cursor-pointer"
-                            >
-                              <Edit className="h-4 w-4 mr-2" />
-                              Editar
-                            </DropdownMenuItem>
-                          </LicenseGuard>
-                          <DropdownMenuItem
-                            onClick={(e) => {
-                              e.preventDefault()
-                              handleToggleFavorite(producto)
-                            }}
-                            className="cursor-pointer"
-                          >
-                            {producto.Favorito ? (
-                              <>
-                                <HeartOff className="h-4 w-4 mr-2" />
-                                Quitar de favoritos
-                              </>
-                            ) : (
-                              <>
-                                <Heart className="h-4 w-4 mr-2" />
-                                Agregar a favoritos
-                              </>
-                            )}
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <LicenseGuard feature="gestionProductos" fallback={null}>
-                            <DropdownMenuItem
-                              onClick={(e) => {
-                                e.preventDefault()
-                                handleDelete(producto)
-                              }}
-                              className="text-red-600 cursor-pointer focus:text-red-600 focus:bg-red-50"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Eliminar
-                            </DropdownMenuItem>
-                          </LicenseGuard>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-
+                    <h3 className="font-semibold text-sm leading-tight">{producto.Nombredelproducto}</h3>
                     <p className="text-xs text-muted-foreground line-clamp-2">
                       {producto.Descripcion || "Sin descripción"}
                     </p>
@@ -615,6 +533,44 @@ export function ProductosView({
                           +{getChannelBadges(producto).length - 3}
                         </Badge>
                       )}
+                    </div>
+
+                    {/* Botones de acción - SIMPLIFICADOS */}
+                    <div className="flex gap-1 pt-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleView(producto)}
+                        className="flex-1 h-8 text-xs"
+                      >
+                        <Eye className="h-3 w-3 mr-1" />
+                        Ver
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleToggleFavorite(producto)}
+                        className="h-8 w-8 p-0"
+                      >
+                        {producto.Favorito ? (
+                          <HeartOff className="h-3 w-3 text-red-500" />
+                        ) : (
+                          <Heart className="h-3 w-3" />
+                        )}
+                      </Button>
+                      <LicenseGuard feature="gestionProductos" fallback={null}>
+                        <Button size="sm" variant="ghost" onClick={() => handleEdit(producto)} className="h-8 w-8 p-0">
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleDelete(producto)}
+                          className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </LicenseGuard>
                     </div>
                   </div>
                 </div>
@@ -664,74 +620,43 @@ export function ProductosView({
                           </div>
                         </div>
 
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
+                        {/* Botones de acción - SIMPLIFICADOS */}
+                        <div className="flex gap-1">
+                          <Button size="sm" variant="outline" onClick={() => handleView(producto)}>
+                            <Eye className="h-4 w-4 mr-1" />
+                            Ver
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleToggleFavorite(producto)}
+                            className="w-9 h-9 p-0"
+                          >
+                            {producto.Favorito ? (
+                              <HeartOff className="h-4 w-4 text-red-500" />
+                            ) : (
+                              <Heart className="h-4 w-4" />
+                            )}
+                          </Button>
+                          <LicenseGuard feature="gestionProductos" fallback={null}>
                             <Button
-                              variant="ghost"
                               size="sm"
-                              className="h-8 w-8 p-0 hover:bg-gray-100 focus:bg-gray-100 data-[state=open]:bg-gray-100"
+                              variant="ghost"
+                              onClick={() => handleEdit(producto)}
+                              className="w-9 h-9 p-0"
                             >
-                              <MoreVertical className="h-4 w-4" />
-                              <span className="sr-only">Abrir menú de opciones</span>
+                              <Edit className="h-4 w-4" />
                             </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-48" sideOffset={5}>
-                            <DropdownMenuItem
-                              onClick={(e) => {
-                                e.preventDefault()
-                                handleView(producto)
-                              }}
-                              className="cursor-pointer"
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleDelete(producto)}
+                              className="w-9 h-9 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
                             >
-                              <Eye className="h-4 w-4 mr-2" />
-                              Ver detalles
-                            </DropdownMenuItem>
-                            <LicenseGuard feature="gestionProductos" fallback={null}>
-                              <DropdownMenuItem
-                                onClick={(e) => {
-                                  e.preventDefault()
-                                  handleEdit(producto)
-                                }}
-                                className="cursor-pointer"
-                              >
-                                <Edit className="h-4 w-4 mr-2" />
-                                Editar
-                              </DropdownMenuItem>
-                            </LicenseGuard>
-                            <DropdownMenuItem
-                              onClick={(e) => {
-                                e.preventDefault()
-                                handleToggleFavorite(producto)
-                              }}
-                              className="cursor-pointer"
-                            >
-                              {producto.Favorito ? (
-                                <>
-                                  <HeartOff className="h-4 w-4 mr-2" />
-                                  Quitar de favoritos
-                                </>
-                              ) : (
-                                <>
-                                  <Heart className="h-4 w-4 mr-2" />
-                                  Agregar a favoritos
-                                </>
-                              )}
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <LicenseGuard feature="gestionProductos" fallback={null}>
-                              <DropdownMenuItem
-                                onClick={(e) => {
-                                  e.preventDefault()
-                                  handleDelete(producto)
-                                }}
-                                className="text-red-600 cursor-pointer focus:text-red-600 focus:bg-red-50"
-                              >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Eliminar
-                              </DropdownMenuItem>
-                            </LicenseGuard>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </LicenseGuard>
+                        </div>
                       </div>
                     </div>
                   </div>

@@ -37,7 +37,7 @@ export function ProductosLoading() {
                   <Skeleton className="h-4 w-2/3" />
                   <div className="flex gap-2">
                     <Skeleton className="h-6 w-16" />
-                    <Skeleton className="h-6 w-16" />
+                    <Skeleton className="h-6 w-20" />
                   </div>
                 </div>
               </div>

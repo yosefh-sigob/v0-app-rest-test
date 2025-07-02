@@ -28,9 +28,9 @@ export default function RootLayout({
             toastOptions={{
               duration: 4000,
               style: {
-                background: "#fff",
-                color: "#000",
-                border: "1px solid #e5e7eb",
+                background: "white",
+                border: "1px solid #e2e8f0",
+                color: "#1e293b",
               },
             }}
           />

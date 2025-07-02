@@ -1,10 +1,10 @@
 "use client"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
 import {
+  Edit,
   Package,
   Utensils,
   Wine,
@@ -14,10 +14,10 @@ import {
   ShoppingCart,
   Smartphone,
   QrCode,
-  Edit,
-  X,
-  Check,
-  AlertCircle,
+  Clock,
+  DollarSign,
+  Hash,
+  FileText,
 } from "lucide-react"
 import type { Producto } from "@/interfaces/database"
 
@@ -48,29 +48,16 @@ export function ProductoDetail({
 }: ProductoDetailProps) {
   const grupo = gruposProductos.find((g) => g.id === producto.GrupoProductoID)
   const unidad = unidades.find((u) => u.id === producto.UnidadID)
-  const area = areasProduccion.find((a) => a.id === producto.AreaProduccionID)
+  const areaProduccion = areasProduccion.find((a) => a.id === producto.AreaProduccionID)
   const almacen = almacenes.find((a) => a.id === producto.AlmacenID)
 
   const getChannelBadges = () => {
     const channels = []
-    if (producto.Comedor)
-      channels.push({ icon: <Home className="h-4 w-4" />, label: "Comedor", color: "bg-green-100 text-green-800" })
-    if (producto.ADomicilio)
-      channels.push({ icon: <Truck className="h-4 w-4" />, label: "Domicilio", color: "bg-blue-100 text-blue-800" })
-    if (producto.Mostrador)
-      channels.push({
-        icon: <ShoppingCart className="h-4 w-4" />,
-        label: "Mostrador",
-        color: "bg-purple-100 text-purple-800",
-      })
-    if (producto.Enlinea)
-      channels.push({
-        icon: <Smartphone className="h-4 w-4" />,
-        label: "En línea",
-        color: "bg-orange-100 text-orange-800",
-      })
-    if (producto.EnMenuQR)
-      channels.push({ icon: <QrCode className="h-4 w-4" />, label: "Menú QR", color: "bg-gray-100 text-gray-800" })
+    if (producto.Comedor) channels.push({ icon: <Home className="h-4 w-4" />, label: "Comedor" })
+    if (producto.ADomicilio) channels.push({ icon: <Truck className="h-4 w-4" />, label: "Domicilio" })
+    if (producto.Mostrador) channels.push({ icon: <ShoppingCart className="h-4 w-4" />, label: "Mostrador" })
+    if (producto.Enlinea) channels.push({ icon: <Smartphone className="h-4 w-4" />, label: "En línea" })
+    if (producto.EnMenuQR) channels.push({ icon: <QrCode className="h-4 w-4" />, label: "QR" })
     return channels
   }
 
@@ -78,185 +65,149 @@ export function ProductoDetail({
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-start justify-between">
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-orange-100 rounded-lg">{TIPO_ICONS[producto.TipoProducto]}</div>
-            <div>
+        <div className="flex items-center gap-4">
+          <img
+            src={`/placeholder.svg?height=80&width=80&text=${encodeURIComponent(producto.Nombredelproducto)}`}
+            alt={producto.Nombredelproducto}
+            className="w-20 h-20 object-cover rounded-lg"
+          />
+          <div>
+            <div className="flex items-center gap-2 mb-2">
               <h2 className="text-2xl font-bold">{producto.Nombredelproducto}</h2>
-              <div className="flex items-center gap-2">
-                <Badge variant="outline">{producto.ClaveProducto}</Badge>
-                <Badge variant="secondary">{producto.TipoProducto}</Badge>
-                {producto.Favorito && (
-                  <Badge className="bg-yellow-500 hover:bg-yellow-600">
-                    <Star className="h-3 w-3 mr-1" />
-                    Favorito
-                  </Badge>
-                )}
-                {producto.Suspendido && (
-                  <Badge variant="destructive">
-                    <AlertCircle className="h-3 w-3 mr-1" />
-                    Suspendido
-                  </Badge>
-                )}
-              </div>
+              {producto.Favorito && <Star className="h-5 w-5 text-yellow-500 fill-current" />}
+              {producto.Suspendido && <Badge variant="destructive">Suspendido</Badge>}
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="flex items-center gap-1">
+                {TIPO_ICONS[producto.TipoProducto]}
+                {producto.TipoProducto}
+              </Badge>
+              <Badge variant="outline">{producto.ClaveProducto}</Badge>
             </div>
           </div>
         </div>
         <div className="flex gap-2">
-          <Button onClick={onEdit} className="bg-orange-600 hover:bg-orange-700">
+          <Button onClick={onEdit} size="sm">
             <Edit className="h-4 w-4 mr-2" />
             Editar
           </Button>
-          <Button variant="outline" onClick={onClose}>
-            <X className="h-4 w-4 mr-2" />
+          <Button onClick={onClose} variant="outline" size="sm">
             Cerrar
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Información Principal */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Descripción */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Descripción</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">{producto.Descripcion || "Sin descripción disponible"}</p>
-            </CardContent>
-          </Card>
-
-          {/* Configuración */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Configuración</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <span className="text-sm font-medium">Permite Descuento</span>
-                  {producto.PermiteDescuento ? (
-                    <Check className="h-4 w-4 text-green-600" />
-                  ) : (
-                    <X className="h-4 w-4 text-red-600" />
-                  )}
-                </div>
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <span className="text-sm font-medium">Controla Stock</span>
-                  {producto.ControlaStock ? (
-                    <Check className="h-4 w-4 text-green-600" />
-                  ) : (
-                    <X className="h-4 w-4 text-red-600" />
-                  )}
-                </div>
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <span className="text-sm font-medium">Acepta Propina</span>
-                  {producto.AceptaPropina ? (
-                    <Check className="h-4 w-4 text-green-600" />
-                  ) : (
-                    <X className="h-4 w-4 text-red-600" />
-                  )}
-                </div>
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <span className="text-sm font-medium">Pregunta Cocción</span>
-                  {producto.PreguntaCoccion ? (
-                    <Check className="h-4 w-4 text-green-600" />
-                  ) : (
-                    <X className="h-4 w-4 text-red-600" />
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Canales de Venta */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Canales de Venta</CardTitle>
-              <CardDescription>Dónde está disponible este producto</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-3">
-                {getChannelBadges().map((channel, index) => (
-                  <div key={index} className={`flex items-center gap-2 px-3 py-2 rounded-lg ${channel.color}`}>
-                    {channel.icon}
-                    <span className="text-sm font-medium">{channel.label}</span>
-                  </div>
-                ))}
-                {getChannelBadges().length === 0 && (
-                  <p className="text-muted-foreground text-sm">No hay canales de venta configurados</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Información Lateral */}
-        <div className="space-y-6">
-          {/* Imagen */}
-          <Card>
-            <CardContent className="p-4">
-              <img
-                src={`/placeholder.svg?height=200&width=300&text=${encodeURIComponent(producto.Nombredelproducto)}`}
-                alt={producto.Nombredelproducto}
-                className="w-full h-48 object-cover rounded-md"
-              />
-            </CardContent>
-          </Card>
-
-          {/* Clasificación */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Clasificación</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Información General */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Información General
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">Descripción</label>
+              <p className="mt-1">{producto.Descripcion || "Sin descripción"}</p>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-muted-foreground">Categoría</label>
-                <p className="text-sm">{grupo?.nombre || "Sin categoría"}</p>
+                <p className="mt-1">{grupo?.nombre || "Sin categoría"}</p>
               </div>
-              <Separator />
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Unidad de Medida</label>
-                <p className="text-sm">{unidad ? `${unidad.nombre} (${unidad.abreviacion})` : "Sin unidad"}</p>
+                <label className="text-sm font-medium text-muted-foreground">Unidad</label>
+                <p className="mt-1">{unidad?.nombre || "Sin unidad"}</p>
               </div>
-              <Separator />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-muted-foreground">Área de Producción</label>
-                <p className="text-sm">{area?.nombre || "Sin área específica"}</p>
+                <p className="mt-1">{areaProduccion?.nombre || "Sin área"}</p>
               </div>
-              <Separator />
               <div>
                 <label className="text-sm font-medium text-muted-foreground">Almacén</label>
-                <p className="text-sm">{almacen?.nombre || "Sin almacén específico"}</p>
+                <p className="mt-1">{almacen?.nombre || "Sin almacén"}</p>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* Información del Sistema */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Información del Sistema</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+        {/* Configuración */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Hash className="h-5 w-5" />
+              Configuración
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium text-muted-foreground">ID del Producto</label>
-                <p className="text-xs font-mono bg-gray-100 p-2 rounded">{producto.ProductoULID}</p>
+                <label className="text-sm font-medium text-muted-foreground">Tiempo de Preparación</label>
+                <p className="mt-1 flex items-center gap-1">
+                  <Clock className="h-4 w-4" />
+                  {producto.TiempoPreparacion || 0} min
+                </p>
               </div>
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Fecha de Creación</label>
-                <p className="text-sm">{new Date(producto.FechaCreacion).toLocaleDateString()}</p>
+                <label className="text-sm font-medium text-muted-foreground">Precio Base</label>
+                <p className="mt-1 flex items-center gap-1">
+                  <DollarSign className="h-4 w-4" />${producto.PrecioBase || 0}
+                </p>
               </div>
-              {producto.FechaModificacion && (
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Última Modificación</label>
-                  <p className="text-sm">{new Date(producto.FechaModificacion).toLocaleDateString()}</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">Orden de Impresión</label>
+              <p className="mt-1">{producto.OrdenImpresion || 0}</p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Canales de Venta */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Canales de Venta</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2">
+            {getChannelBadges().map((channel, index) => (
+              <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                {channel.icon}
+                {channel.label}
+              </Badge>
+            ))}
+            {getChannelBadges().length === 0 && (
+              <p className="text-muted-foreground">No hay canales de venta configurados</p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Información del Sistema */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Información del Sistema</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+            <div>
+              <label className="font-medium text-muted-foreground">ID del Producto</label>
+              <p className="mt-1 font-mono text-xs">{producto.ProductoULID}</p>
+            </div>
+            <div>
+              <label className="font-medium text-muted-foreground">Creado</label>
+              <p className="mt-1">{new Date(producto.FechaCreacion).toLocaleDateString()}</p>
+            </div>
+            <div>
+              <label className="font-medium text-muted-foreground">Actualizado</label>
+              <p className="mt-1">{new Date(producto.FechaActualizacion).toLocaleDateString()}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
