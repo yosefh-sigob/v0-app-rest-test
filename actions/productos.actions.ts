@@ -1,10 +1,10 @@
 "use server"
-
-import { revalidatePath } from "next/cache"
-import { generateULID } from "@/utils/ulid"
-import { createProductoSchema, updateProductoSchema, searchProductosSchema } from "@/schemas/productos.schemas"
-import type { CreateProductoInput, UpdateProductoInput, SearchProductosInput } from "@/schemas/productos.schemas"
+import type { SearchProductosInput } from "@/schemas/productos.schemas"
 import type { Producto } from "@/interfaces/database"
+import { searchProductos, MOCK_PRODUCTOS } from "@/lib/data/mock-data"
+
+// Simular delay de red
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 // Mock data expandido con muchos más productos
 const mockProductos: Producto[] = [
@@ -66,6 +66,7 @@ const mockProductos: Producto[] = [
     CanalesVenta: false,
     EnMenuQR: true,
     Fecha_UltimoCambio: new Date(),
+    Fecha_Sync: new Date(),
     UsuarioULID: 1,
     EmpresaULID: "01HKQM5Z8X9Y2W3V4U5T6S7R8P",
   },
@@ -93,6 +94,7 @@ const mockProductos: Producto[] = [
     CanalesVenta: false,
     EnMenuQR: true,
     Fecha_UltimoCambio: new Date(),
+    Fecha_Sync: new Date(),
     UsuarioULID: 1,
     EmpresaULID: "01HKQM5Z8X9Y2W3V4U5T6S7R8P",
   },
@@ -120,6 +122,7 @@ const mockProductos: Producto[] = [
     CanalesVenta: false,
     EnMenuQR: true,
     Fecha_UltimoCambio: new Date(),
+    Fecha_Sync: new Date(),
     UsuarioULID: 1,
     EmpresaULID: "01HKQM5Z8X9Y2W3V4U5T6S7R8P",
   },
@@ -149,6 +152,7 @@ const mockProductos: Producto[] = [
     CanalesVenta: true,
     EnMenuQR: true,
     Fecha_UltimoCambio: new Date(),
+    Fecha_Sync: new Date(),
     UsuarioULID: 1,
     EmpresaULID: "01HKQM5Z8X9Y2W3V4U5T6S7R8P",
   },
@@ -176,6 +180,7 @@ const mockProductos: Producto[] = [
     CanalesVenta: true,
     EnMenuQR: true,
     Fecha_UltimoCambio: new Date(),
+    Fecha_Sync: new Date(),
     UsuarioULID: 1,
     EmpresaULID: "01HKQM5Z8X9Y2W3V4U5T6S7R8P",
   },
@@ -203,6 +208,7 @@ const mockProductos: Producto[] = [
     CanalesVenta: false,
     EnMenuQR: true,
     Fecha_UltimoCambio: new Date(),
+    Fecha_Sync: new Date(),
     UsuarioULID: 1,
     EmpresaULID: "01HKQM5Z8X9Y2W3V4U5T6S7R8P",
   },
@@ -230,6 +236,7 @@ const mockProductos: Producto[] = [
     CanalesVenta: false,
     EnMenuQR: true,
     Fecha_UltimoCambio: new Date(),
+    Fecha_Sync: new Date(),
     UsuarioULID: 1,
     EmpresaULID: "01HKQM5Z8X9Y2W3V4U5T6S7R8P",
   },
@@ -259,6 +266,7 @@ const mockProductos: Producto[] = [
     CanalesVenta: true,
     EnMenuQR: true,
     Fecha_UltimoCambio: new Date(),
+    Fecha_Sync: new Date(),
     UsuarioULID: 1,
     EmpresaULID: "01HKQM5Z8X9Y2W3V4U5T6S7R8P",
   },
@@ -286,6 +294,7 @@ const mockProductos: Producto[] = [
     CanalesVenta: true,
     EnMenuQR: true,
     Fecha_UltimoCambio: new Date(),
+    Fecha_Sync: new Date(),
     UsuarioULID: 1,
     EmpresaULID: "01HKQM5Z8X9Y2W3V4U5T6S7R8P",
   },
@@ -313,6 +322,7 @@ const mockProductos: Producto[] = [
     CanalesVenta: false,
     EnMenuQR: true,
     Fecha_UltimoCambio: new Date(),
+    Fecha_Sync: new Date(),
     UsuarioULID: 1,
     EmpresaULID: "01HKQM5Z8X9Y2W3V4U5T6S7R8P",
   },
@@ -340,6 +350,7 @@ const mockProductos: Producto[] = [
     CanalesVenta: false,
     EnMenuQR: true,
     Fecha_UltimoCambio: new Date(),
+    Fecha_Sync: new Date(),
     UsuarioULID: 1,
     EmpresaULID: "01HKQM5Z8X9Y2W3V4U5T6S7R8P",
   },
@@ -369,6 +380,7 @@ const mockProductos: Producto[] = [
     CanalesVenta: false,
     EnMenuQR: true,
     Fecha_UltimoCambio: new Date(),
+    Fecha_Sync: new Date(),
     UsuarioULID: 1,
     EmpresaULID: "01HKQM5Z8X9Y2W3V4U5T6S7R8P",
   },
@@ -396,6 +408,7 @@ const mockProductos: Producto[] = [
     CanalesVenta: false,
     EnMenuQR: false,
     Fecha_UltimoCambio: new Date(),
+    Fecha_Sync: new Date(),
     UsuarioULID: 1,
     EmpresaULID: "01HKQM5Z8X9Y2W3V4U5T6S7R8P",
   },
@@ -423,6 +436,7 @@ const mockProductos: Producto[] = [
     CanalesVenta: false,
     EnMenuQR: true,
     Fecha_UltimoCambio: new Date(),
+    Fecha_Sync: new Date(),
     UsuarioULID: 1,
     EmpresaULID: "01HKQM5Z8X9Y2W3V4U5T6S7R8P",
   },
@@ -452,6 +466,7 @@ const mockProductos: Producto[] = [
     CanalesVenta: true,
     EnMenuQR: false,
     Fecha_UltimoCambio: new Date(),
+    Fecha_Sync: new Date(),
     UsuarioULID: 1,
     EmpresaULID: "01HKQM5Z8X9Y2W3V4U5T6S7R8P",
   },
@@ -479,6 +494,7 @@ const mockProductos: Producto[] = [
     CanalesVenta: false,
     EnMenuQR: false,
     Fecha_UltimoCambio: new Date(),
+    Fecha_Sync: new Date(),
     UsuarioULID: 1,
     EmpresaULID: "01HKQM5Z8X9Y2W3V4U5T6S7R8P",
   },
@@ -506,6 +522,7 @@ const mockProductos: Producto[] = [
     CanalesVenta: false,
     EnMenuQR: false,
     Fecha_UltimoCambio: new Date(),
+    Fecha_Sync: new Date(),
     UsuarioULID: 1,
     EmpresaULID: "01HKQM5Z8X9Y2W3V4U5T6S7R8P",
   },
@@ -533,6 +550,7 @@ const mockProductos: Producto[] = [
     CanalesVenta: false,
     EnMenuQR: false,
     Fecha_UltimoCambio: new Date(),
+    Fecha_Sync: new Date(),
     UsuarioULID: 1,
     EmpresaULID: "01HKQM5Z8X9Y2W3V4U5T6S7R8P",
   },
@@ -560,6 +578,7 @@ const mockProductos: Producto[] = [
     CanalesVenta: false,
     EnMenuQR: false,
     Fecha_UltimoCambio: new Date(),
+    Fecha_Sync: new Date(),
     UsuarioULID: 1,
     EmpresaULID: "01HKQM5Z8X9Y2W3V4U5T6S7R8P",
   },
@@ -589,6 +608,7 @@ const mockProductos: Producto[] = [
     CanalesVenta: false,
     EnMenuQR: true,
     Fecha_UltimoCambio: new Date(),
+    Fecha_Sync: new Date(),
     UsuarioULID: 1,
     EmpresaULID: "01HKQM5Z8X9Y2W3V4U5T6S7R8P",
   },
@@ -616,6 +636,7 @@ const mockProductos: Producto[] = [
     CanalesVenta: false,
     EnMenuQR: true,
     Fecha_UltimoCambio: new Date(),
+    Fecha_Sync: new Date(),
     UsuarioULID: 1,
     EmpresaULID: "01HKQM5Z8X9Y2W3V4U5T6S7R8P",
   },
@@ -643,6 +664,7 @@ const mockProductos: Producto[] = [
     CanalesVenta: false,
     EnMenuQR: false,
     Fecha_UltimoCambio: new Date(),
+    Fecha_Sync: new Date(),
     UsuarioULID: 1,
     EmpresaULID: "01HKQM5Z8X9Y2W3V4U5T6S7R8P",
   },
@@ -670,6 +692,7 @@ const mockProductos: Producto[] = [
     CanalesVenta: false,
     EnMenuQR: true,
     Fecha_UltimoCambio: new Date(),
+    Fecha_Sync: new Date(),
     UsuarioULID: 1,
     EmpresaULID: "01HKQM5Z8X9Y2W3V4U5T6S7R8P",
   },
@@ -699,6 +722,7 @@ const mockProductos: Producto[] = [
     CanalesVenta: false,
     EnMenuQR: true,
     Fecha_UltimoCambio: new Date(),
+    Fecha_Sync: new Date(),
     UsuarioULID: 1,
     EmpresaULID: "01HKQM5Z8X9Y2W3V4U5T6S7R8P",
   },
@@ -726,6 +750,7 @@ const mockProductos: Producto[] = [
     CanalesVenta: false,
     EnMenuQR: true,
     Fecha_UltimoCambio: new Date(),
+    Fecha_Sync: new Date(),
     UsuarioULID: 1,
     EmpresaULID: "01HKQM5Z8X9Y2W3V4U5T6S7R8P",
   },
@@ -753,6 +778,7 @@ const mockProductos: Producto[] = [
     CanalesVenta: false,
     EnMenuQR: false,
     Fecha_UltimoCambio: new Date(),
+    Fecha_Sync: new Date(),
     UsuarioULID: 1,
     EmpresaULID: "01HKQM5Z8X9Y2W3V4U5T6S7R8P",
   },
@@ -782,6 +808,7 @@ const mockProductos: Producto[] = [
     CanalesVenta: false,
     EnMenuQR: false,
     Fecha_UltimoCambio: new Date(),
+    Fecha_Sync: new Date(),
     UsuarioULID: 1,
     EmpresaULID: "01HKQM5Z8X9Y2W3V4U5T6S7R8P",
   },
@@ -809,6 +836,7 @@ const mockProductos: Producto[] = [
     CanalesVenta: false,
     EnMenuQR: false,
     Fecha_UltimoCambio: new Date(),
+    Fecha_Sync: new Date(),
     UsuarioULID: 1,
     EmpresaULID: "01HKQM5Z8X9Y2W3V4U5T6S7R8P",
   },
@@ -836,165 +864,139 @@ const mockProductos: Producto[] = [
     CanalesVenta: false,
     EnMenuQR: true,
     Fecha_UltimoCambio: new Date(),
+    Fecha_Sync: new Date(),
     UsuarioULID: 1,
     EmpresaULID: "01HKQM5Z8X9Y2W3V4U5T6S7R8P",
   },
 ]
 
-export async function getProductos(params: SearchProductosInput) {
+export async function getProductos(filters: SearchProductosInput) {
+  await delay(500) // Simular latencia de red
+
   try {
-    const validatedParams = searchProductosSchema.parse(params)
-
-    // Simular filtrado
-    let filteredProductos = [...mockProductos]
-
-    if (validatedParams.search) {
-      const searchTerm = validatedParams.search.toLowerCase()
-      filteredProductos = filteredProductos.filter(
-        (p) =>
-          p.Nombredelproducto.toLowerCase().includes(searchTerm) ||
-          p.Descripcion?.toLowerCase().includes(searchTerm) ||
-          p.ClaveProducto.toLowerCase().includes(searchTerm),
-      )
-    }
-
-    if (validatedParams.tipo) {
-      filteredProductos = filteredProductos.filter((p) => p.TipoProducto === validatedParams.tipo)
-    }
-
-    if (validatedParams.favorito !== undefined) {
-      filteredProductos = filteredProductos.filter((p) => p.Favorito === validatedParams.favorito)
-    }
-
-    if (validatedParams.suspendido !== undefined) {
-      filteredProductos = filteredProductos.filter((p) => p.Suspendido === validatedParams.suspendido)
-    }
-
-    if (validatedParams.grupoId) {
-      filteredProductos = filteredProductos.filter((p) => p.GrupoProductoULID === validatedParams.grupoId)
-    }
-
-    // Simular paginación
-    const total = filteredProductos.length
-    const totalPages = Math.ceil(total / validatedParams.limit)
-    const startIndex = (validatedParams.page - 1) * validatedParams.limit
-    const endIndex = startIndex + validatedParams.limit
-    const productos = filteredProductos.slice(startIndex, endIndex)
-
+    const data = searchProductos(filters)
     return {
       success: true,
-      data: {
-        productos,
-        total,
-        page: validatedParams.page,
-        totalPages,
-        limit: validatedParams.limit,
-      },
+      data,
+      message: "Productos cargados exitosamente",
     }
   } catch (error) {
-    console.error("Error getting productos:", error)
     return {
       success: false,
-      message: "Error al obtener productos",
-      data: {
-        productos: [],
-        total: 0,
-        page: 1,
-        totalPages: 0,
-        limit: 20,
-      },
+      data: null,
+      message: "Error al cargar productos",
     }
   }
 }
 
-export async function createProducto(data: CreateProductoInput) {
-  try {
-    const validatedData = createProductoSchema.parse(data)
+export async function createProducto(data: any) {
+  await delay(800)
 
-    const newProducto: Producto = {
-      ProductoULID: generateULID(),
-      ...validatedData,
-      Fecha_UltimoCambio: new Date(),
-      Fecha_Sync: new Date(),
-      UsuarioULID: 1, // En producción vendría de la sesión
-      EmpresaULID: "01HKQM5Z8X9Y2W3V4U5T6S7R8P", // En producción vendría de la sesión
+  try {
+    // Simular creación de producto
+    const newProducto = {
+      ProductoULID: `01HN${Date.now()}${Math.random().toString(36).substr(2, 9)}`,
+      ClaveProducto: data.claveProducto,
+      Nombredelproducto: data.nombreProducto,
+      Descripcion: data.descripcion,
+      TipoProducto: data.tipoProducto,
+      GrupoProductoId: data.grupoProductoId,
+      UnidadId: data.unidadId,
+      AreaProduccionId: data.areaProduccionId,
+      AlmacenId: data.almacenId,
+      Favorito: false,
+      Suspendido: false,
+      Comedor: data.comedor || false,
+      ADomicilio: data.aDomicilio || false,
+      Mostrador: data.mostrador || false,
+      Enlinea: data.enlinea || false,
+      EnMenuQR: data.enMenuQR || false,
+      FechaCreacion: new Date(),
+      FechaActualizacion: new Date(),
     }
 
-    // Simular guardado en base de datos
-    mockProductos.push(newProducto)
-
-    revalidatePath("/productos")
+    MOCK_PRODUCTOS.push(newProducto)
 
     return {
       success: true,
-      message: "Producto creado exitosamente",
       data: newProducto,
+      message: "Producto creado exitosamente",
     }
   } catch (error) {
-    console.error("Error creating producto:", error)
     return {
       success: false,
+      data: null,
       message: "Error al crear producto",
     }
   }
 }
 
-export async function updateProducto(id: string, data: UpdateProductoInput) {
-  try {
-    const validatedData = updateProductoSchema.parse(data)
+export async function updateProducto(productoULID: string, data: any) {
+  await delay(600)
 
-    const index = mockProductos.findIndex((p) => p.ProductoULID === id)
-    if (index === -1) {
+  try {
+    const productoIndex = MOCK_PRODUCTOS.findIndex((p) => p.ProductoULID === productoULID)
+    if (productoIndex === -1) {
       return {
         success: false,
         message: "Producto no encontrado",
       }
     }
 
-    mockProductos[index] = {
-      ...mockProductos[index],
-      ...validatedData,
-      Fecha_UltimoCambio: new Date(),
+    // Actualizar producto
+    MOCK_PRODUCTOS[productoIndex] = {
+      ...MOCK_PRODUCTOS[productoIndex],
+      ClaveProducto: data.claveProducto,
+      Nombredelproducto: data.nombreProducto,
+      Descripcion: data.descripcion,
+      TipoProducto: data.tipoProducto,
+      GrupoProductoId: data.grupoProductoId,
+      UnidadId: data.unidadId,
+      AreaProduccionId: data.areaProduccionId,
+      AlmacenId: data.almacenId,
+      Comedor: data.comedor || false,
+      ADomicilio: data.aDomicilio || false,
+      Mostrador: data.mostrador || false,
+      Enlinea: data.enlinea || false,
+      EnMenuQR: data.enMenuQR || false,
+      FechaActualizacion: new Date(),
     }
-
-    revalidatePath("/productos")
 
     return {
       success: true,
+      data: MOCK_PRODUCTOS[productoIndex],
       message: "Producto actualizado exitosamente",
-      data: mockProductos[index],
     }
   } catch (error) {
-    console.error("Error updating producto:", error)
     return {
       success: false,
+      data: null,
       message: "Error al actualizar producto",
     }
   }
 }
 
-export async function deleteProducto(id: string) {
+export async function deleteProducto(productoULID: string) {
+  await delay(300)
+
   try {
-    const index = mockProductos.findIndex((p) => p.ProductoULID === id)
-    if (index === -1) {
+    // En una app real, aquí se haría la eliminación en la base de datos
+    const producto = MOCK_PRODUCTOS.find((p) => p.ProductoULID === productoULID)
+    if (!producto) {
       return {
         success: false,
         message: "Producto no encontrado",
       }
     }
 
-    // Eliminación suave - marcar como suspendido
-    mockProductos[index].Suspendido = true
-    mockProductos[index].Fecha_UltimoCambio = new Date()
-
-    revalidatePath("/productos")
+    // Simular soft delete
+    producto.Suspendido = true
 
     return {
       success: true,
-      message: "Producto eliminado exitosamente",
+      message: `Producto "${producto.Nombredelproducto}" eliminado exitosamente`,
     }
   } catch (error) {
-    console.error("Error deleting producto:", error)
     return {
       success: false,
       message: "Error al eliminar producto",
@@ -1002,27 +1004,28 @@ export async function deleteProducto(id: string) {
   }
 }
 
-export async function toggleFavoriteProducto(id: string) {
+export async function toggleFavoriteProducto(productoULID: string) {
+  await delay(200)
+
   try {
-    const index = mockProductos.findIndex((p) => p.ProductoULID === id)
-    if (index === -1) {
+    const producto = MOCK_PRODUCTOS.find((p) => p.ProductoULID === productoULID)
+    if (!producto) {
       return {
         success: false,
         message: "Producto no encontrado",
       }
     }
 
-    mockProductos[index].Favorito = !mockProductos[index].Favorito
-    mockProductos[index].Fecha_UltimoCambio = new Date()
-
-    revalidatePath("/productos")
+    // Toggle favorito
+    producto.Favorito = !producto.Favorito
 
     return {
       success: true,
-      message: mockProductos[index].Favorito ? "Agregado a favoritos" : "Removido de favoritos",
+      message: producto.Favorito
+        ? `"${producto.Nombredelproducto}" agregado a favoritos`
+        : `"${producto.Nombredelproducto}" removido de favoritos`,
     }
   } catch (error) {
-    console.error("Error toggling favorite:", error)
     return {
       success: false,
       message: "Error al actualizar favorito",

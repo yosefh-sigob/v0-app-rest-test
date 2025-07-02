@@ -1,4 +1,5 @@
 import type { Usuario, Producto, Mesa, Cliente, Venta, Reservacion, Encuesta, CampanaSMS } from "@/lib/types"
+import type { Producto as ProductoNew } from "@/interfaces/database"
 
 // Usuarios mock
 export const mockUsuarios: Usuario[] = [
@@ -717,4 +718,207 @@ export const mockDashboardData = {
     { id: 4, mesa: "M12", orden: 1004, total: 95.0, hora: "14:15" },
     { id: 5, mesa: "M05", orden: 1005, total: 240.0, hora: "14:10" },
   ],
+}
+
+// Datos simulados de productos
+export const MOCK_PRODUCTOS: ProductoNew[] = [
+  {
+    ProductoULID: "01HN123456789ABCDEFGHIJ",
+    ClaveProducto: "PLAT001",
+    Nombredelproducto: "Hamburguesa Clásica",
+    Descripcion: "Hamburguesa de carne de res con lechuga, tomate, cebolla y salsa especial",
+    TipoProducto: "Platillo",
+    GrupoProductoId: 1,
+    UnidadId: 1,
+    AreaProduccionId: 1,
+    AlmacenId: 1,
+    Favorito: true,
+    Suspendido: false,
+    Comedor: true,
+    ADomicilio: true,
+    Mostrador: false,
+    Enlinea: true,
+    EnMenuQR: true,
+    FechaCreacion: new Date("2024-01-15"),
+    FechaActualizacion: new Date("2024-01-20"),
+  },
+  {
+    ProductoULID: "01HN123456789ABCDEFGHIK",
+    ClaveProducto: "PLAT002",
+    Nombredelproducto: "Pizza Margherita",
+    Descripcion: "Pizza tradicional con salsa de tomate, mozzarella fresca y albahaca",
+    TipoProducto: "Platillo",
+    GrupoProductoId: 2,
+    UnidadId: 1,
+    AreaProduccionId: 2,
+    AlmacenId: 1,
+    Favorito: false,
+    Suspendido: false,
+    Comedor: true,
+    ADomicilio: true,
+    Mostrador: true,
+    Enlinea: true,
+    EnMenuQR: true,
+    FechaCreacion: new Date("2024-01-16"),
+    FechaActualizacion: new Date("2024-01-21"),
+  },
+  {
+    ProductoULID: "01HN123456789ABCDEFGHIL",
+    ClaveProducto: "BEB001",
+    Nombredelproducto: "Coca Cola",
+    Descripcion: "Refresco de cola 355ml",
+    TipoProducto: "Producto",
+    GrupoProductoId: 3,
+    UnidadId: 2,
+    AreaProduccionId: 3,
+    AlmacenId: 2,
+    Favorito: false,
+    Suspendido: false,
+    Comedor: true,
+    ADomicilio: true,
+    Mostrador: true,
+    Enlinea: false,
+    EnMenuQR: true,
+    FechaCreacion: new Date("2024-01-17"),
+    FechaActualizacion: new Date("2024-01-22"),
+  },
+  {
+    ProductoULID: "01HN123456789ABCDEFGHIM",
+    ClaveProducto: "VINO001",
+    Nombredelproducto: "Vino Tinto Reserva",
+    Descripcion: "Vino tinto de la casa, cosecha 2020",
+    TipoProducto: "Botella",
+    GrupoProductoId: 4,
+    UnidadId: 3,
+    AreaProduccionId: 3,
+    AlmacenId: 2,
+    Favorito: true,
+    Suspendido: false,
+    Comedor: true,
+    ADomicilio: false,
+    Mostrador: true,
+    Enlinea: false,
+    EnMenuQR: true,
+    FechaCreacion: new Date("2024-01-18"),
+    FechaActualizacion: new Date("2024-01-23"),
+  },
+  {
+    ProductoULID: "01HN123456789ABCDEFGHIN",
+    ClaveProducto: "PLAT003",
+    Nombredelproducto: "Ensalada César",
+    Descripcion: "Ensalada fresca con lechuga romana, crutones, parmesano y aderezo césar",
+    TipoProducto: "Platillo",
+    GrupoProductoId: 5,
+    UnidadId: 1,
+    AreaProduccionId: 1,
+    AlmacenId: 1,
+    Favorito: false,
+    Suspendido: true,
+    Comedor: true,
+    ADomicilio: true,
+    Mostrador: false,
+    Enlinea: true,
+    EnMenuQR: false,
+    FechaCreacion: new Date("2024-01-19"),
+    FechaActualizacion: new Date("2024-01-24"),
+  },
+]
+
+// Datos simulados de grupos de productos
+export const MOCK_GRUPOS_PRODUCTOS = [
+  { id: 1, nombre: "Hamburguesas" },
+  { id: 2, nombre: "Pizzas" },
+  { id: 3, nombre: "Bebidas" },
+  { id: 4, nombre: "Vinos" },
+  { id: 5, nombre: "Ensaladas" },
+  { id: 6, nombre: "Postres" },
+  { id: 7, nombre: "Entradas" },
+  { id: 8, nombre: "Platos Principales" },
+]
+
+// Datos simulados de unidades
+export const MOCK_UNIDADES = [
+  { id: 1, nombre: "Pieza", abreviacion: "pza" },
+  { id: 2, nombre: "Litro", abreviacion: "lt" },
+  { id: 3, nombre: "Botella", abreviacion: "bot" },
+  { id: 4, nombre: "Kilogramo", abreviacion: "kg" },
+  { id: 5, nombre: "Gramo", abreviacion: "gr" },
+]
+
+// Datos simulados de áreas de producción
+export const MOCK_AREAS_PRODUCCION = [
+  { id: 1, nombre: "Cocina Principal" },
+  { id: 2, nombre: "Horno de Pizza" },
+  { id: 3, nombre: "Bar" },
+  { id: 4, nombre: "Parrilla" },
+  { id: 5, nombre: "Repostería" },
+]
+
+// Datos simulados de almacenes
+export const MOCK_ALMACENES = [
+  { id: 1, nombre: "Almacén Principal" },
+  { id: 2, nombre: "Bodega de Bebidas" },
+  { id: 3, nombre: "Cámara Fría" },
+  { id: 4, nombre: "Despensa Seca" },
+]
+
+// Función para simular búsqueda y filtrado
+export function searchProductos(filters: {
+  search?: string
+  tipo?: string
+  favorito?: boolean
+  suspendido?: boolean
+  grupoId?: number
+  page?: number
+  limit?: number
+}) {
+  let filteredProducts = [...MOCK_PRODUCTOS]
+
+  // Filtro por búsqueda
+  if (filters.search) {
+    const searchTerm = filters.search.toLowerCase()
+    filteredProducts = filteredProducts.filter(
+      (producto) =>
+        producto.Nombredelproducto.toLowerCase().includes(searchTerm) ||
+        producto.ClaveProducto.toLowerCase().includes(searchTerm) ||
+        producto.Descripcion?.toLowerCase().includes(searchTerm),
+    )
+  }
+
+  // Filtro por tipo
+  if (filters.tipo) {
+    filteredProducts = filteredProducts.filter((producto) => producto.TipoProducto === filters.tipo)
+  }
+
+  // Filtro por favorito
+  if (filters.favorito !== undefined) {
+    filteredProducts = filteredProducts.filter((producto) => producto.Favorito === filters.favorito)
+  }
+
+  // Filtro por suspendido
+  if (filters.suspendido !== undefined) {
+    filteredProducts = filteredProducts.filter((producto) => producto.Suspendido === filters.suspendido)
+  }
+
+  // Filtro por grupo
+  if (filters.grupoId) {
+    filteredProducts = filteredProducts.filter((producto) => producto.GrupoProductoId === filters.grupoId)
+  }
+
+  // Paginación
+  const page = filters.page || 1
+  const limit = filters.limit || 20
+  const total = filteredProducts.length
+  const totalPages = Math.ceil(total / limit)
+  const startIndex = (page - 1) * limit
+  const endIndex = startIndex + limit
+  const productos = filteredProducts.slice(startIndex, endIndex)
+
+  return {
+    productos,
+    total,
+    page,
+    totalPages,
+    limit,
+  }
 }

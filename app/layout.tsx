@@ -8,8 +8,8 @@ import { Toaster } from "@/components/ui/sonner"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "RestApp - Sistema de Gestión de Restaurantes",
-  description: "Sistema completo para la gestión de restaurantes con múltiples funcionalidades",
+  title: "RestApp - Sistema de Gestión para Restaurantes",
+  description: "Sistema completo de gestión para restaurantes con múltiples módulos",
     generator: 'v0.dev'
 }
 
@@ -23,17 +23,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <LicenseProvider>
           {children}
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              duration: 4000,
-              style: {
-                background: "white",
-                border: "1px solid #e2e8f0",
-                color: "#1e293b",
-              },
-            }}
-          />
+          <Toaster />
         </LicenseProvider>
       </body>
     </html>

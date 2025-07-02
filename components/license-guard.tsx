@@ -1,26 +1,26 @@
 "use client"
 
 import type { ReactNode } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Lock, Crown, ArrowUp } from "lucide-react"
 import { useLicense } from "@/contexts/license-context"
-import { hasAccess, FEATURES, getUpgradeMessage, getLicenseColor } from "@/utils/license"
+import { hasAccess, FEATURES, getUpgradeMessage } from "@/utils/license"
 
 interface LicenseGuardProps {
   feature: string
   children: ReactNode
-  fallback?: ReactNode
-  showUpgradeCard?: boolean
+  fallback?: ReactNode | null
+  showUpgrade?: boolean
 }
 
-export function LicenseGuard({ feature, children, fallback, showUpgradeCard = true }: LicenseGuardProps) {
-  const { currentLicense, setLicense } = useLicense()
-  const featureConfig = FEATURES[feature]
+export function LicenseGuard({ feature, children, fallback, showUpgrade = true }: LicenseGuardProps) {
+  const { currentLicense } = useLicense()
 
+  const featureConfig = FEATURES[feature]
   if (!featureConfig) {
-    console.warn(`Feature "${feature}" not found in license configuration`)
+    // Si no existe la configuración de la feature, permitir acceso
     return <>{children}</>
   }
 
@@ -30,49 +30,57 @@ export function LicenseGuard({ feature, children, fallback, showUpgradeCard = tr
     return <>{children}</>
   }
 
+  // Si se especifica fallback como null, no mostrar nada
+  if (fallback === null) {
+    return null
+  }
+
+  // Si hay un fallback personalizado, usarlo
   if (fallback !== undefined) {
     return <>{fallback}</>
   }
 
-  if (!showUpgradeCard) {
+  // Mostrar mensaje de upgrade por defecto
+  if (!showUpgrade) {
     return null
   }
 
   return (
-    <Card className="border-2 border-dashed border-orange-200 bg-orange-50/30">
-      <CardHeader className="text-center">
-        <div className="mx-auto w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mb-2">
-          <Lock className="h-6 w-6 text-orange-600" />
-        </div>
-        <CardTitle className="text-lg text-orange-800">Funcionalidad Bloqueada</CardTitle>
-        <CardDescription className="text-orange-700">
-          {getUpgradeMessage(featureConfig.name, featureConfig.requiredLicense)}
-        </CardDescription>
+    <Card className="border-2 border-dashed border-amber-200 bg-amber-50/50">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg flex items-center gap-2 text-amber-800">
+          <Lock className="h-5 w-5" />
+          Funcionalidad Bloqueada
+        </CardTitle>
       </CardHeader>
-      <CardContent className="text-center space-y-4">
-        <div className="flex items-center justify-center gap-2">
-          <Badge variant="outline" className="text-gray-600">
-            Plan Actual: {currentLicense}
-          </Badge>
-          <ArrowUp className="h-4 w-4 text-orange-500" />
-          <Badge className={`${getLicenseColor(featureConfig.requiredLicense)} text-white`}>
-            Requiere: {featureConfig.requiredLicense}
-          </Badge>
-        </div>
+      <CardContent>
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="border-amber-300 text-amber-700">
+              <Crown className="h-3 w-3 mr-1" />
+              Requiere: {featureConfig.requiredLicense}
+            </Badge>
+            <Badge variant="outline" className="border-gray-300 text-gray-600">
+              Actual: {currentLicense}
+            </Badge>
+          </div>
 
-        <div className="flex gap-2 justify-center">
+          <p className="text-sm text-amber-700">
+            {getUpgradeMessage(featureConfig.name, featureConfig.requiredLicense)}
+          </p>
+
           <Button
-            variant="outline"
             size="sm"
-            onClick={() => setLicense(featureConfig.requiredLicense)}
-            className="text-orange-600 border-orange-200 hover:bg-orange-50"
+            className="bg-amber-600 hover:bg-amber-700 text-white"
+            onClick={() => {
+              // En una app real, esto abriría el modal de upgrade o redirigiría a billing
+              console.log(`Upgrade to ${featureConfig.requiredLicense} requested`)
+            }}
           >
-            <Crown className="h-4 w-4 mr-1" />
-            Probar {featureConfig.requiredLicense}
+            <ArrowUp className="h-4 w-4 mr-2" />
+            Actualizar a {featureConfig.requiredLicense}
           </Button>
         </div>
-
-        <p className="text-xs text-muted-foreground">En un entorno real, esto te llevaría a la página de facturación</p>
       </CardContent>
     </Card>
   )

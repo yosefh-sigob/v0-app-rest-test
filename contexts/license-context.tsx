@@ -1,8 +1,7 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
-
-type LicenseType = "Gratis" | "Lite" | "Pro" | "Franquicia"
+import type { LicenseType } from "@/utils/license"
 
 interface LicenseContextType {
   currentLicense: LicenseType
@@ -11,14 +10,18 @@ interface LicenseContextType {
 
 const LicenseContext = createContext<LicenseContextType | undefined>(undefined)
 
-export function LicenseProvider({ children }: { children: ReactNode }) {
+interface LicenseProviderProps {
+  children: ReactNode
+}
+
+export function LicenseProvider({ children }: LicenseProviderProps) {
   const [currentLicense, setCurrentLicense] = useState<LicenseType>("Gratis")
 
-  // Cargar licencia desde localStorage al inicializar
   useEffect(() => {
-    const savedLicense = localStorage.getItem("restaurant-license") as LicenseType
+    // Cargar licencia desde localStorage al montar el componente
+    const savedLicense = localStorage.getItem("restaurant-license")
     if (savedLicense && ["Gratis", "Lite", "Pro", "Franquicia"].includes(savedLicense)) {
-      setCurrentLicense(savedLicense)
+      setCurrentLicense(savedLicense as LicenseType)
     }
   }, [])
 
