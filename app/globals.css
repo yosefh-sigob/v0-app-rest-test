@@ -1,109 +1,186 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-@layer base {
-  :root {
-    /* Paleta de colores cálida para restaurante */
-    --background: 44 20% 97%; /* Crema muy suave */
-    --foreground: 25 25% 15%; /* Marrón oscuro */
-    --card: 44 30% 98%; /* Crema para tarjetas */
-    --card-foreground: 25 25% 15%;
-    --popover: 44 30% 98%;
-    --popover-foreground: 25 25% 15%;
-    --primary: 25 95% 53%; /* Naranja terracota */
-    --primary-foreground: 44 20% 97%;
-    --secondary: 42 87% 55%; /* Amarillo dorado */
-    --secondary-foreground: 25 25% 15%;
-    --muted: 44 20% 94%; /* Crema más oscura */
-    --muted-foreground: 25 15% 45%;
-    --accent: 42 87% 55%;
-    --accent-foreground: 25 25% 15%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 44 20% 97%;
-    --border: 44 20% 88%;
-    --input: 44 20% 88%;
-    --ring: 25 95% 53%;
-    --radius: 0.75rem;
-  }
+:root {
+  /* Paleta de colores del restaurante */
+  --restaurant-primary: #d97706; /* Naranja terracota */
+  --restaurant-primary-dark: #b45309;
+  --restaurant-primary-light: #f59e0b;
 
-  .dark {
-    --background: 25 25% 8%; /* Marrón muy oscuro */
-    --foreground: 44 20% 95%;
-    --card: 25 25% 10%;
-    --card-foreground: 44 20% 95%;
-    --popover: 25 25% 10%;
-    --popover-foreground: 44 20% 95%;
-    --primary: 25 95% 53%;
-    --primary-foreground: 44 20% 97%;
-    --secondary: 42 87% 45%;
-    --secondary-foreground: 44 20% 95%;
-    --muted: 25 20% 15%;
-    --muted-foreground: 44 15% 65%;
-    --accent: 42 87% 45%;
-    --accent-foreground: 44 20% 95%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 44 20% 97%;
-    --border: 25 20% 20%;
-    --input: 25 20% 20%;
-    --ring: 25 95% 53%;
-  }
+  --restaurant-secondary: #059669; /* Verde esmeralda */
+  --restaurant-secondary-dark: #047857;
+  --restaurant-secondary-light: #10b981;
+
+  --restaurant-accent: #fbbf24; /* Amarillo dorado */
+  --restaurant-accent-dark: #f59e0b;
+  --restaurant-accent-light: #fcd34d;
+
+  --restaurant-neutral: #3c2e26; /* Marrón oscuro */
+  --restaurant-neutral-light: #6b5b73;
+  --restaurant-neutral-lighter: #9ca3af;
+
+  --restaurant-background: #fefcf8; /* Crema suave */
+  --restaurant-background-secondary: #faf8f3;
+  --restaurant-surface: #ffffff;
+
+  --restaurant-success: #10b981;
+  --restaurant-warning: #f59e0b;
+  --restaurant-error: #ef4444;
+  --restaurant-info: #3b82f6;
 }
 
 @layer base {
   * {
     @apply border-border;
   }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-[var(--restaurant-background)] text-[var(--restaurant-neutral)] font-sans;
+    background-image: radial-gradient(circle at 25% 25%, rgba(217, 119, 6, 0.05) 0%, transparent 50%),
+      radial-gradient(circle at 75% 75%, rgba(251, 191, 36, 0.05) 0%, transparent 50%);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply text-[var(--restaurant-neutral)];
   }
 }
 
 @layer components {
-  /* Gradiente principal del restaurante */
-  .restaurant-gradient {
-    @apply bg-gradient-to-r from-orange-600 via-orange-500 to-amber-500;
+  /* Botones principales */
+  .btn-primary {
+    @apply bg-gradient-to-r from-[var(--restaurant-primary)] to-[var(--restaurant-primary-light)] 
+           text-white hover:from-[var(--restaurant-primary-dark)] hover:to-[var(--restaurant-primary)]
+           transition-all duration-200 shadow-lg hover:shadow-xl;
   }
 
-  /* Gradiente suave para fondos */
-  .restaurant-bg {
-    @apply bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50;
+  .btn-secondary {
+    @apply bg-[var(--restaurant-secondary)] text-white hover:bg-[var(--restaurant-secondary-dark)]
+           transition-colors duration-200;
   }
 
-  /* Tarjetas con estilo restaurante */
-  .restaurant-card {
-    @apply bg-white border border-orange-100 shadow-lg shadow-orange-100/20 hover:shadow-xl hover:shadow-orange-200/30 transition-all duration-300;
-  }
-
-  /* Sidebar del restaurante */
-  .restaurant-sidebar {
-    @apply bg-gradient-to-b from-amber-900 via-orange-900 to-red-900 text-amber-50;
+  /* Tarjetas */
+  .card-restaurant {
+    @apply bg-[var(--restaurant-surface)] border border-orange-100 
+           shadow-lg shadow-orange-100/50 hover:shadow-xl hover:shadow-orange-200/50
+           transition-all duration-300 rounded-lg;
   }
 
   /* Estados de mesa */
   .mesa-disponible {
-    @apply bg-green-50 border-green-200 text-green-800;
+    @apply bg-green-500 hover:bg-green-600 text-white;
   }
 
   .mesa-ocupada {
-    @apply bg-red-50 border-red-200 text-red-800;
+    @apply bg-red-500 hover:bg-red-600 text-white;
   }
 
   .mesa-reservada {
-    @apply bg-amber-50 border-amber-200 text-amber-800;
+    @apply bg-yellow-500 hover:bg-yellow-600 text-white;
   }
 
   .mesa-limpieza {
-    @apply bg-blue-50 border-blue-200 text-blue-800;
+    @apply bg-blue-500 hover:bg-blue-600 text-white;
   }
 
-  /* Botones temáticos */
-  .btn-restaurant {
-    @apply restaurant-gradient text-white hover:opacity-90 transition-opacity;
+  /* Sidebar */
+  .sidebar-restaurant {
+    @apply bg-gradient-to-b from-[var(--restaurant-neutral)] to-[var(--restaurant-neutral-light)]
+           text-white border-r border-orange-200;
   }
 
-  /* Header con estilo */
-  .restaurant-header {
-    @apply bg-white border-b border-orange-100 shadow-sm;
+  /* Header */
+  .header-restaurant {
+    @apply bg-[var(--restaurant-surface)] border-b border-orange-200 
+           shadow-sm backdrop-blur-sm;
+  }
+
+  /* Gradientes de fondo */
+  .bg-gradient-restaurant {
+    background: linear-gradient(135deg, var(--restaurant-background) 0%, var(--restaurant-background-secondary) 100%);
+  }
+
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, var(--restaurant-primary) 0%, var(--restaurant-primary-light) 100%);
+  }
+
+  /* Animaciones */
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Scrollbar personalizado */
+  .scrollbar-restaurant::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-restaurant::-webkit-scrollbar-track {
+    background: var(--restaurant-background);
+  }
+
+  .scrollbar-restaurant::-webkit-scrollbar-thumb {
+    background: var(--restaurant-primary);
+    border-radius: 3px;
+  }
+
+  .scrollbar-restaurant::-webkit-scrollbar-thumb:hover {
+    background: var(--restaurant-primary-dark);
+  }
+}
+
+@layer utilities {
+  .text-restaurant-primary {
+    color: var(--restaurant-primary);
+  }
+
+  .text-restaurant-secondary {
+    color: var(--restaurant-secondary);
+  }
+
+  .text-restaurant-accent {
+    color: var(--restaurant-accent);
+  }
+
+  .bg-restaurant-primary {
+    background-color: var(--restaurant-primary);
+  }
+
+  .bg-restaurant-secondary {
+    background-color: var(--restaurant-secondary);
+  }
+
+  .bg-restaurant-surface {
+    background-color: var(--restaurant-surface);
+  }
+
+  .border-restaurant-primary {
+    border-color: var(--restaurant-primary);
   }
 }
