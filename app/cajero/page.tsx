@@ -2,445 +2,285 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import {
   CreditCard,
   DollarSign,
   Receipt,
-  Clock,
-  Calculator,
-  ArrowLeft,
-  Users,
   TrendingUp,
-  Banknote,
-  Printer,
-  FileText,
+  Home,
+  ChefHat,
+  Bell,
+  Search,
+  Clock,
   CheckCircle,
-  AlertCircle,
 } from "lucide-react"
 
+// Datos simulados para el cajero
+const cajeroStats = {
+  ventasHoy: 3450.75,
+  transacciones: 47,
+  ticketPromedio: 73.42,
+  efectivo: 1250.3,
+}
+
+const cuentasPendientes = [
+  {
+    id: 1,
+    mesa: "Mesa 1",
+    cliente: "Juan Pérez",
+    total: 125.5,
+    items: 4,
+    tiempo: "45 min",
+    mesero: "Carlos",
+  },
+  {
+    id: 2,
+    mesa: "Mesa 5",
+    cliente: "María García",
+    total: 89.25,
+    items: 3,
+    tiempo: "30 min",
+    mesero: "Ana",
+  },
+  {
+    id: 3,
+    mesa: "Mesa 12",
+    cliente: "Pedro López",
+    total: 234.75,
+    items: 6,
+    tiempo: "1h 15min",
+    mesero: "Carlos",
+  },
+  {
+    id: 4,
+    mesa: "Mesa 8",
+    cliente: "Laura Martín",
+    total: 67.5,
+    items: 2,
+    tiempo: "25 min",
+    mesero: "Ana",
+  },
+]
+
+const transaccionesRecientes = [
+  { id: 1, mesa: "Mesa 3", total: 156.75, metodo: "Tarjeta", hora: "14:32", estado: "completada" },
+  { id: 2, mesa: "Mesa 7", total: 89.5, metodo: "Efectivo", hora: "14:28", estado: "completada" },
+  { id: 3, mesa: "Mesa 2", total: 203.25, metodo: "Tarjeta", hora: "14:15", estado: "completada" },
+  { id: 4, mesa: "Mesa 9", total: 45.0, metodo: "Efectivo", hora: "14:10", estado: "completada" },
+]
+
 export default function CajeroPage() {
-  const [selectedPayment, setSelectedPayment] = useState<string>("")
-  const [cashAmount, setCashAmount] = useState<string>("")
+  const [selectedTab, setSelectedTab] = useState("cuentas")
+  const [searchTerm, setSearchTerm] = useState("")
 
-  const ventasPendientes = [
-    {
-      id: 1,
-      mesa: "M01",
-      total: 450.0,
-      mesero: "Juan Pérez",
-      tiempo: "15 min",
-      items: ["Pasta Carbonara", "Pizza Margherita", "Ensalada César", "Agua"],
-      comensales: 4,
-    },
-    {
-      id: 2,
-      mesa: "M07",
-      total: 890.5,
-      mesero: "María García",
-      tiempo: "35 min",
-      items: ["Paella Valenciana", "Sangría", "Pan de Ajo", "Flan", "Café"],
-      comensales: 6,
-    },
-    {
-      id: 3,
-      mesa: "M12",
-      total: 320.0,
-      mesero: "Carlos López",
-      tiempo: "45 min",
-      items: ["Hamburguesa", "Papas Fritas", "Refresco"],
-      comensales: 3,
-    },
-    {
-      id: 4,
-      mesa: "Mostrador",
-      total: 125.0,
-      mesero: "Venta directa",
-      tiempo: "2 min",
-      items: ["Café", "Croissant"],
-      comensales: 1,
-    },
-  ]
-
-  const ventasDelDia = [
-    { hora: "14:30", mesa: "M05", total: 280.5, metodo: "Tarjeta", mesero: "Ana García" },
-    { hora: "14:15", mesa: "M02", total: 156.0, metodo: "Efectivo", mesero: "Juan Pérez" },
-    { hora: "13:45", mesa: "M08", total: 420.75, metodo: "Tarjeta", mesero: "María García" },
-    { hora: "13:30", mesa: "Mostrador", total: 85.0, metodo: "Efectivo", mesero: "Venta directa" },
-  ]
-
-  const totalPendiente = ventasPendientes.reduce((sum, venta) => sum + venta.total, 0)
-  const ventasEfectivo = 2100.0
-  const ventasTarjeta = 3140.5
-  const totalVentas = ventasEfectivo + ventasTarjeta
+  const filteredCuentas = cuentasPendientes.filter(
+    (cuenta) =>
+      cuenta.mesa.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      cuenta.cliente.toLowerCase().includes(searchTerm.toLowerCase()),
+  )
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50/30 to-amber-50/30">
-      {/* Header */}
-      <div className="restaurant-gradient text-white p-6">
-        <div className="container mx-auto">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link href="/">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-                >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Volver al Inicio
-                </Button>
-              </Link>
+    <div className="min-h-screen restaurant-bg">
+      {/* Header específico para cajero */}
+      <header className="restaurant-header px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <Link href="/">
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-orange-200 text-orange-600 hover:bg-orange-50 bg-transparent"
+              >
+                <Home className="h-4 w-4 mr-2" />
+                Volver al Inicio
+              </Button>
+            </Link>
+            <div className="h-6 w-px bg-orange-200" />
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                <CreditCard className="h-5 w-5 text-green-600" />
+              </div>
               <div>
-                <h1 className="text-3xl font-bold">Punto de Venta</h1>
-                <p className="text-orange-100">Cajero Principal - Turno Vespertino</p>
+                <h1 className="text-2xl font-bold text-gray-900">Panel de Cajero</h1>
+                <p className="text-sm text-gray-600">Ana Rodríguez - Turno Día</p>
               </div>
             </div>
-            <div className="text-right">
-              <p className="text-sm text-orange-100">Caja abierta</p>
-              <p className="text-lg font-semibold">14:00 - ${totalVentas.toLocaleString()}</p>
-            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button variant="ghost" size="sm" className="relative">
+              <Bell className="h-5 w-5 text-gray-600" />
+              <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full"></span>
+            </Button>
+            <Link href="/dashboard">
+              <Button variant="outline" size="sm">
+                <ChefHat className="h-4 w-4 mr-2" />
+                Dashboard Completo
+              </Button>
+            </Link>
           </div>
         </div>
-      </div>
+      </header>
 
-      <div className="container mx-auto p-6 space-y-8">
-        {/* Stats Cards */}
-        <div className="grid gap-6 md:grid-cols-4">
+      <div className="container mx-auto px-6 py-8">
+        {/* Estadísticas del cajero */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card className="restaurant-card">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Ventas del Turno</CardTitle>
+              <CardTitle className="text-sm font-medium">Ventas Hoy</CardTitle>
               <DollarSign className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900">${totalVentas.toLocaleString()}</div>
-              <p className="text-xs text-green-600 flex items-center">
-                <TrendingUp className="h-3 w-3 mr-1" />
-                +15% vs ayer
-              </p>
+              <div className="text-2xl font-bold text-green-600">${cajeroStats.ventasHoy}</div>
+              <p className="text-xs text-muted-foreground">+15% vs ayer</p>
             </CardContent>
           </Card>
 
           <Card className="restaurant-card">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Efectivo</CardTitle>
-              <Banknote className="h-4 w-4 text-orange-600" />
+              <CardTitle className="text-sm font-medium">Transacciones</CardTitle>
+              <Receipt className="h-4 w-4 text-blue-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900">${ventasEfectivo.toLocaleString()}</div>
-              <p className="text-xs text-gray-600">{Math.round((ventasEfectivo / totalVentas) * 100)}% del total</p>
+              <div className="text-2xl font-bold text-blue-600">{cajeroStats.transacciones}</div>
+              <p className="text-xs text-muted-foreground">4 pendientes</p>
             </CardContent>
           </Card>
 
           <Card className="restaurant-card">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Tarjetas</CardTitle>
-              <CreditCard className="h-4 w-4 text-blue-600" />
+              <CardTitle className="text-sm font-medium">Ticket Promedio</CardTitle>
+              <TrendingUp className="h-4 w-4 text-purple-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900">${ventasTarjeta.toLocaleString()}</div>
-              <p className="text-xs text-gray-600">{Math.round((ventasTarjeta / totalVentas) * 100)}% del total</p>
+              <div className="text-2xl font-bold text-purple-600">${cajeroStats.ticketPromedio}</div>
+              <p className="text-xs text-muted-foreground">+8% vs promedio</p>
             </CardContent>
           </Card>
 
           <Card className="restaurant-card">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">Cuentas Pendientes</CardTitle>
-              <Clock className="h-4 w-4 text-purple-600" />
+              <CardTitle className="text-sm font-medium">Efectivo en Caja</CardTitle>
+              <CreditCard className="h-4 w-4 text-orange-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900">{ventasPendientes.length}</div>
-              <p className="text-xs text-gray-600">${totalPendiente.toLocaleString()} total</p>
+              <div className="text-2xl font-bold text-orange-600">${cajeroStats.efectivo}</div>
+              <p className="text-xs text-muted-foreground">36% del total</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Payment Processing */}
-          <div className="lg:col-span-2">
-            <Tabs defaultValue="pendientes" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="pendientes">Cuentas Pendientes</TabsTrigger>
-                <TabsTrigger value="procesar">Procesar Pago</TabsTrigger>
-                <TabsTrigger value="historial">Historial</TabsTrigger>
-              </TabsList>
+        {/* Tabs para diferentes vistas */}
+        <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="cuentas">Cuentas Pendientes</TabsTrigger>
+            <TabsTrigger value="transacciones">Transacciones</TabsTrigger>
+          </TabsList>
 
-              <TabsContent value="pendientes" className="space-y-4">
-                <Card className="restaurant-card">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Receipt className="h-5 w-5 text-orange-600" />
-                      Cuentas por Cobrar
-                    </CardTitle>
-                    <CardDescription>Mesas listas para procesar el pago</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {ventasPendientes.map((venta) => (
-                        <div
-                          key={venta.id}
-                          className="p-4 border rounded-lg bg-white hover:shadow-md transition-shadow"
-                        >
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-2">
-                                <Badge variant="outline" className="font-medium">
-                                  {venta.mesa}
-                                </Badge>
-                                <div className="flex items-center text-sm text-gray-600">
-                                  <Users className="h-4 w-4 mr-1" />
-                                  {venta.comensales} personas
-                                </div>
-                                <div className="flex items-center text-sm text-gray-600">
-                                  <Clock className="h-4 w-4 mr-1" />
-                                  {venta.tiempo}
-                                </div>
-                              </div>
+          <TabsContent value="cuentas" className="space-y-6">
+            {/* Buscador */}
+            <Card className="restaurant-card">
+              <CardContent className="p-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    placeholder="Buscar por mesa o cliente..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </CardContent>
+            </Card>
 
-                              <p className="text-sm text-gray-600 mb-2">Mesero: {venta.mesero}</p>
-
-                              <div className="text-sm text-gray-600 mb-3">
-                                <p className="font-medium mb-1">Orden:</p>
-                                <div className="flex flex-wrap gap-1">
-                                  {venta.items.map((item, index) => (
-                                    <Badge key={index} variant="secondary" className="text-xs">
-                                      {item}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="text-right ml-4">
-                              <div className="text-2xl font-bold text-gray-900 mb-2">${venta.total.toFixed(2)}</div>
-                              <div className="space-y-2">
-                                <Button
-                                  size="sm"
-                                  className="w-full restaurant-gradient text-white"
-                                  onClick={() => setSelectedPayment(venta.id.toString())}
-                                >
-                                  <CreditCard className="h-4 w-4 mr-2" />
-                                  Cobrar
-                                </Button>
-                                <Button variant="outline" size="sm" className="w-full bg-transparent">
-                                  <Receipt className="h-4 w-4 mr-2" />
-                                  Ver Cuenta
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
+            {/* Lista de cuentas pendientes */}
+            <div className="space-y-4">
+              {filteredCuentas.map((cuenta) => (
+                <Card key={cuenta.id} className="restaurant-card">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                          <Receipt className="h-6 w-6 text-orange-600" />
                         </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="procesar" className="space-y-4">
-                <Card className="restaurant-card">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Calculator className="h-5 w-5 text-orange-600" />
-                      Procesar Pago
-                    </CardTitle>
-                    <CardDescription>Selecciona el método de pago</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    {selectedPayment && (
-                      <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
-                        <p className="font-medium text-orange-800">
-                          Procesando pago para:{" "}
-                          {ventasPendientes.find((v) => v.id.toString() === selectedPayment)?.mesa}
-                        </p>
-                        <p className="text-2xl font-bold text-orange-900">
-                          ${ventasPendientes.find((v) => v.id.toString() === selectedPayment)?.total.toFixed(2)}
-                        </p>
-                      </div>
-                    )}
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <Button
-                        variant="outline"
-                        className="h-20 flex-col bg-transparent hover:bg-green-50 border-green-200"
-                      >
-                        <Banknote className="h-8 w-8 mb-2 text-green-600" />
-                        <span>Efectivo</span>
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="h-20 flex-col bg-transparent hover:bg-blue-50 border-blue-200"
-                      >
-                        <CreditCard className="h-8 w-8 mb-2 text-blue-600" />
-                        <span>Tarjeta</span>
-                      </Button>
-                    </div>
-
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="cash-amount">Monto recibido (Efectivo)</Label>
-                        <Input
-                          id="cash-amount"
-                          type="number"
-                          placeholder="0.00"
-                          value={cashAmount}
-                          onChange={(e) => setCashAmount(e.target.value)}
-                          className="text-lg"
-                        />
-                      </div>
-
-                      {cashAmount && selectedPayment && (
-                        <div className="p-4 bg-gray-50 rounded-lg">
-                          <div className="flex justify-between items-center">
-                            <span>Total a pagar:</span>
-                            <span className="font-bold">
-                              ${ventasPendientes.find((v) => v.id.toString() === selectedPayment)?.total.toFixed(2)}
+                        <div>
+                          <h3 className="font-semibold text-lg">{cuenta.mesa}</h3>
+                          <p className="text-sm text-gray-600">{cuenta.cliente}</p>
+                          <div className="flex items-center space-x-4 mt-1 text-xs text-gray-500">
+                            <span className="flex items-center">
+                              <Clock className="h-3 w-3 mr-1" />
+                              {cuenta.tiempo}
                             </span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span>Recibido:</span>
-                            <span>${Number.parseFloat(cashAmount || "0").toFixed(2)}</span>
-                          </div>
-                          <div className="flex justify-between items-center font-bold text-lg border-t pt-2">
-                            <span>Cambio:</span>
-                            <span className="text-green-600">
-                              $
-                              {Math.max(
-                                0,
-                                Number.parseFloat(cashAmount || "0") -
-                                  (ventasPendientes.find((v) => v.id.toString() === selectedPayment)?.total || 0),
-                              ).toFixed(2)}
-                            </span>
+                            <span>Mesero: {cuenta.mesero}</span>
+                            <span>{cuenta.items} items</span>
                           </div>
                         </div>
-                      )}
-
-                      <Button className="w-full restaurant-gradient text-white" size="lg">
-                        <CheckCircle className="h-5 w-5 mr-2" />
-                        Confirmar Pago
-                      </Button>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-green-600 mb-2">${cuenta.total}</div>
+                        <div className="space-x-2">
+                          <Button size="sm" className="restaurant-gradient text-white">
+                            Procesar Pago
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            Ver Detalles
+                          </Button>
+                        </div>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
-              </TabsContent>
+              ))}
+            </div>
+          </TabsContent>
 
-              <TabsContent value="historial" className="space-y-4">
-                <Card className="restaurant-card">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <FileText className="h-5 w-5 text-orange-600" />
-                      Ventas del Día
-                    </CardTitle>
-                    <CardDescription>Historial de transacciones completadas</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {ventasDelDia.map((venta, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <div className="flex items-center gap-3">
-                            <div className="text-sm">
-                              <p className="font-medium">{venta.mesa}</p>
-                              <p className="text-gray-600">{venta.mesero}</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-4">
-                            <Badge
-                              variant="outline"
-                              className={
-                                venta.metodo === "Efectivo"
-                                  ? "border-green-500 text-green-700"
-                                  : "border-blue-500 text-blue-700"
-                              }
-                            >
-                              {venta.metodo}
-                            </Badge>
-                            <div className="text-right">
-                              <p className="font-bold">${venta.total.toFixed(2)}</p>
-                              <p className="text-xs text-gray-500">{venta.hora}</p>
-                            </div>
-                          </div>
+          <TabsContent value="transacciones" className="space-y-6">
+            <div className="space-y-4">
+              {transaccionesRecientes.map((transaccion) => (
+                <Card key={transaccion.id} className="restaurant-card">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                          <CheckCircle className="h-5 w-5 text-green-600" />
                         </div>
-                      ))}
+                        <div>
+                          <h3 className="font-semibold">{transaccion.mesa}</h3>
+                          <p className="text-sm text-gray-600">
+                            {transaccion.metodo} - {transaccion.hora}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-xl font-bold text-green-600">${transaccion.total}</div>
+                        <Badge className="bg-green-100 text-green-800 mt-1">{transaccion.estado}</Badge>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
-              </TabsContent>
-            </Tabs>
-          </div>
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Quick Actions */}
-            <Card className="restaurant-card">
-              <CardHeader>
-                <CardTitle className="text-lg">Acciones Rápidas</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button className="w-full justify-start restaurant-gradient text-white">
-                  <Calculator className="h-4 w-4 mr-2" />
-                  Venta Mostrador
+        {/* Acceso rápido al POS */}
+        <div className="mt-8">
+          <Card className="restaurant-card">
+            <CardContent className="p-6 text-center">
+              <h3 className="text-lg font-semibold mb-2">¿Necesitas procesar una venta directa?</h3>
+              <p className="text-gray-600 mb-4">Accede al punto de venta para transacciones rápidas</p>
+              <Link href="/ventas/pos">
+                <Button size="lg" className="restaurant-gradient text-white">
+                  <CreditCard className="h-5 w-5 mr-2" />
+                  Abrir Punto de Venta
                 </Button>
-                <Button variant="outline" className="w-full justify-start bg-transparent">
-                  <Printer className="h-4 w-4 mr-2" />
-                  Reimprimir Ticket
-                </Button>
-                <Button variant="outline" className="w-full justify-start bg-transparent">
-                  <DollarSign className="h-4 w-4 mr-2" />
-                  Corte de Caja
-                </Button>
-                <Button variant="outline" className="w-full justify-start bg-transparent">
-                  <FileText className="h-4 w-4 mr-2" />
-                  Reporte de Ventas
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Cash Register Status */}
-            <Card className="restaurant-card">
-              <CardHeader>
-                <CardTitle className="text-lg">Estado de Caja</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Efectivo en caja:</span>
-                  <span className="font-bold text-green-600">${ventasEfectivo.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Transacciones:</span>
-                  <span className="font-bold">23</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Promedio por venta:</span>
-                  <span className="font-bold">${Math.round(totalVentas / 23)}</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Alerts */}
-            <Card className="restaurant-card">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <AlertCircle className="h-5 w-5 text-amber-600" />
-                  Alertas
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                  <p className="text-sm font-medium text-amber-800">Cambio Bajo</p>
-                  <p className="text-xs text-amber-600">Solicitar cambio de billetes pequeños</p>
-                </div>
-                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                  <p className="text-sm font-medium text-green-800">Meta Alcanzada</p>
-                  <p className="text-xs text-green-600">Ventas superaron la meta diaria</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+              </Link>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

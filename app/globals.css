@@ -5,48 +5,48 @@
 @layer base {
   :root {
     /* Paleta de colores cálida para restaurante */
-    --background: 254 252 248; /* Crema suave */
-    --foreground: 60 46 38; /* Marrón oscuro */
-    --card: 255 255 255; /* Blanco puro */
-    --card-foreground: 60 46 38;
-    --popover: 255 255 255;
-    --popover-foreground: 60 46 38;
-    --primary: 217 119 6; /* Naranja terracota */
-    --primary-foreground: 255 255 255;
-    --secondary: 251 191 36; /* Amarillo dorado */
-    --secondary-foreground: 60 46 38;
-    --muted: 249 245 235; /* Beige muy claro */
-    --muted-foreground: 120 113 108;
-    --accent: 254 215 170; /* Melocotón suave */
-    --accent-foreground: 60 46 38;
-    --destructive: 220 38 38;
-    --destructive-foreground: 255 255 255;
-    --border: 231 229 228;
-    --input: 255 255 255;
-    --ring: 217 119 6;
+    --background: 44 20% 97%; /* Crema muy suave */
+    --foreground: 25 25% 15%; /* Marrón oscuro */
+    --card: 44 30% 98%; /* Crema para tarjetas */
+    --card-foreground: 25 25% 15%;
+    --popover: 44 30% 98%;
+    --popover-foreground: 25 25% 15%;
+    --primary: 25 95% 53%; /* Naranja terracota */
+    --primary-foreground: 44 20% 97%;
+    --secondary: 42 87% 55%; /* Amarillo dorado */
+    --secondary-foreground: 25 25% 15%;
+    --muted: 44 20% 94%; /* Crema más oscura */
+    --muted-foreground: 25 15% 45%;
+    --accent: 42 87% 55%;
+    --accent-foreground: 25 25% 15%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 44 20% 97%;
+    --border: 44 20% 88%;
+    --input: 44 20% 88%;
+    --ring: 25 95% 53%;
     --radius: 0.75rem;
   }
 
   .dark {
-    --background: 41 37 36; /* Marrón muy oscuro */
-    --foreground: 250 250 249;
-    --card: 60 46 38; /* Marrón oscuro */
-    --card-foreground: 250 250 249;
-    --popover: 60 46 38;
-    --popover-foreground: 250 250 249;
-    --primary: 251 191 36; /* Amarillo dorado más brillante en dark */
-    --primary-foreground: 41 37 36;
-    --secondary: 87 83 78;
-    --secondary-foreground: 250 250 249;
-    --muted: 68 64 60;
-    --muted-foreground: 161 161 170;
-    --accent: 87 83 78;
-    --accent-foreground: 250 250 249;
-    --destructive: 239 68 68;
-    --destructive-foreground: 250 250 249;
-    --border: 68 64 60;
-    --input: 68 64 60;
-    --ring: 251 191 36;
+    --background: 25 25% 8%; /* Marrón muy oscuro */
+    --foreground: 44 20% 95%;
+    --card: 25 25% 10%;
+    --card-foreground: 44 20% 95%;
+    --popover: 25 25% 10%;
+    --popover-foreground: 44 20% 95%;
+    --primary: 25 95% 53%;
+    --primary-foreground: 44 20% 97%;
+    --secondary: 42 87% 45%;
+    --secondary-foreground: 44 20% 95%;
+    --muted: 25 20% 15%;
+    --muted-foreground: 44 15% 65%;
+    --accent: 42 87% 45%;
+    --accent-foreground: 44 20% 95%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 44 20% 97%;
+    --border: 25 20% 20%;
+    --input: 25 20% 20%;
+    --ring: 25 95% 53%;
   }
 }
 
@@ -56,7 +56,6 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
@@ -66,123 +65,45 @@
     @apply bg-gradient-to-r from-orange-600 via-orange-500 to-amber-500;
   }
 
+  /* Gradiente suave para fondos */
+  .restaurant-bg {
+    @apply bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50;
+  }
+
   /* Tarjetas con estilo restaurante */
   .restaurant-card {
     @apply bg-white border border-orange-100 shadow-lg shadow-orange-100/20 hover:shadow-xl hover:shadow-orange-200/30 transition-all duration-300;
   }
 
+  /* Sidebar del restaurante */
+  .restaurant-sidebar {
+    @apply bg-gradient-to-b from-amber-900 via-orange-900 to-red-900 text-amber-50;
+  }
+
   /* Estados de mesa */
-  .status-available {
-    @apply bg-green-100 text-green-800 border-green-200;
+  .mesa-disponible {
+    @apply bg-green-50 border-green-200 text-green-800;
   }
 
-  .status-occupied {
-    @apply bg-red-100 text-red-800 border-red-200;
+  .mesa-ocupada {
+    @apply bg-red-50 border-red-200 text-red-800;
   }
 
-  .status-reserved {
-    @apply bg-amber-100 text-amber-800 border-amber-200;
+  .mesa-reservada {
+    @apply bg-amber-50 border-amber-200 text-amber-800;
   }
 
-  .status-cleaning {
-    @apply bg-blue-100 text-blue-800 border-blue-200;
+  .mesa-limpieza {
+    @apply bg-blue-50 border-blue-200 text-blue-800;
   }
 
-  .status-ordering {
-    @apply bg-yellow-100 text-yellow-800 border-yellow-200;
-  }
-
-  .status-eating {
-    @apply bg-green-100 text-green-800 border-green-200;
-  }
-
-  .status-billing {
-    @apply bg-purple-100 text-purple-800 border-purple-200;
-  }
-
-  /* Botones con tema restaurante */
+  /* Botones temáticos */
   .btn-restaurant {
     @apply restaurant-gradient text-white hover:opacity-90 transition-opacity;
   }
 
-  /* Fondos con gradiente sutil */
-  .bg-restaurant-light {
-    @apply bg-gradient-to-br from-orange-50/30 to-amber-50/30;
+  /* Header con estilo */
+  .restaurant-header {
+    @apply bg-white border-b border-orange-100 shadow-sm;
   }
-
-  /* Texto con colores temáticos */
-  .text-restaurant-primary {
-    @apply text-orange-600;
-  }
-
-  .text-restaurant-secondary {
-    @apply text-amber-600;
-  }
-
-  /* Bordes temáticos */
-  .border-restaurant {
-    @apply border-orange-200;
-  }
-
-  /* Hover effects para cards */
-  .card-hover {
-    @apply hover:scale-105 hover:shadow-lg hover:shadow-orange-200/30 transition-all duration-300;
-  }
-}
-
-/* Scrollbar personalizado */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #d97706;
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #b45309;
-}
-
-/* Animaciones suaves */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-out;
-}
-
-/* Efectos de hover para botones */
-.btn-hover-lift {
-  @apply transition-transform duration-200 hover:-translate-y-1;
-}
-
-/* Gradientes adicionales */
-.gradient-warm {
-  background: linear-gradient(135deg, #fef7ed 0%, #fed7aa 100%);
-}
-
-.gradient-sunset {
-  background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
-}
-
-/* Sombras personalizadas */
-.shadow-warm {
-  box-shadow: 0 4px 20px rgba(251, 191, 36, 0.15);
-}
-
-.shadow-restaurant {
-  box-shadow: 0 8px 32px rgba(217, 119, 6, 0.12);
 }
