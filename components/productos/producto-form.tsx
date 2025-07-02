@@ -1,6 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import type React from "react"
+
+import { useState, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
@@ -13,9 +15,25 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
-import { Loader2, Save, X, Package, Utensils, Wine, Home, Truck, ShoppingCart, Smartphone, QrCode } from "lucide-react"
+import {
+  Loader2,
+  Save,
+  X,
+  Package,
+  Utensils,
+  Wine,
+  Home,
+  Truck,
+  ShoppingCart,
+  Smartphone,
+  QrCode,
+  Upload,
+  ImageIcon,
+  Trash2,
+} from "lucide-react"
 import { createProducto, updateProducto } from "@/actions/productos.actions"
 import { createProductoSchema, type CreateProductoInput } from "@/schemas/productos.schemas"
+import { validateImageFile, compressImage, getImageSrc } from "@/lib/utils/image"
 import type { Producto } from "@/interfaces/database"
 
 interface ProductoFormProps {
@@ -44,6 +62,8 @@ export function ProductoForm({
   onCancel,
 }: ProductoFormProps) {
   const [loading, setLoading] = useState(false)
+  const [imageLoading, setImageLoading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const isEditing = !!producto
 
   const form = useForm<CreateProductoInput>({
@@ -53,6 +73,7 @@ export function ProductoForm({
       ClaveProducto: producto?.ClaveProducto || "",
       TipoProducto: producto?.TipoProducto || "Producto",
       Descripcion: producto?.Descripcion || "",
+      Imagen: producto?.Imagen || "",
       GrupoProductoID: producto?.GrupoProductoID || undefined,
       UnidadID: producto?.UnidadID || undefined,
       AreaProduccionID: producto?.AreaProduccionID || undefined,
@@ -70,6 +91,37 @@ export function ProductoForm({
       Suspendido: producto?.Suspendido ?? false,
     },
   })
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    const validation = validateImageFile(file)
+    if (!validation.isValid) {
+      toast.error(validation.error)
+      return
+    }
+
+    setImageLoading(true)
+    try {
+      // Comprimir la imagen antes de convertir a base64
+      const compressedBase64 = await compressImage(file, 800, 0.8)
+      form.setValue("Imagen", compressedBase64)
+      toast.success("Imagen cargada exitosamente")
+    } catch (error) {
+      toast.error("Error al procesar la imagen")
+      console.error("Error processing image:", error)
+    } finally {
+      setImageLoading(false)
+    }
+  }
+
+  const handleRemoveImage = () => {
+    form.setValue("Imagen", "")
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""
+    }
+  }
 
   const onSubmit = async (data: CreateProductoInput) => {
     setLoading(true)
@@ -91,6 +143,7 @@ export function ProductoForm({
 
   const watchedChannels = form.watch(["Comedor", "ADomicilio", "Mostrador", "Enlinea", "EnMenuQR"])
   const activeChannels = watchedChannels.filter(Boolean).length
+  const currentImage = form.watch("Imagen")
 
   return (
     <Form {...form}>
@@ -183,6 +236,77 @@ export function ProductoForm({
                           {...field}
                         />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Sección de imagen */}
+                <FormField
+                  control={form.control}
+                  name="Imagen"
+                  render={() => (
+                    <FormItem>
+                      <FormLabel>Imagen del Producto</FormLabel>
+                      <FormControl>
+                        <div className="space-y-4">
+                          {/* Vista previa de la imagen */}
+                          {currentImage ? (
+                            <div className="relative inline-block">
+                              <img
+                                src={getImageSrc(currentImage) || "/placeholder.svg"}
+                                alt="Vista previa"
+                                className="w-32 h-32 object-cover rounded-lg border"
+                              />
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="sm"
+                                className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
+                                onClick={handleRemoveImage}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="w-32 h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
+                              <ImageIcon className="h-8 w-8 text-gray-400" />
+                            </div>
+                          )}
+
+                          {/* Botón de carga */}
+                          <div className="flex gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => fileInputRef.current?.click()}
+                              disabled={imageLoading}
+                            >
+                              {imageLoading ? (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              ) : (
+                                <Upload className="h-4 w-4 mr-2" />
+                              )}
+                              {currentImage ? "Cambiar Imagen" : "Subir Imagen"}
+                            </Button>
+                            {currentImage && (
+                              <Button type="button" variant="outline" onClick={handleRemoveImage}>
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Eliminar
+                              </Button>
+                            )}
+                          </div>
+
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/jpeg,image/jpg,image/png,image/webp"
+                            onChange={handleImageUpload}
+                            className="hidden"
+                          />
+                        </div>
+                      </FormControl>
+                      <FormDescription>Formatos soportados: JPG, PNG, WebP. Tamaño máximo: 5MB.</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

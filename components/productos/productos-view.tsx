@@ -56,6 +56,7 @@ import { LicenseGuard } from "@/components/license-guard"
 import { LicenseSelector } from "@/components/license-selector"
 import { useLicense } from "@/contexts/license-context"
 import { getProductos, deleteProducto, toggleFavoriteProducto } from "@/actions/productos.actions"
+import { getImageSrc } from "@/lib/utils/image"
 import type { Producto } from "@/interfaces/database"
 import type { SearchProductosInput } from "@/schemas/productos.schemas"
 
@@ -482,7 +483,7 @@ export function ProductosView({
                   {/* Imagen */}
                   <div className="relative">
                     <img
-                      src={`/placeholder.svg?height=120&width=160&text=${encodeURIComponent(producto.Nombredelproducto)}`}
+                      src={getImageSrc(producto.Imagen) || "/placeholder.svg"}
                       alt={producto.Nombredelproducto}
                       className="w-full h-30 object-cover rounded-md"
                     />
@@ -590,7 +591,7 @@ export function ProductosView({
                   <div className="flex items-center gap-4">
                     {/* Imagen pequeña */}
                     <img
-                      src={`/placeholder.svg?height=64&width=64&text=${encodeURIComponent(producto.Nombredelproducto)}`}
+                      src={getImageSrc(producto.Imagen) || "/placeholder.svg"}
                       alt={producto.Nombredelproducto}
                       className="w-16 h-16 object-cover rounded-md flex-shrink-0"
                     />
