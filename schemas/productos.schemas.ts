@@ -5,6 +5,7 @@ export const createProductoSchema = z.object({
   ClaveProducto: z.string().min(1, "La clave del producto es requerida").max(50),
   TipoProducto: z.enum(["Platillo", "Producto", "Botella"]),
   Descripcion: z.string().optional(),
+  Imagen: z.string().optional(), // Base64 string
   GrupoProductoID: z.number().optional(),
   UnidadID: z.number().optional(),
   AreaProduccionID: z.number().optional(),

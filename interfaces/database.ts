@@ -169,6 +169,7 @@ export interface Producto {
   Nombredelproducto: string
   Favorito: boolean
   Descripcion?: string
+  Imagen?: string // Base64 string
   ExentoImpuesto: boolean
   PrecioAbierto: boolean
   UnidadesULID: number
