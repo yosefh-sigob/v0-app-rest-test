@@ -1,76 +1,57 @@
 "use server"
 
-import type { Empresa, Usuario } from "@/interfaces/empresa.interface"
-import type { EmpresaFormData, UsuarioFormData } from "@/schemas/empresa.schema"
-import { mockEmpresa, mockUsuarios } from "@/utils/mock-data"
+import type { Empresa } from "@/interfaces/empresa.interface"
+import { mockEmpresas } from "@/utils/mock-data"
 import { generateULID } from "@/utils/ulid"
 
-export async function obtenerEmpresa(): Promise<Empresa> {
-  // Simular delay de red
-  await new Promise((resolve) => setTimeout(resolve, 100))
-  return mockEmpresa
-}
-
-export async function obtenerUsuarios(): Promise<Usuario[]> {
-  // Simular delay de red
-  await new Promise((resolve) => setTimeout(resolve, 150))
-  return mockUsuarios
-}
-
-export async function crearEmpresa(data: EmpresaFormData): Promise<Empresa> {
+export async function getEmpresas(): Promise<Empresa[]> {
   // Simular delay de red
   await new Promise((resolve) => setTimeout(resolve, 500))
+  return mockEmpresas
+}
+
+export async function getEmpresaById(id: string): Promise<Empresa | null> {
+  await new Promise((resolve) => setTimeout(resolve, 300))
+  return mockEmpresas.find((empresa) => empresa.EmpresaULID === id) || null
+}
+
+export async function createEmpresa(
+  data: Omit<Empresa, "EmpresaULID" | "FechaRegistro" | "Fecha_UltimoCambio">,
+): Promise<Empresa> {
+  await new Promise((resolve) => setTimeout(resolve, 800))
 
   const nuevaEmpresa: Empresa = {
-    EmpresaULID: generateULID(),
     ...data,
+    EmpresaULID: generateULID(),
     FechaRegistro: new Date(),
     Fecha_UltimoCambio: new Date(),
-    Fecha_Sync: new Date(),
   }
 
+  mockEmpresas.push(nuevaEmpresa)
   return nuevaEmpresa
 }
 
-export async function crearUsuario(data: UsuarioFormData): Promise<Usuario> {
-  // Simular delay de red
-  await new Promise((resolve) => setTimeout(resolve, 500))
+export async function updateEmpresa(id: string, data: Partial<Empresa>): Promise<Empresa | null> {
+  await new Promise((resolve) => setTimeout(resolve, 600))
 
-  const nuevoUsuario: Usuario = {
-    UsuarioULID: generateULID(),
-    ...data,
-    Suspendido: false,
-    Fecha_UltimoCambio: new Date(),
-    Fecha_Sync: new Date(),
-  }
+  const index = mockEmpresas.findIndex((empresa) => empresa.EmpresaULID === id)
+  if (index === -1) return null
 
-  return nuevoUsuario
-}
-
-export async function actualizarEmpresa(id: string, data: Partial<EmpresaFormData>): Promise<Empresa> {
-  // Simular delay de red
-  await new Promise((resolve) => setTimeout(resolve, 300))
-
-  return {
-    ...mockEmpresa,
+  mockEmpresas[index] = {
+    ...mockEmpresas[index],
     ...data,
     Fecha_UltimoCambio: new Date(),
   }
+
+  return mockEmpresas[index]
 }
 
-export async function suspenderUsuario(id: string): Promise<Usuario> {
-  // Simular delay de red
-  await new Promise((resolve) => setTimeout(resolve, 200))
+export async function deleteEmpresa(id: string): Promise<boolean> {
+  await new Promise((resolve) => setTimeout(resolve, 400))
 
-  const usuario = mockUsuarios.find((u) => u.UsuarioULID === id)
-  if (!usuario) {
-    throw new Error("Usuario no encontrado")
-  }
+  const index = mockEmpresas.findIndex((empresa) => empresa.EmpresaULID === id)
+  if (index === -1) return false
 
-  return {
-    ...usuario,
-    Suspendido: true,
-    FechaSuspension: new Date(),
-    Fecha_UltimoCambio: new Date(),
-  }
+  mockEmpresas.splice(index, 1)
+  return true
 }

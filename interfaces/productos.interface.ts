@@ -1,15 +1,7 @@
-import type { ULID } from "./empresa.interface"
-
-export enum TipoProducto {
-  PLATILLO = "Platillo",
-  PRODUCTO = "Producto",
-  BOTELLA = "Botella",
-}
-
 export interface GrupoProducto {
-  GrupoProductoULID: ULID
-  Clave: string
-  Orden: string
+  GrupoProductoULID: string
+  ClaveGrupo: string
+  Orden: number
   Descripcion: string
   Clasificacion: string
   MenuQR: boolean
@@ -17,34 +9,33 @@ export interface GrupoProducto {
   APPComensal: boolean
   Inactiva: boolean
   Paletacolor: string
-  Imagen: string
+  Imagen?: string
   Sucursales: boolean
   AplicarComentarios: boolean
-  CamposDinamicos?: any
+  CamposDinamicos?: Record<string, any>
   Fecha_UltimoCambio: Date
-  Fecha_Sync: Date
-  UsuarioULID: number
-  EmpresaULID: ULID
+  Fecha_Sync?: Date
+  UsuarioULID: string
 }
 
 export interface Producto {
-  ProductoULID: ULID
-  GrupoProductoULID: number
-  SubgrupoProductoULID: number
+  ProductoULID: string
+  GrupoProductoULID: string
+  SubgrupoProductoULID?: string
   ClaveProducto: string
-  TipoProducto: TipoProducto
+  TipoProducto: "Platillo" | "Producto" | "Botella"
   Nombredelproducto: string
   Favorito: boolean
-  Descripcion: string
+  Descripcion?: string
   ExentoImpuesto: boolean
   PrecioAbierto: boolean
-  UnidadesULID: number
-  AreaProduccionULID: number
-  AlmacenULID: number
+  UnidadesULID: string
+  AreaProduccionULID: string
+  AlmacenULID: string
   ControlStock: boolean
-  PrecioxUtilidad: boolean
+  PrecioxUtilidadad: boolean
   Facturable: boolean
-  ClaveTributaria: string
+  ClaveTributaria?: string
   Suspendido: boolean
   Comedor: boolean
   ADomicilio: boolean
@@ -53,10 +44,30 @@ export interface Producto {
   EnAPP: boolean
   CanalesVenta: boolean
   EnMenuQR: boolean
-  ClasificacionQRULID: number
-  DatosDinamicos?: any
+  ClasificacionQRULID?: string
+  DatosDinamicos?: Record<string, any>
   Fecha_UltimoCambio: Date
-  Fecha_Sync: Date
-  UsuarioULID: number
-  EmpresaULID: ULID
+  Fecha_Sync?: Date
+  UsuarioULID: string
+  EmpresaULID: string
+}
+
+export interface ProductoPresentacion {
+  PresentacionULID: string
+  ProductoULID: string
+  CodigoPresentacion: string
+  NombrePresentacion: string
+  CostoInsumos: number
+  UnidadesULID: string
+  PreciodeVenta: number
+  ComisiondeVenta: number
+  ComisiondeVentaPorcentaje: number
+  Puntos: number
+  VariosenEnPlato: boolean
+  TieneReceta: boolean
+  TiempodeProduccion: number
+  Fecha_UltimoCambio: Date
+  Fecha_Sync?: Date
+  UsuarioULID: string
+  EmpresaULID: string
 }

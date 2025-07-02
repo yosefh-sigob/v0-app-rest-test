@@ -1,43 +1,30 @@
 import { z } from "zod"
-import { TipoEmpresa } from "@/interfaces/empresa.interface"
 
 export const empresaSchema = z.object({
-  NombreRestaurante: z
-    .string()
-    .min(1, "El nombre del restaurante es requerido")
-    .max(100, "El nombre no puede exceder 100 caracteres"),
-  Esquema: z.string().max(100, "El esquema no puede exceder 100 caracteres").optional(),
-  Licencia: z.string().max(3, "La licencia no puede exceder 3 caracteres").optional(),
-  TipoEmpresa: z.nativeEnum(TipoEmpresa),
-  UsuarioULID: z.number().int("Debe ser un número entero").positive("Debe ser un número positivo"),
+  EmpresaULID: z.string().length(26),
+  RazonSocial: z.string().min(1, "La razón social es requerida").max(255),
+  NombreComercial: z.string().min(1, "El nombre comercial es requerido").max(255),
+  RFC: z.string().min(12, "RFC inválido").max(13),
+  Direccion: z.string().min(1, "La dirección es requerida"),
+  Telefono: z.string().min(10, "Teléfono inválido").max(15),
+  Email: z.string().email("Email inválido"),
+  SitioWeb: z.string().url("URL inválida").optional(),
+  Logo: z.string().optional(),
+  TipoEmpresa: z.enum(["Restaurante", "Franquicia", "Corporativo"]),
+  Activa: z.boolean().default(true),
 })
 
-export const usuarioSchema = z.object({
-  NombreCompleto: z
-    .string()
-    .min(1, "El nombre completo es requerido")
-    .max(255, "El nombre no puede exceder 255 caracteres"),
-  Usuario: z
-    .string()
-    .min(3, "El usuario debe tener al menos 3 caracteres")
-    .max(100, "El usuario no puede exceder 100 caracteres"),
-  Correo: z.string().email("Correo electrónico inválido").max(100, "El correo no puede exceder 100 caracteres"),
-  Contraseña: z
-    .string()
-    .min(6, "La contraseña debe tener al menos 6 caracteres")
-    .max(8, "La contraseña no puede exceder 8 caracteres"),
-  PIN: z
-    .string()
-    .length(4, "El PIN debe tener exactamente 4 dígitos")
-    .regex(/^\d{4}$/, "El PIN debe contener solo números"),
-  Celular: z
-    .string()
-    .length(10, "El celular debe tener 10 dígitos")
-    .regex(/^\d{10}$/, "El celular debe contener solo números"),
-  Puesto: z.string().max(100, "El puesto no puede exceder 100 caracteres").optional(),
-  EsAdministrador: z.boolean().default(false),
-  EmpresaULID: z.string().length(26, "ULID de empresa inválido"),
+export const sucursalSchema = z.object({
+  SucursalULID: z.string().length(26),
+  EmpresaULID: z.string().length(26),
+  ClaveSucursal: z.string().min(1).max(10),
+  NombreSucursal: z.string().min(1).max(255),
+  Direccion: z.string().min(1),
+  Telefono: z.string().min(10).max(15),
+  Email: z.string().email(),
+  Gerente: z.string().min(1).max(255),
+  Activa: z.boolean().default(true),
 })
 
 export type EmpresaFormData = z.infer<typeof empresaSchema>
-export type UsuarioFormData = z.infer<typeof usuarioSchema>
+export type SucursalFormData = z.infer<typeof sucursalSchema>

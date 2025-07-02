@@ -1,50 +1,46 @@
-import type { ULID } from "./empresa.interface"
-
 export interface PlanodeMesas {
-  PlanoULID: ULID
+  PlanoULID: string
   NombrePlanodeMesas: string
   ComensalesMaximos: number
   Activo: boolean
   Fecha_UltimoCambio: Date
   Fecha_Sync: Date
-  UsuarioULID: number
-  EmpresaULID: ULID
+  UsuarioULID: string
+  EmpresaULID: string
 }
 
-export interface AreaVentas {
-  AreaULID: ULID
-  PlanoULID: ULID
+export interface AreaVenta {
+  AreaULID: string
+  PlanoULID: string
   Descripcion: string
   Fumar: boolean
   Exterior: boolean
   Barra: boolean
   Fecha_UltimoCambio: Date
   Fecha_Sync: Date
-  UsuarioULID: number
-  EmpresaULID: ULID
-}
-
-export interface TipoMesa {
-  TipoMesaULID: ULID
-  Descripcion: string
-  NumeroComensales: number
-  NumeroMaxComensales: number
-  Icono: string
-  Fecha_UltimoCambio: Date
-  Fecha_Sync: Date
-  UsuarioULID: number
-  EmpresaULID: ULID
+  UsuarioULID: string
+  EmpresaULID: string
 }
 
 export interface Mesa {
-  MesaULID: ULID
+  MesaULID: string
   ClaveMesa: string
   NombreMesa: string
-  TipoMesaULID: number
-  AreaVentasULID: number
+  TipoMesaULID: string
+  AreaVentasULID: string
   ComensalesMaximos: number
+  Estado: "Disponible" | "Ocupada" | "Reservada" | "Limpieza"
   Fecha_UltimoCambio: Date
   Fecha_Sync: Date
-  UsuarioULID: number
-  EmpresaULID: ULID
+  UsuarioULID: string
+  EmpresaULID: string
+}
+
+export interface TipoMesa {
+  TipoMesaULID: string
+  Descripcion: string
+  Fecha_UltimoCambio: Date
+  Fecha_Sync: Date
+  UsuarioULID: string
+  EmpresaULID: string
 }

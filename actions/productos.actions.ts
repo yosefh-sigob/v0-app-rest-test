@@ -1,82 +1,75 @@
 "use server"
 
 import type { Producto, GrupoProducto } from "@/interfaces/productos.interface"
-import type { ProductoFormData } from "@/schemas/productos.schema"
 import { mockProductos, mockGruposProductos } from "@/utils/mock-data"
 import { generateULID } from "@/utils/ulid"
 
-export async function obtenerProductos(): Promise<Producto[]> {
-  // Simular delay de red
-  await new Promise((resolve) => setTimeout(resolve, 200))
+export async function getProductos(): Promise<Producto[]> {
+  await new Promise((resolve) => setTimeout(resolve, 600))
   return mockProductos
 }
 
-export async function obtenerGruposProductos(): Promise<GrupoProducto[]> {
-  // Simular delay de red
-  await new Promise((resolve) => setTimeout(resolve, 150))
+export async function getGruposProductos(): Promise<GrupoProducto[]> {
+  await new Promise((resolve) => setTimeout(resolve, 400))
   return mockGruposProductos
 }
 
-export async function buscarProductos(termino: string): Promise<Producto[]> {
-  // Simular delay de red
+export async function getProductoById(id: string): Promise<Producto | null> {
   await new Promise((resolve) => setTimeout(resolve, 300))
-
-  return mockProductos.filter(
-    (producto) =>
-      producto.Nombredelproducto.toLowerCase().includes(termino.toLowerCase()) ||
-      producto.ClaveProducto.toLowerCase().includes(termino.toLowerCase()),
-  )
+  return mockProductos.find((producto) => producto.ProductoULID === id) || null
 }
 
-export async function obtenerProductosActivos(): Promise<Producto[]> {
-  // Simular delay de red
-  await new Promise((resolve) => setTimeout(resolve, 200))
-
-  return mockProductos.filter((producto) => !producto.Suspendido)
-}
-
-export async function crearProducto(data: ProductoFormData): Promise<Producto> {
-  // Simular delay de red
+export async function getProductosByGrupo(grupoId: string): Promise<Producto[]> {
   await new Promise((resolve) => setTimeout(resolve, 500))
+  return mockProductos.filter((producto) => producto.GrupoProductoULID === grupoId)
+}
+
+export async function createProducto(data: Omit<Producto, "ProductoULID" | "Fecha_UltimoCambio">): Promise<Producto> {
+  await new Promise((resolve) => setTimeout(resolve, 800))
 
   const nuevoProducto: Producto = {
-    ProductoULID: generateULID(),
     ...data,
+    ProductoULID: generateULID(),
     Fecha_UltimoCambio: new Date(),
-    Fecha_Sync: new Date(),
   }
 
+  mockProductos.push(nuevoProducto)
   return nuevoProducto
 }
 
-export async function actualizarProducto(id: string, data: Partial<ProductoFormData>): Promise<Producto> {
-  // Simular delay de red
-  await new Promise((resolve) => setTimeout(resolve, 300))
+export async function updateProducto(id: string, data: Partial<Producto>): Promise<Producto | null> {
+  await new Promise((resolve) => setTimeout(resolve, 600))
 
-  const producto = mockProductos.find((p) => p.ProductoULID === id)
-  if (!producto) {
-    throw new Error("Producto no encontrado")
-  }
+  const index = mockProductos.findIndex((producto) => producto.ProductoULID === id)
+  if (index === -1) return null
 
-  return {
-    ...producto,
+  mockProductos[index] = {
+    ...mockProductos[index],
     ...data,
     Fecha_UltimoCambio: new Date(),
   }
+
+  return mockProductos[index]
 }
 
-export async function suspenderProducto(id: string): Promise<Producto> {
-  // Simular delay de red
-  await new Promise((resolve) => setTimeout(resolve, 200))
+export async function deleteProducto(id: string): Promise<boolean> {
+  await new Promise((resolve) => setTimeout(resolve, 400))
 
-  const producto = mockProductos.find((p) => p.ProductoULID === id)
-  if (!producto) {
-    throw new Error("Producto no encontrado")
-  }
+  const index = mockProductos.findIndex((producto) => producto.ProductoULID === id)
+  if (index === -1) return false
 
-  return {
-    ...producto,
-    Suspendido: true,
-    Fecha_UltimoCambio: new Date(),
-  }
+  mockProductos.splice(index, 1)
+  return true
+}
+
+export async function toggleProductoFavorito(id: string): Promise<Producto | null> {
+  await new Promise((resolve) => setTimeout(resolve, 300))
+
+  const index = mockProductos.findIndex((producto) => producto.ProductoULID === id)
+  if (index === -1) return null
+
+  mockProductos[index].Favorito = !mockProductos[index].Favorito
+  mockProductos[index].Fecha_UltimoCambio = new Date()
+
+  return mockProductos[index]
 }

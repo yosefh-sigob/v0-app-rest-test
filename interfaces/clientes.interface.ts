@@ -1,40 +1,37 @@
-import type { ULID } from "./empresa.interface"
-
 export interface Cliente {
-  ClienteULID: ULID
-  Celular: string
-  Nombres: string
-  Apellidos: string
-  NombreCorto: string
-  NotasEspeciales: string
-  FechaNacimiento: Date
-  Correo: string
-  Comentarios: string
-  LimitedeCredito: number
-  DiasdeCredito: number
-  SaldodeCredito: number
-  Suspendido: boolean
+  ClienteULID: string
+  ClaveCliente: string
+  NombreCompleto: string
+  Telefono: string
+  Email?: string
+  FechaNacimiento?: Date
+  Direccion?: string
+  CodigoPostal?: string
+  Ciudad?: string
+  Estado?: string
+  Pais?: string
+  TipoCliente: "Frecuente" | "Ocasional" | "VIP"
+  Activo: boolean
+  Puntos: number
+  FechaRegistro: Date
   Fecha_UltimoCambio: Date
-  Fecha_Sync: Date
-  UsuarioULID: number
-  EmpresaULID: ULID
+  Fecha_Sync?: Date
+  UsuarioULID: string
+  EmpresaULID: string
 }
 
-export interface ClienteDomicilio {
-  ClienteDomicilioULID: ULID
-  ClienteULID: ULID
-  TipoDomicilio: string
-  Pais: string
-  CP: string
-  Estado: string
-  Colonia: string
-  Ciudad: string
+export interface ClienteDireccion {
+  DireccionULID: string
+  ClienteULID: string
+  TipoDireccion: "Casa" | "Trabajo" | "Otro"
   Direccion: string
-  Exterior: string
-  Interior: string
-  Referencias: string
+  CodigoPostal: string
+  Ciudad: string
+  Estado: string
+  Pais: string
+  Principal: boolean
   Fecha_UltimoCambio: Date
-  Fecha_Sync: Date
-  UsuarioULID: number
-  EmpresaULID: ULID
+  Fecha_Sync?: Date
+  UsuarioULID: string
+  EmpresaULID: string
 }

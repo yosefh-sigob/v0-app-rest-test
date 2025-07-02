@@ -1,70 +1,84 @@
 "use server"
 
-import type { Mesa, AreaVentas, TipoMesa } from "@/interfaces/mesas.interface"
-import type { MesaFormData } from "@/schemas/mesas.schema"
-import { mockMesas, mockAreasVentas, mockTiposMesa } from "@/utils/mock-data"
+import type { Mesa, AreaVenta, PlanodeMesas } from "@/interfaces/mesas.interface"
+import { mockMesas, mockAreasVenta, mockPlanosMesas } from "@/utils/mock-data"
 import { generateULID } from "@/utils/ulid"
 
-export async function obtenerMesas(): Promise<Mesa[]> {
-  // Simular delay de red
-  await new Promise((resolve) => setTimeout(resolve, 200))
+export async function getMesas(): Promise<Mesa[]> {
+  await new Promise((resolve) => setTimeout(resolve, 500))
   return mockMesas
 }
 
-export async function obtenerAreasVentas(): Promise<AreaVentas[]> {
-  // Simular delay de red
-  await new Promise((resolve) => setTimeout(resolve, 150))
-  return mockAreasVentas
+export async function getAreasVenta(): Promise<AreaVenta[]> {
+  await new Promise((resolve) => setTimeout(resolve, 400))
+  return mockAreasVenta
 }
 
-export async function obtenerTiposMesa(): Promise<TipoMesa[]> {
-  // Simular delay de red
-  await new Promise((resolve) => setTimeout(resolve, 100))
-  return mockTiposMesa
+export async function getPlanosMesas(): Promise<PlanodeMesas[]> {
+  await new Promise((resolve) => setTimeout(resolve, 300))
+  return mockPlanosMesas
 }
 
-export async function crearMesa(data: MesaFormData): Promise<Mesa> {
-  // Simular delay de red
-  await new Promise((resolve) => setTimeout(resolve, 500))
+export async function getMesaById(id: string): Promise<Mesa | null> {
+  await new Promise((resolve) => setTimeout(resolve, 200))
+  return mockMesas.find((mesa) => mesa.MesaULID === id) || null
+}
+
+export async function getMesasByArea(areaId: string): Promise<Mesa[]> {
+  await new Promise((resolve) => setTimeout(resolve, 400))
+  return mockMesas.filter((mesa) => mesa.AreaVentasULID === areaId)
+}
+
+export async function updateEstadoMesa(id: string, estado: Mesa["Estado"]): Promise<Mesa | null> {
+  await new Promise((resolve) => setTimeout(resolve, 300))
+
+  const index = mockMesas.findIndex((mesa) => mesa.MesaULID === id)
+  if (index === -1) return null
+
+  mockMesas[index].Estado = estado
+  mockMesas[index].Fecha_UltimoCambio = new Date()
+
+  return mockMesas[index]
+}
+
+export async function createMesa(data: Omit<Mesa, "MesaULID" | "Fecha_UltimoCambio" | "Fecha_Sync">): Promise<Mesa> {
+  await new Promise((resolve) => setTimeout(resolve, 600))
 
   const nuevaMesa: Mesa = {
-    MesaULID: generateULID(),
     ...data,
+    MesaULID: generateULID(),
     Fecha_UltimoCambio: new Date(),
     Fecha_Sync: new Date(),
   }
 
+  mockMesas.push(nuevaMesa)
   return nuevaMesa
 }
 
-export async function actualizarMesa(id: string, data: Partial<MesaFormData>): Promise<Mesa> {
-  // Simular delay de red
-  await new Promise((resolve) => setTimeout(resolve, 300))
+export async function deleteMesa(id: string): Promise<boolean> {
+  await new Promise((resolve) => setTimeout(resolve, 400))
 
-  const mesa = mockMesas.find((m) => m.MesaULID === id)
-  if (!mesa) {
-    throw new Error("Mesa no encontrada")
-  }
+  const index = mockMesas.findIndex((mesa) => mesa.MesaULID === id)
+  if (index === -1) return false
 
-  return {
-    ...mesa,
-    ...data,
-    Fecha_UltimoCambio: new Date(),
-  }
+  mockMesas.splice(index, 1)
+  return true
 }
 
-export async function cambiarEstadoMesa(id: string, estado: string): Promise<Mesa> {
-  // Simular delay de red
-  await new Promise((resolve) => setTimeout(resolve, 200))
+export async function getEstadisticasMesas() {
+  await new Promise((resolve) => setTimeout(resolve, 300))
 
-  const mesa = mockMesas.find((m) => m.MesaULID === id)
-  if (!mesa) {
-    throw new Error("Mesa no encontrada")
-  }
+  const disponibles = mockMesas.filter((mesa) => mesa.Estado === "Disponible").length
+  const ocupadas = mockMesas.filter((mesa) => mesa.Estado === "Ocupada").length
+  const reservadas = mockMesas.filter((mesa) => mesa.Estado === "Reservada").length
+  const limpieza = mockMesas.filter((mesa) => mesa.Estado === "Limpieza").length
 
-  // En una implementación real, el estado se guardaría en una tabla separada
   return {
-    ...mesa,
-    Fecha_UltimoCambio: new Date(),
+    total: mockMesas.length,
+    disponibles,
+    ocupadas,
+    reservadas,
+    limpieza,
+    porcentajeOcupacion: Math.round((ocupadas / mockMesas.length) * 100),
   }
 }
