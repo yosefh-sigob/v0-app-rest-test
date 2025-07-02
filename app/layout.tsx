@@ -2,14 +2,14 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import { Toaster } from "@/components/ui/sonner"
 import { LicenseProvider } from "@/contexts/license-context"
+import { Toaster } from "@/components/ui/sonner"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "RestApp - Sistema de Gestión de Restaurantes",
-  description: "Sistema completo para la gestión de restaurantes con múltiples funcionalidades",
+  title: "RestApp - Sistema de Gestión para Restaurantes",
+  description: "Sistema completo de gestión para restaurantes con múltiples funcionalidades",
     generator: 'v0.dev'
 }
 

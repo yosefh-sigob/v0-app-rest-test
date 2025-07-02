@@ -1,98 +1,84 @@
 export type LicenseType = "Gratis" | "Lite" | "Pro" | "Franquicia"
 
-export interface LicenseFeatures {
-  gestionProductos: boolean
-  ventaComedor: boolean
-  ventaMostrador: boolean
-  ventaDomicilio: boolean
-  menuQR: boolean
-  reportesBasicos: boolean
-  reportesAvanzados: boolean
-  controlInventario: boolean
-  integracionesAPI: boolean
-  campanasSMS: boolean
-  multiSucursal: boolean
-  usuariosIlimitados: boolean
-  soportePrioritario: boolean
-  maxProductos: number
-  maxUsuarios: number
-}
-
-export const LICENSE_FEATURES: Record<LicenseType, LicenseFeatures> = {
+export const LICENSE_FEATURES = {
   Gratis: {
     gestionProductos: true,
     ventaComedor: true,
     ventaMostrador: false,
     ventaDomicilio: false,
-    menuQR: false,
+    menuDigital: false,
     reportesBasicos: false,
     reportesAvanzados: false,
     controlInventario: false,
     integracionesAPI: false,
-    campanasSMS: false,
+    campanaSMS: false,
+    programaLealtad: false,
     multiSucursal: false,
-    usuariosIlimitados: false,
-    soportePrioritario: false,
-    maxProductos: 50,
-    maxUsuarios: 1,
+    reportesCorporativos: false,
+    dashboardCentralizado: false,
   },
   Lite: {
     gestionProductos: true,
     ventaComedor: true,
     ventaMostrador: true,
     ventaDomicilio: true,
-    menuQR: true,
+    menuDigital: true,
     reportesBasicos: true,
     reportesAvanzados: false,
     controlInventario: false,
     integracionesAPI: false,
-    campanasSMS: false,
+    campanaSMS: false,
+    programaLealtad: false,
     multiSucursal: false,
-    usuariosIlimitados: false,
-    soportePrioritario: false,
-    maxProductos: 200,
-    maxUsuarios: 3,
+    reportesCorporativos: false,
+    dashboardCentralizado: false,
   },
   Pro: {
     gestionProductos: true,
     ventaComedor: true,
     ventaMostrador: true,
     ventaDomicilio: true,
-    menuQR: true,
+    menuDigital: true,
     reportesBasicos: true,
     reportesAvanzados: true,
     controlInventario: true,
     integracionesAPI: true,
-    campanasSMS: true,
+    campanaSMS: true,
+    programaLealtad: true,
     multiSucursal: false,
-    usuariosIlimitados: false,
-    soportePrioritario: false,
-    maxProductos: -1, // Ilimitado
-    maxUsuarios: 10,
+    reportesCorporativos: false,
+    dashboardCentralizado: false,
   },
   Franquicia: {
     gestionProductos: true,
     ventaComedor: true,
     ventaMostrador: true,
     ventaDomicilio: true,
-    menuQR: true,
+    menuDigital: true,
     reportesBasicos: true,
     reportesAvanzados: true,
     controlInventario: true,
     integracionesAPI: true,
-    campanasSMS: true,
+    campanaSMS: true,
+    programaLealtad: true,
     multiSucursal: true,
-    usuariosIlimitados: true,
-    soportePrioritario: true,
-    maxProductos: -1, // Ilimitado
-    maxUsuarios: -1, // Ilimitado
+    reportesCorporativos: true,
+    dashboardCentralizado: true,
   },
 }
 
-export function hasFeature(license: LicenseType, feature: keyof LicenseFeatures): boolean {
-  return LICENSE_FEATURES[license][feature] as boolean
+export function hasFeature(license: LicenseType, feature: keyof typeof LICENSE_FEATURES.Gratis): boolean {
+  return LICENSE_FEATURES[license][feature] || false
 }
 
-export function getFeatureValue(license: LicenseType, feature: keyof LicenseFeatures): boolean | number {
-  return LICENSE_FEATURES[license][feature]
+export function getRequiredLicense(feature: keyof typeof LICENSE_FEATURES.Gratis): LicenseType {
+  const licenses: LicenseType[] = ["Gratis", "Lite", "Pro", "Franquicia"]
+
+  for (const license of licenses) {
+    if (LICENSE_FEATURES[license][feature]) {
+      return license
+    }
+  }
+
+  return "Pro" // Default fallback
 }

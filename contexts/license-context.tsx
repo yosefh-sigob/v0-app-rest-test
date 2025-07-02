@@ -6,6 +6,7 @@ import type { LicenseType } from "@/utils/license"
 interface LicenseContextType {
   currentLicense: LicenseType
   setLicense: (license: LicenseType) => void
+  hasFeature: (feature: string) => boolean
 }
 
 const LicenseContext = createContext<LicenseContextType | undefined>(undefined)
@@ -31,7 +32,16 @@ export function LicenseProvider({ children }: LicenseProviderProps) {
     localStorage.setItem("demo-license", license)
   }
 
-  return <LicenseContext.Provider value={{ currentLicense, setLicense }}>{children}</LicenseContext.Provider>
+  // Verificar si tiene acceso a una funcionalidad
+  const hasFeature = (feature: string): boolean => {
+    // Importar dinámicamente para evitar problemas de SSR
+    const { hasFeature: checkFeature } = require("@/utils/license")
+    return checkFeature(currentLicense, feature)
+  }
+
+  return (
+    <LicenseContext.Provider value={{ currentLicense, setLicense, hasFeature }}>{children}</LicenseContext.Provider>
+  )
 }
 
 export function useLicense() {

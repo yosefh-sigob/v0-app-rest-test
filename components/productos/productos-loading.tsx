@@ -8,22 +8,25 @@ export function ProductosLoading() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="space-y-2">
           <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-4 w-80" />
+          <Skeleton className="h-4 w-64" />
         </div>
-        <Skeleton className="h-10 w-36" />
+        <div className="flex gap-2">
+          <Skeleton className="h-10 w-24" />
+          <Skeleton className="h-10 w-32" />
+        </div>
       </div>
 
       {/* License Selector Skeleton */}
       <Card>
         <CardHeader>
-          <Skeleton className="h-6 w-32" />
+          <Skeleton className="h-5 w-48" />
         </CardHeader>
         <CardContent>
           <div className="flex gap-2">
-            <Skeleton className="h-8 w-20" />
             <Skeleton className="h-8 w-16" />
-            <Skeleton className="h-8 w-18" />
-            <Skeleton className="h-8 w-24" />
+            <Skeleton className="h-8 w-16" />
+            <Skeleton className="h-8 w-16" />
+            <Skeleton className="h-8 w-20" />
           </div>
         </CardContent>
       </Card>
@@ -45,7 +48,7 @@ export function ProductosLoading() {
 
       {/* Controls Skeleton */}
       <div className="flex justify-between items-center">
-        <Skeleton className="h-4 w-40" />
+        <Skeleton className="h-4 w-32" />
         <div className="flex gap-2">
           <Skeleton className="h-8 w-8" />
           <Skeleton className="h-8 w-8" />
@@ -55,7 +58,7 @@ export function ProductosLoading() {
       {/* Products Grid Skeleton */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {Array.from({ length: 8 }).map((_, i) => (
-          <Card key={i} className="animate-pulse">
+          <Card key={i}>
             <CardContent className="p-4">
               <div className="space-y-3">
                 <Skeleton className="h-32 w-full rounded-md" />
@@ -64,13 +67,13 @@ export function ProductosLoading() {
                   <Skeleton className="h-4 w-full" />
                   <Skeleton className="h-4 w-2/3" />
                   <div className="flex gap-2">
-                    <Skeleton className="h-5 w-16" />
-                    <Skeleton className="h-5 w-20" />
+                    <Skeleton className="h-6 w-16" />
+                    <Skeleton className="h-6 w-12" />
                   </div>
                   <div className="flex gap-1">
-                    <Skeleton className="h-4 w-12" />
-                    <Skeleton className="h-4 w-14" />
-                    <Skeleton className="h-4 w-10" />
+                    <Skeleton className="h-5 w-14" />
+                    <Skeleton className="h-5 w-16" />
+                    <Skeleton className="h-5 w-12" />
                   </div>
                 </div>
               </div>
