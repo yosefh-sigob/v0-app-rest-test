@@ -1,84 +1,64 @@
 "use client"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Users, ChefHat, CreditCard, TrendingUp, Clock, DollarSign, ShoppingCart, Home } from "lucide-react"
+import { Users, DollarSign, Calendar, ChefHat, TrendingUp, Clock, MapPin, Bell } from "lucide-react"
 import Link from "next/link"
-import { formatCurrency, formatNumber } from "@/utils/format"
 
 interface HomeViewProps {
-  estadisticas: {
-    ventasHoy: number
-    ventasAyer: number
+  stats: {
     mesasOcupadas: number
-    mesasDisponibles: number
+    totalMesas: number
+    ventasHoy: number
     clientesAtendidos: number
-    productosVendidos: number
-    promedioTicket: number
-    tiempoPromedioAtencion: number
+    reservacionesHoy: number
   }
 }
 
-export function HomeView({ estadisticas }: HomeViewProps) {
-  const crecimientoVentas = ((estadisticas.ventasHoy - estadisticas.ventasAyer) / estadisticas.ventasAyer) * 100
-  const totalMesas = estadisticas.mesasOcupadas + estadisticas.mesasDisponibles
-  const porcentajeOcupacion = (estadisticas.mesasOcupadas / totalMesas) * 100
+export function HomeView({ stats }: HomeViewProps) {
+  const ocupacionPorcentaje = Math.round((stats.mesasOcupadas / stats.totalMesas) * 100)
 
   return (
     <div className="min-h-screen bg-gradient-restaurant">
-      {/* Header con navegación de regreso */}
-      <div className="header-restaurant p-6 mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-restaurant-primary mb-2">Sistema de Gestión Restaurante</h1>
-            <p className="text-restaurant-neutral-light">Selecciona tu rol para comenzar</p>
-          </div>
-          <Button
-            asChild
-            variant="outline"
-            size="sm"
-            className="border-restaurant-primary text-restaurant-primary hover:bg-restaurant-primary hover:text-white bg-transparent"
-          >
-            <Link href="/">
-              <Home className="w-4 h-4 mr-2" />
-              Inicio
-            </Link>
-          </Button>
+      <div className="container mx-auto px-4 py-8">
+        {/* Header de Bienvenida */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-restaurant-neutral mb-2">¡Bienvenido a RestApp! 🍽️</h1>
+          <p className="text-lg text-restaurant-neutral-light">Tu sistema completo de gestión para restaurantes</p>
         </div>
-      </div>
 
-      <div className="container mx-auto px-6 pb-8">
-        {/* Estadísticas principales */}
+        {/* Estadísticas Principales */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card className="card-restaurant">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Ventas Hoy</CardTitle>
-              <DollarSign className="h-4 w-4 text-restaurant-primary" />
+              <CardTitle className="text-sm font-medium">Ocupación de Mesas</CardTitle>
+              <MapPin className="h-4 w-4 text-restaurant-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-restaurant-primary">{formatCurrency(estadisticas.ventasHoy)}</div>
-              <div className="flex items-center text-xs text-muted-foreground">
-                <TrendingUp className="h-3 w-3 mr-1" />
-                <span className={crecimientoVentas >= 0 ? "text-green-600" : "text-red-600"}>
-                  {crecimientoVentas >= 0 ? "+" : ""}
-                  {crecimientoVentas.toFixed(1)}%
-                </span>
-                <span className="ml-1">vs ayer</span>
+              <div className="text-2xl font-bold text-restaurant-primary">
+                {stats.mesasOcupadas}/{stats.totalMesas}
+              </div>
+              <div className="flex items-center space-x-2 mt-2">
+                <Badge variant={ocupacionPorcentaje > 80 ? "destructive" : "secondary"}>{ocupacionPorcentaje}%</Badge>
+                <p className="text-xs text-muted-foreground">
+                  {ocupacionPorcentaje > 80 ? "Alta ocupación" : "Disponible"}
+                </p>
               </div>
             </CardContent>
           </Card>
 
           <Card className="card-restaurant">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Ocupación de Mesas</CardTitle>
-              <Users className="h-4 w-4 text-restaurant-secondary" />
+              <CardTitle className="text-sm font-medium">Ventas de Hoy</CardTitle>
+              <DollarSign className="h-4 w-4 text-restaurant-secondary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-restaurant-secondary">
-                {estadisticas.mesasOcupadas}/{totalMesas}
+              <div className="text-2xl font-bold text-restaurant-secondary">${stats.ventasHoy.toLocaleString()}</div>
+              <div className="flex items-center space-x-1 mt-2">
+                <TrendingUp className="h-3 w-3 text-green-500" />
+                <p className="text-xs text-green-600">+12% vs ayer</p>
               </div>
-              <div className="text-xs text-muted-foreground">{porcentajeOcupacion.toFixed(0)}% ocupación</div>
             </CardContent>
           </Card>
 
@@ -88,153 +68,131 @@ export function HomeView({ estadisticas }: HomeViewProps) {
               <Users className="h-4 w-4 text-restaurant-accent" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-restaurant-accent">
-                {formatNumber(estadisticas.clientesAtendidos)}
-              </div>
-              <div className="text-xs text-muted-foreground">
-                Promedio: {formatNumber(Math.round(estadisticas.clientesAtendidos / 8))} por hora
-              </div>
+              <div className="text-2xl font-bold text-restaurant-accent">{stats.clientesAtendidos}</div>
+              <p className="text-xs text-muted-foreground mt-2">Promedio: 3.2 personas/mesa</p>
             </CardContent>
           </Card>
 
           <Card className="card-restaurant">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Ticket Promedio</CardTitle>
-              <CreditCard className="h-4 w-4 text-restaurant-info" />
+              <CardTitle className="text-sm font-medium">Reservaciones</CardTitle>
+              <Calendar className="h-4 w-4 text-restaurant-info" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-restaurant-info">
-                {formatCurrency(estadisticas.promedioTicket)}
-              </div>
-              <div className="text-xs text-muted-foreground">
-                {formatNumber(estadisticas.productosVendidos)} productos vendidos
-              </div>
+              <div className="text-2xl font-bold text-restaurant-info">{stats.reservacionesHoy}</div>
+              <p className="text-xs text-muted-foreground mt-2">Para hoy</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Selección de roles */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
-          {/* Mesero */}
-          <Card className="card-restaurant hover:scale-105 transition-transform duration-300">
-            <CardHeader className="text-center">
-              <div className="mx-auto w-16 h-16 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center mb-4">
-                <Users className="w-8 h-8 text-white" />
-              </div>
-              <CardTitle className="text-xl">Mesero</CardTitle>
-              <CardDescription>Gestiona mesas, toma pedidos y atiende a los clientes</CardDescription>
-            </CardHeader>
-            <CardContent className="text-center">
-              <div className="space-y-2 mb-6">
-                <Badge variant="secondary" className="mr-2">
-                  Gestión de Mesas
-                </Badge>
-                <Badge variant="secondary" className="mr-2">
-                  Toma de Pedidos
-                </Badge>
-                <Badge variant="secondary">Atención al Cliente</Badge>
-              </div>
-              <Button asChild className="w-full btn-primary">
-                <Link href="/mesero">Acceder como Mesero</Link>
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Cajero */}
-          <Card className="card-restaurant hover:scale-105 transition-transform duration-300">
-            <CardHeader className="text-center">
-              <div className="mx-auto w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center mb-4">
-                <CreditCard className="w-8 h-8 text-white" />
-              </div>
-              <CardTitle className="text-xl">Cajero</CardTitle>
-              <CardDescription>Procesa pagos, genera facturas y maneja el punto de venta</CardDescription>
-            </CardHeader>
-            <CardContent className="text-center">
-              <div className="space-y-2 mb-6">
-                <Badge variant="secondary" className="mr-2">
-                  Punto de Venta
-                </Badge>
-                <Badge variant="secondary" className="mr-2">
-                  Facturación
-                </Badge>
-                <Badge variant="secondary">Reportes</Badge>
-              </div>
-              <Button asChild className="w-full btn-secondary">
-                <Link href="/cajero">Acceder como Cajero</Link>
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Administrador */}
-          <Card className="card-restaurant hover:scale-105 transition-transform duration-300">
-            <CardHeader className="text-center">
-              <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center mb-4">
-                <ChefHat className="w-8 h-8 text-white" />
-              </div>
-              <CardTitle className="text-xl">Administrador</CardTitle>
-              <CardDescription>Gestiona el restaurante, productos, empleados y reportes</CardDescription>
-            </CardHeader>
-            <CardContent className="text-center">
-              <div className="space-y-2 mb-6">
-                <Badge variant="secondary" className="mr-2">
-                  Gestión Completa
-                </Badge>
-                <Badge variant="secondary" className="mr-2">
-                  Reportes
-                </Badge>
-                <Badge variant="secondary">Configuración</Badge>
-              </div>
-              <Button asChild className="w-full bg-transparent" variant="outline">
-                <Link href="/dashboard">Acceder como Admin</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Métricas adicionales */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Acciones Rápidas */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           <Card className="card-restaurant">
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <Clock className="w-5 h-5 mr-2 text-restaurant-primary" />
-                Tiempo Promedio de Atención
+              <CardTitle className="flex items-center space-x-2">
+                <ChefHat className="h-5 w-5 text-restaurant-primary" />
+                <span>Acciones Rápidas</span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-restaurant-primary mb-2">
-                {estadisticas.tiempoPromedioAtencion} min
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <Button asChild className="btn-primary">
+                  <Link href="/ventas/pos">
+                    <DollarSign className="h-4 w-4 mr-2" />
+                    Nueva Venta
+                  </Link>
+                </Button>
+                <Button asChild variant="outline">
+                  <Link href="/reservaciones">
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Reservaciones
+                  </Link>
+                </Button>
+                <Button asChild variant="outline">
+                  <Link href="/mesas">
+                    <MapPin className="h-4 w-4 mr-2" />
+                    Ver Mesas
+                  </Link>
+                </Button>
+                <Button asChild variant="outline">
+                  <Link href="/productos">
+                    <ChefHat className="h-4 w-4 mr-2" />
+                    Productos
+                  </Link>
+                </Button>
               </div>
-              <p className="text-sm text-muted-foreground">
-                Tiempo desde que el cliente se sienta hasta que recibe su pedido
-              </p>
             </CardContent>
           </Card>
 
           <Card className="card-restaurant">
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <ShoppingCart className="w-5 h-5 mr-2 text-restaurant-secondary" />
-                Productos Más Vendidos
+              <CardTitle className="flex items-center space-x-2">
+                <Bell className="h-5 w-5 text-restaurant-warning" />
+                <span>Notificaciones</span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Tacos al Pastor</span>
-                  <Badge variant="outline">45 vendidos</Badge>
+            <CardContent className="space-y-3">
+              <div className="flex items-center space-x-3 p-3 bg-yellow-50 rounded-lg border-l-4 border-yellow-400">
+                <Clock className="h-4 w-4 text-yellow-600" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-yellow-800">Mesa 5 - Tiempo de espera alto</p>
+                  <p className="text-xs text-yellow-600">45 minutos desde el pedido</p>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Nachos Supremos</span>
-                  <Badge variant="outline">32 vendidos</Badge>
+              </div>
+
+              <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400">
+                <Calendar className="h-4 w-4 text-blue-600" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-blue-800">Reservación confirmada</p>
+                  <p className="text-xs text-blue-600">Mesa para 4 - 19:30</p>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">Quesadillas</span>
-                  <Badge variant="outline">28 vendidos</Badge>
+              </div>
+
+              <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg border-l-4 border-green-400">
+                <TrendingUp className="h-4 w-4 text-green-600" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-green-800">Meta de ventas alcanzada</p>
+                  <p className="text-xs text-green-600">102% del objetivo diario</p>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
+
+        {/* Selección de Rol */}
+        <Card className="card-restaurant">
+          <CardHeader>
+            <CardTitle>Acceso por Rol</CardTitle>
+            <p className="text-sm text-muted-foreground">Selecciona tu rol para acceder a las funciones específicas</p>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Button asChild size="lg" className="btn-primary h-20 flex-col">
+                <Link href="/dashboard">
+                  <Users className="h-6 w-6 mb-2" />
+                  <span className="font-semibold">Administrador</span>
+                  <span className="text-xs opacity-90">Acceso completo</span>
+                </Link>
+              </Button>
+
+              <Button asChild size="lg" variant="outline" className="h-20 flex-col bg-transparent">
+                <Link href="/mesero">
+                  <ChefHat className="h-6 w-6 mb-2" />
+                  <span className="font-semibold">Mesero</span>
+                  <span className="text-xs opacity-70">Mesas y pedidos</span>
+                </Link>
+              </Button>
+
+              <Button asChild size="lg" variant="outline" className="h-20 flex-col bg-transparent">
+                <Link href="/cajero">
+                  <DollarSign className="h-6 w-6 mb-2" />
+                  <span className="font-semibold">Cajero</span>
+                  <span className="text-xs opacity-70">Ventas y cobros</span>
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

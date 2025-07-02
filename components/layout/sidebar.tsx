@@ -1,239 +1,185 @@
 "use client"
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
 import {
   Home,
   Users,
   ChefHat,
-  CreditCard,
+  MapPin,
+  DollarSign,
   Calendar,
+  MessageSquare,
   BarChart3,
   Settings,
+  User,
+  CreditCard,
   Package,
-  MessageSquare,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarRail,
+} from "@/components/ui/sidebar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 const menuItems = [
   {
-    title: "Inicio",
-    href: "/",
-    icon: Home,
-    badge: null,
+    title: "Principal",
+    items: [
+      {
+        title: "Inicio",
+        url: "/",
+        icon: Home,
+      },
+      {
+        title: "Dashboard",
+        url: "/dashboard",
+        icon: BarChart3,
+      },
+    ],
   },
   {
-    title: "Mesas",
-    href: "/mesas",
-    icon: Users,
-    badge: "8 ocupadas",
+    title: "Operaciones",
+    items: [
+      {
+        title: "Punto de Venta",
+        url: "/ventas/pos",
+        icon: DollarSign,
+      },
+      {
+        title: "Mesas",
+        url: "/mesas",
+        icon: MapPin,
+      },
+      {
+        title: "Productos",
+        url: "/productos",
+        icon: Package,
+      },
+      {
+        title: "Clientes",
+        url: "/clientes",
+        icon: Users,
+      },
+      {
+        title: "Reservaciones",
+        url: "/reservaciones",
+        icon: Calendar,
+      },
+    ],
   },
   {
-    title: "Productos",
-    href: "/productos",
-    icon: Package,
-    badge: null,
+    title: "Roles",
+    items: [
+      {
+        title: "Mesero",
+        url: "/mesero",
+        icon: ChefHat,
+      },
+      {
+        title: "Cajero",
+        url: "/cajero",
+        icon: CreditCard,
+      },
+    ],
   },
   {
-    title: "Clientes",
-    href: "/clientes",
-    icon: Users,
-    badge: null,
+    title: "Marketing",
+    items: [
+      {
+        title: "Crear Encuesta",
+        url: "/encuestas/crear",
+        icon: MessageSquare,
+      },
+      {
+        title: "Campañas SMS",
+        url: "/encuestas/campanas",
+        icon: MessageSquare,
+      },
+    ],
   },
   {
-    title: "Reservaciones",
-    href: "/reservaciones",
-    icon: Calendar,
-    badge: "3 hoy",
-  },
-  {
-    title: "Punto de Venta",
-    href: "/ventas/pos",
-    icon: CreditCard,
-    badge: null,
-  },
-  {
-    title: "Reportes",
-    href: "/reportes",
-    icon: BarChart3,
-    badge: null,
+    title: "Configuración",
+    items: [
+      {
+        title: "Configuración",
+        url: "/configuracion",
+        icon: Settings,
+      },
+    ],
   },
 ]
 
-const rolesItems = [
-  {
-    title: "Mesero",
-    href: "/mesero",
-    icon: ChefHat,
-    description: "Gestión de mesas y pedidos",
-  },
-  {
-    title: "Cajero",
-    href: "/cajero",
-    icon: CreditCard,
-    description: "Punto de venta y facturación",
-  },
-]
-
-const encuestasItems = [
-  {
-    title: "Crear Encuesta",
-    href: "/encuestas/crear",
-    icon: MessageSquare,
-    badge: null,
-  },
-  {
-    title: "Campañas SMS",
-    href: "/encuestas/campanas",
-    icon: MessageSquare,
-    badge: "2 activas",
-  },
-]
-
-export function Sidebar() {
-  const [collapsed, setCollapsed] = useState(false)
+export function AppSidebar() {
   const pathname = usePathname()
 
   return (
-    <div className={cn("sidebar-restaurant flex flex-col transition-all duration-300", collapsed ? "w-16" : "w-64")}>
-      {/* Header del sidebar */}
-      <div className="p-4 border-b border-white/10">
-        <div className="flex items-center justify-between">
-          {!collapsed && (
-            <div>
-              <h2 className="text-lg font-bold text-white">El Buen Sabor</h2>
-              <p className="text-xs text-white/70">Sistema de Gestión</p>
-            </div>
-          )}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setCollapsed(!collapsed)}
-            className="text-white hover:bg-white/10"
-          >
-            {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-          </Button>
+    <Sidebar className="sidebar-restaurant">
+      <SidebarHeader className="p-4">
+        <div className="flex items-center space-x-3">
+          <div className="w-8 h-8 bg-restaurant-primary rounded-lg flex items-center justify-center">
+            <ChefHat className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-white">RestApp</h2>
+            <p className="text-xs text-gray-300">Sistema de Gestión</p>
+          </div>
         </div>
-      </div>
+      </SidebarHeader>
 
-      {/* Navegación principal */}
-      <div className="flex-1 overflow-y-auto scrollbar-restaurant">
-        <div className="p-4 space-y-2">
-          {!collapsed && (
-            <h3 className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-3">Navegación</h3>
-          )}
+      <SidebarContent className="scrollbar-restaurant">
+        {menuItems.map((group) => (
+          <SidebarGroup key={group.title}>
+            <SidebarGroupLabel className="text-gray-300 text-xs uppercase tracking-wider">
+              {group.title}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {group.items.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname === item.url}
+                      className="text-gray-200 hover:text-white hover:bg-white/10 data-[active=true]:bg-restaurant-primary data-[active=true]:text-white"
+                    >
+                      <Link href={item.url}>
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
+      </SidebarContent>
 
-          {menuItems.map((item) => {
-            const isActive = pathname === item.href
-            return (
-              <Button
-                key={item.href}
-                asChild
-                variant="ghost"
-                className={cn(
-                  "w-full justify-start text-white hover:bg-white/10",
-                  isActive && "bg-white/20 text-white",
-                  collapsed && "px-2",
-                )}
-              >
-                <Link href={item.href}>
-                  <item.icon className={cn("w-4 h-4", !collapsed && "mr-3")} />
-                  {!collapsed && (
-                    <>
-                      <span className="flex-1 text-left">{item.title}</span>
-                      {item.badge && (
-                        <Badge variant="secondary" className="ml-auto text-xs">
-                          {item.badge}
-                        </Badge>
-                      )}
-                    </>
-                  )}
-                </Link>
-              </Button>
-            )
-          })}
+      <SidebarFooter className="p-4">
+        <div className="flex items-center space-x-3">
+          <Avatar className="h-8 w-8">
+            <AvatarImage src="/placeholder-avatar.jpg" />
+            <AvatarFallback className="bg-restaurant-primary text-white">
+              <User className="h-4 w-4" />
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-white truncate">Admin Usuario</p>
+            <p className="text-xs text-gray-300 truncate">Administrador</p>
+          </div>
         </div>
+      </SidebarFooter>
 
-        <Separator className="mx-4 bg-white/10" />
-
-        {/* Sección de roles */}
-        <div className="p-4 space-y-2">
-          {!collapsed && (
-            <h3 className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-3">Acceso Rápido</h3>
-          )}
-
-          {rolesItems.map((item) => (
-            <Button
-              key={item.href}
-              asChild
-              variant="ghost"
-              className={cn("w-full justify-start text-white hover:bg-white/10", collapsed && "px-2")}
-            >
-              <Link href={item.href}>
-                <item.icon className={cn("w-4 h-4", !collapsed && "mr-3")} />
-                {!collapsed && (
-                  <div className="flex-1 text-left">
-                    <div className="text-sm font-medium">{item.title}</div>
-                    <div className="text-xs text-white/70">{item.description}</div>
-                  </div>
-                )}
-              </Link>
-            </Button>
-          ))}
-        </div>
-
-        <Separator className="mx-4 bg-white/10" />
-
-        {/* Sección de encuestas */}
-        <div className="p-4 space-y-2">
-          {!collapsed && (
-            <h3 className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-3">Encuestas SMS</h3>
-          )}
-
-          {encuestasItems.map((item) => (
-            <Button
-              key={item.href}
-              asChild
-              variant="ghost"
-              className={cn("w-full justify-start text-white hover:bg-white/10", collapsed && "px-2")}
-            >
-              <Link href={item.href}>
-                <item.icon className={cn("w-4 h-4", !collapsed && "mr-3")} />
-                {!collapsed && (
-                  <>
-                    <span className="flex-1 text-left">{item.title}</span>
-                    {item.badge && (
-                      <Badge variant="secondary" className="ml-auto text-xs">
-                        {item.badge}
-                      </Badge>
-                    )}
-                  </>
-                )}
-              </Link>
-            </Button>
-          ))}
-        </div>
-      </div>
-
-      {/* Footer del sidebar */}
-      <div className="p-4 border-t border-white/10">
-        <Button
-          asChild
-          variant="ghost"
-          className={cn("w-full justify-start text-white hover:bg-white/10", collapsed && "px-2")}
-        >
-          <Link href="/configuracion">
-            <Settings className={cn("w-4 h-4", !collapsed && "mr-3")} />
-            {!collapsed && <span>Configuración</span>}
-          </Link>
-        </Button>
-      </div>
-    </div>
+      <SidebarRail />
+    </Sidebar>
   )
 }

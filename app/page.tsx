@@ -1,11 +1,14 @@
 import { HomeView } from "@/components/home-view"
-import { mockEstadisticas } from "@/utils/mock-data"
 
 export default async function HomePage() {
-  // Simular obtención de datos del servidor
-  await new Promise((resolve) => setTimeout(resolve, 300))
+  // Aquí se pueden obtener datos del servidor si es necesario
+  const stats = {
+    mesasOcupadas: 12,
+    totalMesas: 20,
+    ventasHoy: 15420.5,
+    clientesAtendidos: 45,
+    reservacionesHoy: 8,
+  }
 
-  const estadisticas = mockEstadisticas
-
-  return <HomeView estadisticas={estadisticas} />
+  return <HomeView stats={stats} />
 }
