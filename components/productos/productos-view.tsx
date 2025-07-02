@@ -518,22 +518,23 @@ export function ProductosView({
                       <h3 className="font-semibold text-sm leading-tight">{producto.Nombredelproducto}</h3>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                            <MoreVertical className="h-4 w-4 bg-red-500" />
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-100">
+                            <MoreVertical className="h-4 w-4" />
+                            <span className="sr-only">Abrir menú</span>
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleView(producto)}>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuItem onClick={() => handleView(producto)} className="cursor-pointer">
                             <Eye className="h-4 w-4 mr-2" />
                             Ver detalles
                           </DropdownMenuItem>
-                          <LicenseGuard feature="gestionProductos">
-                            <DropdownMenuItem onClick={() => handleEdit(producto)}>
+                          <LicenseGuard feature="gestionProductos" fallback={null}>
+                            <DropdownMenuItem onClick={() => handleEdit(producto)} className="cursor-pointer">
                               <Edit className="h-4 w-4 mr-2" />
                               Editar
                             </DropdownMenuItem>
                           </LicenseGuard>
-                          <DropdownMenuItem onClick={() => handleToggleFavorite(producto)}>
+                          <DropdownMenuItem onClick={() => handleToggleFavorite(producto)} className="cursor-pointer">
                             {producto.Favorito ? (
                               <>
                                 <HeartOff className="h-4 w-4 mr-2" />
@@ -547,8 +548,11 @@ export function ProductosView({
                             )}
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <LicenseGuard feature="gestionProductos">
-                            <DropdownMenuItem onClick={() => handleDelete(producto)} className="text-red-600">
+                          <LicenseGuard feature="gestionProductos" fallback={null}>
+                            <DropdownMenuItem
+                              onClick={() => handleDelete(producto)}
+                              className="text-red-600 cursor-pointer focus:text-red-600"
+                            >
                               <Trash2 className="h-4 w-4 mr-2" />
                               Eliminar
                             </DropdownMenuItem>
@@ -637,20 +641,23 @@ export function ProductosView({
 
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-100">
                               <MoreVertical className="h-4 w-4" />
+                              <span className="sr-only">Abrir menú</span>
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleView(producto)}>
+                          <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuItem onClick={() => handleView(producto)} className="cursor-pointer">
                               <Eye className="h-4 w-4 mr-2" />
                               Ver detalles
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleEdit(producto)}>
-                              <Edit className="h-4 w-4 mr-2" />
-                              Editar
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleToggleFavorite(producto)}>
+                            <LicenseGuard feature="gestionProductos" fallback={null}>
+                              <DropdownMenuItem onClick={() => handleEdit(producto)} className="cursor-pointer">
+                                <Edit className="h-4 w-4 mr-2" />
+                                Editar
+                              </DropdownMenuItem>
+                            </LicenseGuard>
+                            <DropdownMenuItem onClick={() => handleToggleFavorite(producto)} className="cursor-pointer">
                               {producto.Favorito ? (
                                 <>
                                   <HeartOff className="h-4 w-4 mr-2" />
@@ -664,10 +671,15 @@ export function ProductosView({
                               )}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => handleDelete(producto)} className="text-red-600">
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Eliminar
-                            </DropdownMenuItem>
+                            <LicenseGuard feature="gestionProductos" fallback={null}>
+                              <DropdownMenuItem
+                                onClick={() => handleDelete(producto)}
+                                className="text-red-600 cursor-pointer focus:text-red-600"
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Eliminar
+                              </DropdownMenuItem>
+                            </LicenseGuard>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>

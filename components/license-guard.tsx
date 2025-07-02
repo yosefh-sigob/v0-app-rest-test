@@ -1,53 +1,32 @@
 "use client"
 
 import type { ReactNode } from "react"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Lock, Crown, Zap, Building, ArrowRight } from "lucide-react"
+import { Lock, Crown, ArrowUp } from "lucide-react"
 import { useLicense } from "@/contexts/license-context"
-import { hasFeature, LICENSE_FEATURES } from "@/utils/license"
+import { canAccessFeature, getUpgradeMessage, LICENSE_FEATURES } from "@/utils/license"
 import type { LicenseType } from "@/utils/license"
 
 interface LicenseGuardProps {
+  feature: string
   children: ReactNode
-  feature: keyof typeof LICENSE_FEATURES.Gratis
   fallback?: ReactNode
+  showUpgrade?: boolean
 }
 
-const LICENSE_ICONS = {
-  Gratis: <Lock className="h-4 w-4" />,
-  Lite: <Zap className="h-4 w-4" />,
-  Pro: <Crown className="h-4 w-4" />,
-  Franquicia: <Building className="h-4 w-4" />,
+const LICENSE_COLORS: Record<LicenseType, string> = {
+  Gratis: "bg-gray-100 text-gray-800 border-gray-200",
+  Lite: "bg-blue-100 text-blue-800 border-blue-200",
+  Pro: "bg-orange-100 text-orange-800 border-orange-200",
+  Franquicia: "bg-purple-100 text-purple-800 border-purple-200",
 }
 
-const LICENSE_COLORS = {
-  Gratis: "bg-gray-500",
-  Lite: "bg-blue-500",
-  Pro: "bg-orange-500",
-  Franquicia: "bg-purple-500",
-}
-
-function getRequiredLicense(feature: keyof typeof LICENSE_FEATURES.Gratis): LicenseType {
-  const licenses: LicenseType[] = ["Gratis", "Lite", "Pro", "Franquicia"]
-
-  for (const license of licenses) {
-    if (LICENSE_FEATURES[license][feature]) {
-      return license
-    }
-  }
-
-  return "Pro" // Default fallback
-}
-
-export function LicenseGuard({ children, feature, fallback }: LicenseGuardProps) {
+export function LicenseGuard({ feature, children, fallback, showUpgrade = true }: LicenseGuardProps) {
   const { currentLicense, setLicense } = useLicense()
 
-  const hasAccess = hasFeature(currentLicense, feature)
-  const requiredLicense = getRequiredLicense(feature)
-
-  if (hasAccess) {
+  if (canAccessFeature(currentLicense, feature)) {
     return <>{children}</>
   }
 
@@ -55,41 +34,44 @@ export function LicenseGuard({ children, feature, fallback }: LicenseGuardProps)
     return <>{fallback}</>
   }
 
+  if (!showUpgrade) {
+    return null
+  }
+
+  const featureInfo = LICENSE_FEATURES[feature]
+  const requiredLicense = featureInfo?.requiredLicense || "Pro"
+
   return (
     <Card className="border-dashed border-2 border-orange-200 bg-orange-50/50">
-      <CardContent className="flex flex-col items-center justify-center py-8 text-center">
-        <div className="mb-4">
-          <div className={`inline-flex p-3 rounded-full ${LICENSE_COLORS[requiredLicense]} text-white mb-3`}>
-            <Lock className="h-6 w-6" />
-          </div>
-          <h3 className="text-lg font-semibold mb-2">Funcionalidad Bloqueada</h3>
-          <p className="text-muted-foreground mb-4">
-            Esta funcionalidad requiere el plan <strong>{requiredLicense}</strong> o superior
-          </p>
+      <CardHeader className="text-center pb-3">
+        <div className="mx-auto w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mb-3">
+          <Lock className="h-6 w-6 text-orange-600" />
         </div>
+        <CardTitle className="text-lg text-orange-900">{featureInfo?.name || "Funcionalidad Premium"}</CardTitle>
+      </CardHeader>
+      <CardContent className="text-center space-y-4">
+        <p className="text-sm text-orange-700">{getUpgradeMessage(feature)}</p>
 
-        <div className="flex items-center gap-2 mb-4">
-          <Badge variant="outline" className="text-xs">
-            {LICENSE_ICONS[currentLicense]}
-            Plan Actual: {currentLicense}
-          </Badge>
-          <ArrowRight className="h-4 w-4 text-muted-foreground" />
-          <Badge className={`text-xs text-white ${LICENSE_COLORS[requiredLicense]}`}>
-            {LICENSE_ICONS[requiredLicense]}
-            Requerido: {requiredLicense}
+        <div className="flex items-center justify-center gap-2">
+          <span className="text-sm text-muted-foreground">Requiere plan:</span>
+          <Badge className={`${LICENSE_COLORS[requiredLicense]} border`}>
+            <Crown className="h-3 w-3 mr-1" />
+            {requiredLicense}
           </Badge>
         </div>
 
-        <Button
-          onClick={() => setLicense(requiredLicense)}
-          className={`${LICENSE_COLORS[requiredLicense]} hover:opacity-90 text-white`}
-        >
-          {LICENSE_ICONS[requiredLicense]}
-          Probar Plan {requiredLicense}
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-2 justify-center">
+          <Button onClick={() => setLicense(requiredLicense)} className="bg-orange-600 hover:bg-orange-700" size="sm">
+            <ArrowUp className="h-4 w-4 mr-2" />
+            Probar {requiredLicense}
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setLicense("Franquicia")}>
+            Ver Todos los Planes
+          </Button>
+        </div>
 
-        <p className="text-xs text-muted-foreground mt-3">
-          🧪 Modo demo - Cambia de plan para probar esta funcionalidad
+        <p className="text-xs text-muted-foreground">
+          Puedes cambiar de plan en cualquier momento para probar las funcionalidades
         </p>
       </CardContent>
     </Card>

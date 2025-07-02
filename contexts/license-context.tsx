@@ -6,7 +6,6 @@ import type { LicenseType } from "@/utils/license"
 interface LicenseContextType {
   currentLicense: LicenseType
   setLicense: (license: LicenseType) => void
-  hasFeature: (feature: string) => boolean
 }
 
 const LicenseContext = createContext<LicenseContextType | undefined>(undefined)
@@ -18,30 +17,21 @@ interface LicenseProviderProps {
 export function LicenseProvider({ children }: LicenseProviderProps) {
   const [currentLicense, setCurrentLicense] = useState<LicenseType>("Gratis")
 
-  // Cargar licencia desde localStorage al inicializar
+  // Cargar licencia desde localStorage al montar
   useEffect(() => {
-    const savedLicense = localStorage.getItem("demo-license") as LicenseType
+    const savedLicense = localStorage.getItem("restaurant-license")
     if (savedLicense && ["Gratis", "Lite", "Pro", "Franquicia"].includes(savedLicense)) {
-      setCurrentLicense(savedLicense)
+      setCurrentLicense(savedLicense as LicenseType)
     }
   }, [])
 
   // Guardar licencia en localStorage cuando cambie
   const setLicense = (license: LicenseType) => {
     setCurrentLicense(license)
-    localStorage.setItem("demo-license", license)
+    localStorage.setItem("restaurant-license", license)
   }
 
-  // Verificar si tiene acceso a una funcionalidad
-  const hasFeature = (feature: string): boolean => {
-    // Importar dinámicamente para evitar problemas de SSR
-    const { hasFeature: checkFeature } = require("@/utils/license")
-    return checkFeature(currentLicense, feature)
-  }
-
-  return (
-    <LicenseContext.Provider value={{ currentLicense, setLicense, hasFeature }}>{children}</LicenseContext.Provider>
-  )
+  return <LicenseContext.Provider value={{ currentLicense, setLicense }}>{children}</LicenseContext.Provider>
 }
 
 export function useLicense() {

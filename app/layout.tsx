@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "RestApp - Sistema de Gestión para Restaurantes",
-  description: "Sistema completo de gestión para restaurantes con múltiples funcionalidades",
+  description: "Sistema completo de gestión para restaurantes con control de inventario, ventas y más",
     generator: 'v0.dev'
 }
 
@@ -23,7 +23,17 @@ export default function RootLayout({
       <body className={inter.className}>
         <LicenseProvider>
           {children}
-          <Toaster />
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              duration: 4000,
+              style: {
+                background: "white",
+                border: "1px solid #e5e7eb",
+                color: "#374151",
+              },
+            }}
+          />
         </LicenseProvider>
       </body>
     </html>
