@@ -1,4 +1,4 @@
-// Implementación simple de ULID para el frontend
+// Implementación simple de ULID para el proyecto
 // En producción, usar una librería como 'ulid'
 
 const ENCODING = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
@@ -31,41 +31,23 @@ function encodeRandom(len: number): string {
 }
 
 export function generateULID(): string {
-  const now = Date.now()
-  return encodeTime(now, TIME_LEN) + encodeRandom(RANDOM_LEN)
+  const timestamp = Date.now().toString(36).toUpperCase()
+  const randomPart = Math.random().toString(36).substring(2, 15).toUpperCase()
+  return `${timestamp}${randomPart}`.padEnd(26, "0").substring(0, 26)
 }
 
 export function isValidULID(ulid: string): boolean {
-  if (typeof ulid !== "string") return false
-  if (ulid.length !== 26) return false
-
-  // Verificar que todos los caracteres sean válidos
-  for (let i = 0; i < ulid.length; i++) {
-    if (ENCODING.indexOf(ulid.charAt(i)) === -1) {
-      return false
-    }
-  }
-
-  return true
+  return typeof ulid === "string" && ulid.length === 26 && /^[0-9A-Z]+$/.test(ulid)
 }
 
-export function extractTimestamp(ulid: string): number {
-  if (!isValidULID(ulid)) {
-    throw new Error("Invalid ULID")
+export function getULIDTimestamp(ulid: string): Date | null {
+  if (!isValidULID(ulid)) return null
+
+  try {
+    const timestampPart = ulid.substring(0, 10)
+    const timestamp = Number.parseInt(timestampPart, 36)
+    return new Date(timestamp)
+  } catch {
+    return null
   }
-
-  const timeStr = ulid.substring(0, TIME_LEN)
-  let timestamp = 0
-
-  for (let i = 0; i < timeStr.length; i++) {
-    const char = timeStr.charAt(i)
-    const index = ENCODING.indexOf(char)
-    timestamp = timestamp * ENCODING_LEN + index
-  }
-
-  return timestamp
-}
-
-export function getULIDDate(ulid: string): Date {
-  return new Date(extractTimestamp(ulid))
 }

@@ -1,8 +1,8 @@
 "use client"
 
-import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import {
   Package,
@@ -16,10 +16,8 @@ import {
   QrCode,
   Edit,
   X,
-  Clock,
-  DollarSign,
-  Warehouse,
-  Users,
+  Check,
+  AlertCircle,
 } from "lucide-react"
 import type { Producto } from "@/interfaces/database"
 
@@ -50,16 +48,29 @@ export function ProductoDetail({
 }: ProductoDetailProps) {
   const grupo = gruposProductos.find((g) => g.id === producto.GrupoProductoID)
   const unidad = unidades.find((u) => u.id === producto.UnidadID)
-  const areaProduccion = areasProduccion.find((a) => a.id === producto.AreaProduccionID)
+  const area = areasProduccion.find((a) => a.id === producto.AreaProduccionID)
   const almacen = almacenes.find((a) => a.id === producto.AlmacenID)
 
   const getChannelBadges = () => {
     const channels = []
-    if (producto.Comedor) channels.push({ icon: <Home className="h-4 w-4" />, label: "Comedor" })
-    if (producto.ADomicilio) channels.push({ icon: <Truck className="h-4 w-4" />, label: "Domicilio" })
-    if (producto.Mostrador) channels.push({ icon: <ShoppingCart className="h-4 w-4" />, label: "Mostrador" })
-    if (producto.Enlinea) channels.push({ icon: <Smartphone className="h-4 w-4" />, label: "En línea" })
-    if (producto.EnMenuQR) channels.push({ icon: <QrCode className="h-4 w-4" />, label: "QR" })
+    if (producto.Comedor)
+      channels.push({ icon: <Home className="h-4 w-4" />, label: "Comedor", color: "bg-green-100 text-green-800" })
+    if (producto.ADomicilio)
+      channels.push({ icon: <Truck className="h-4 w-4" />, label: "Domicilio", color: "bg-blue-100 text-blue-800" })
+    if (producto.Mostrador)
+      channels.push({
+        icon: <ShoppingCart className="h-4 w-4" />,
+        label: "Mostrador",
+        color: "bg-purple-100 text-purple-800",
+      })
+    if (producto.Enlinea)
+      channels.push({
+        icon: <Smartphone className="h-4 w-4" />,
+        label: "En línea",
+        color: "bg-orange-100 text-orange-800",
+      })
+    if (producto.EnMenuQR)
+      channels.push({ icon: <QrCode className="h-4 w-4" />, label: "Menú QR", color: "bg-gray-100 text-gray-800" })
     return channels
   }
 
@@ -72,16 +83,21 @@ export function ProductoDetail({
             <div className="p-2 bg-orange-100 rounded-lg">{TIPO_ICONS[producto.TipoProducto]}</div>
             <div>
               <h2 className="text-2xl font-bold">{producto.Nombredelproducto}</h2>
-              <div className="flex items-center gap-2 mt-1">
+              <div className="flex items-center gap-2">
                 <Badge variant="outline">{producto.ClaveProducto}</Badge>
-                <Badge variant="outline">{producto.TipoProducto}</Badge>
+                <Badge variant="secondary">{producto.TipoProducto}</Badge>
                 {producto.Favorito && (
                   <Badge className="bg-yellow-500 hover:bg-yellow-600">
                     <Star className="h-3 w-3 mr-1" />
                     Favorito
                   </Badge>
                 )}
-                {producto.Suspendido && <Badge variant="destructive">Suspendido</Badge>}
+                {producto.Suspendido && (
+                  <Badge variant="destructive">
+                    <AlertCircle className="h-3 w-3 mr-1" />
+                    Suspendido
+                  </Badge>
+                )}
               </div>
             </div>
           </div>
@@ -92,185 +108,154 @@ export function ProductoDetail({
             Editar
           </Button>
           <Button variant="outline" onClick={onClose}>
-            <X className="h-4 w-4" />
+            <X className="h-4 w-4 mr-2" />
+            Cerrar
           </Button>
         </div>
       </div>
 
-      {/* Imagen */}
-      <Card>
-        <CardContent className="p-6">
-          <img
-            src={`/placeholder.svg?height=300&width=400&text=${encodeURIComponent(producto.Nombredelproducto)}`}
-            alt={producto.Nombredelproducto}
-            className="w-full max-w-md mx-auto h-64 object-cover rounded-lg"
-          />
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Información Principal */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Descripción */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Descripción</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">{producto.Descripcion || "Sin descripción disponible"}</p>
+            </CardContent>
+          </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Información General */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Package className="h-5 w-5" />
-              Información General
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <label className="text-sm font-medium text-muted-foreground">Descripción</label>
-              <p className="mt-1">{producto.Descripcion || "Sin descripción"}</p>
-            </div>
-
-            <Separator />
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Categoría</label>
-                <p className="mt-1">{grupo?.nombre || "Sin categoría"}</p>
+          {/* Configuración */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Configuración</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <span className="text-sm font-medium">Permite Descuento</span>
+                  {producto.PermiteDescuento ? (
+                    <Check className="h-4 w-4 text-green-600" />
+                  ) : (
+                    <X className="h-4 w-4 text-red-600" />
+                  )}
+                </div>
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <span className="text-sm font-medium">Controla Stock</span>
+                  {producto.ControlaStock ? (
+                    <Check className="h-4 w-4 text-green-600" />
+                  ) : (
+                    <X className="h-4 w-4 text-red-600" />
+                  )}
+                </div>
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <span className="text-sm font-medium">Acepta Propina</span>
+                  {producto.AceptaPropina ? (
+                    <Check className="h-4 w-4 text-green-600" />
+                  ) : (
+                    <X className="h-4 w-4 text-red-600" />
+                  )}
+                </div>
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <span className="text-sm font-medium">Pregunta Cocción</span>
+                  {producto.PreguntaCoccion ? (
+                    <Check className="h-4 w-4 text-green-600" />
+                  ) : (
+                    <X className="h-4 w-4 text-red-600" />
+                  )}
+                </div>
               </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Unidad</label>
-                <p className="mt-1">{unidad ? `${unidad.nombre} (${unidad.abreviacion})` : "Sin unidad"}</p>
-              </div>
-            </div>
+            </CardContent>
+          </Card>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Área de Producción</label>
-                <p className="mt-1">{areaProduccion?.nombre || "Sin área"}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Almacén</label>
-                <p className="mt-1">{almacen?.nombre || "Sin almacén"}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Configuración de Ventas */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5" />
-              Configuración de Ventas
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <label className="text-sm font-medium text-muted-foreground">Canales de Venta</label>
-              <div className="flex flex-wrap gap-2 mt-2">
+          {/* Canales de Venta */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Canales de Venta</CardTitle>
+              <CardDescription>Dónde está disponible este producto</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-3">
                 {getChannelBadges().map((channel, index) => (
-                  <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                  <div key={index} className={`flex items-center gap-2 px-3 py-2 rounded-lg ${channel.color}`}>
                     {channel.icon}
-                    {channel.label}
-                  </Badge>
+                    <span className="text-sm font-medium">{channel.label}</span>
+                  </div>
                 ))}
                 {getChannelBadges().length === 0 && (
-                  <p className="text-sm text-muted-foreground">Sin canales configurados</p>
+                  <p className="text-muted-foreground text-sm">No hay canales de venta configurados</p>
                 )}
               </div>
-            </div>
+            </CardContent>
+          </Card>
+        </div>
 
-            <Separator />
+        {/* Información Lateral */}
+        <div className="space-y-6">
+          {/* Imagen */}
+          <Card>
+            <CardContent className="p-4">
+              <img
+                src={`/placeholder.svg?height=200&width=300&text=${encodeURIComponent(producto.Nombredelproducto)}`}
+                alt={producto.Nombredelproducto}
+                className="w-full h-48 object-cover rounded-md"
+              />
+            </CardContent>
+          </Card>
 
-            <div className="grid grid-cols-2 gap-4">
+          {/* Clasificación */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Clasificación</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Tiempo de Preparación</label>
-                <p className="mt-1 flex items-center gap-1">
-                  <Clock className="h-4 w-4" />
-                  {producto.TiempoPreparacion || 0} min
-                </p>
+                <label className="text-sm font-medium text-muted-foreground">Categoría</label>
+                <p className="text-sm">{grupo?.nombre || "Sin categoría"}</p>
               </div>
+              <Separator />
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Orden de Impresión</label>
-                <p className="mt-1">{producto.OrdenImpresion || "No definido"}</p>
+                <label className="text-sm font-medium text-muted-foreground">Unidad de Medida</label>
+                <p className="text-sm">{unidad ? `${unidad.nombre} (${unidad.abreviacion})` : "Sin unidad"}</p>
               </div>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-muted-foreground">Configuraciones Especiales</label>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {producto.RequierePreparacion && <Badge variant="outline">Requiere Preparación</Badge>}
-                {producto.PermiteDescuento && <Badge variant="outline">Permite Descuento</Badge>}
-                {producto.EsCombo && <Badge variant="outline">Es Combo</Badge>}
-                {producto.TienePresentaciones && <Badge variant="outline">Tiene Presentaciones</Badge>}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Control de Inventario */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Warehouse className="h-5 w-5" />
-              Control de Inventario
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+              <Separator />
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Stock Mínimo</label>
-                <p className="mt-1">{producto.StockMinimo || 0}</p>
+                <label className="text-sm font-medium text-muted-foreground">Área de Producción</label>
+                <p className="text-sm">{area?.nombre || "Sin área específica"}</p>
               </div>
+              <Separator />
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Stock Máximo</label>
-                <p className="mt-1">{producto.StockMaximo || 0}</p>
+                <label className="text-sm font-medium text-muted-foreground">Almacén</label>
+                <p className="text-sm">{almacen?.nombre || "Sin almacén específico"}</p>
               </div>
-            </div>
+            </CardContent>
+          </Card>
 
-            <div>
-              <label className="text-sm font-medium text-muted-foreground">Configuraciones</label>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {producto.ManejaInventario && <Badge variant="outline">Maneja Inventario</Badge>}
-                {producto.ControlaStock && <Badge variant="outline">Controla Stock</Badge>}
-                {producto.AlertaStockMinimo && <Badge variant="outline">Alerta Stock Mínimo</Badge>}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Información Adicional */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              Información Adicional
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <label className="text-sm font-medium text-muted-foreground">Notas Internas</label>
-              <p className="mt-1">{producto.NotasInternas || "Sin notas"}</p>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-muted-foreground">Instrucciones Especiales</label>
-              <p className="mt-1">{producto.InstruccionesEspeciales || "Sin instrucciones"}</p>
-            </div>
-
-            <Separator />
-
-            <div className="grid grid-cols-2 gap-4 text-sm">
+          {/* Información del Sistema */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Información del Sistema</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Creado</label>
-                <p className="mt-1">
-                  {producto.FechaCreacion ? new Date(producto.FechaCreacion).toLocaleDateString() : "No disponible"}
-                </p>
+                <label className="text-sm font-medium text-muted-foreground">ID del Producto</label>
+                <p className="text-xs font-mono bg-gray-100 p-2 rounded">{producto.ProductoULID}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Actualizado</label>
-                <p className="mt-1">
-                  {producto.FechaActualizacion
-                    ? new Date(producto.FechaActualizacion).toLocaleDateString()
-                    : "No disponible"}
-                </p>
+                <label className="text-sm font-medium text-muted-foreground">Fecha de Creación</label>
+                <p className="text-sm">{new Date(producto.FechaCreacion).toLocaleDateString()}</p>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+              {producto.FechaModificacion && (
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Última Modificación</label>
+                  <p className="text-sm">{new Date(producto.FechaModificacion).toLocaleDateString()}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   )

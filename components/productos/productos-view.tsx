@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,16 +14,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
 import {
   Pagination,
   PaginationContent,
@@ -58,8 +47,6 @@ import {
   X,
   RefreshCw,
 } from "lucide-react"
-import { ProductoForm } from "./producto-form"
-import { ProductoDetail } from "./producto-detail"
 import { LicenseGuard } from "@/components/license-guard"
 import { LicenseSelector } from "@/components/license-selector"
 import { useLicense } from "@/contexts/license-context"
@@ -518,23 +505,45 @@ export function ProductosView({
                       <h3 className="font-semibold text-sm leading-tight">{producto.Nombredelproducto}</h3>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-100">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-8 w-8 p-0 hover:bg-gray-100 focus:bg-gray-100 data-[state=open]:bg-gray-100"
+                          >
                             <MoreVertical className="h-4 w-4" />
-                            <span className="sr-only">Abrir menú</span>
+                            <span className="sr-only">Abrir menú de opciones</span>
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
-                          <DropdownMenuItem onClick={() => handleView(producto)} className="cursor-pointer">
+                        <DropdownMenuContent align="end" className="w-48" sideOffset={5}>
+                          <DropdownMenuItem 
+                            onClick={(e) => {
+                              e.preventDefault()
+                              handleView(producto)
+                            }}
+                            className="cursor-pointer"
+                          >
                             <Eye className="h-4 w-4 mr-2" />
                             Ver detalles
                           </DropdownMenuItem>
                           <LicenseGuard feature="gestionProductos" fallback={null}>
-                            <DropdownMenuItem onClick={() => handleEdit(producto)} className="cursor-pointer">
+                            <DropdownMenuItem 
+                              onClick={(e) => {
+                                e.preventDefault()
+                                handleEdit(producto)
+                              }}
+                              className="cursor-pointer"
+                            >
                               <Edit className="h-4 w-4 mr-2" />
                               Editar
                             </DropdownMenuItem>
                           </LicenseGuard>
-                          <DropdownMenuItem onClick={() => handleToggleFavorite(producto)} className="cursor-pointer">
+                          <DropdownMenuItem 
+                            onClick={(e) => {
+                              e.preventDefault()
+                              handleToggleFavorite(producto)
+                            }}
+                            className="cursor-pointer"
+                          >
                             {producto.Favorito ? (
                               <>
                                 <HeartOff className="h-4 w-4 mr-2" />
@@ -550,8 +559,11 @@ export function ProductosView({
                           <DropdownMenuSeparator />
                           <LicenseGuard feature="gestionProductos" fallback={null}>
                             <DropdownMenuItem
-                              onClick={() => handleDelete(producto)}
-                              className="text-red-600 cursor-pointer focus:text-red-600"
+                              onClick={(e) => {
+                                e.preventDefault()
+                                handleDelete(producto)
+                              }}
+                              className="text-red-600 cursor-pointer focus:text-red-600 focus:bg-red-50"
                             >
                               <Trash2 className="h-4 w-4 mr-2" />
                               Eliminar
@@ -641,23 +653,45 @@ export function ProductosView({
 
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-gray-100">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-8 w-8 p-0 hover:bg-gray-100 focus:bg-gray-100 data-[state=open]:bg-gray-100"
+                            >
                               <MoreVertical className="h-4 w-4" />
-                              <span className="sr-only">Abrir menú</span>
+                              <span className="sr-only">Abrir menú de opciones</span>
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-48">
-                            <DropdownMenuItem onClick={() => handleView(producto)} className="cursor-pointer">
+                          <DropdownMenuContent align="end" className="w-48" sideOffset={5}>
+                            <DropdownMenuItem 
+                              onClick={(e) => {
+                                e.preventDefault()
+                                handleView(producto)
+                              }}
+                              className="cursor-pointer"
+                            >
                               <Eye className="h-4 w-4 mr-2" />
                               Ver detalles
                             </DropdownMenuItem>
                             <LicenseGuard feature="gestionProductos" fallback={null}>
-                              <DropdownMenuItem onClick={() => handleEdit(producto)} className="cursor-pointer">
+                              <DropdownMenuItem 
+                                onClick={(e) => {
+                                  e.preventDefault()
+                                  handleEdit(producto)
+                                }}
+                                className="cursor-pointer"
+                              >
                                 <Edit className="h-4 w-4 mr-2" />
                                 Editar
                               </DropdownMenuItem>
                             </LicenseGuard>
-                            <DropdownMenuItem onClick={() => handleToggleFavorite(producto)} className="cursor-pointer">
+                            <DropdownMenuItem 
+                              onClick={(e) => {
+                                e.preventDefault()
+                                handleToggleFavorite(producto)
+                              }}
+                              className="cursor-pointer"
+                            >
                               {producto.Favorito ? (
                                 <>
                                   <HeartOff className="h-4 w-4 mr-2" />
@@ -673,8 +707,11 @@ export function ProductosView({
                             <DropdownMenuSeparator />
                             <LicenseGuard feature="gestionProductos" fallback={null}>
                               <DropdownMenuItem
-                                onClick={() => handleDelete(producto)}
-                                className="text-red-600 cursor-pointer focus:text-red-600"
+                                onClick={(e) => {
+                                  e.preventDefault()
+                                  handleDelete(producto)
+                                }}
+                                className="text-red-600 cursor-pointer focus:text-red-600 focus:bg-red-50"
                               >
                                 <Trash2 className="h-4 w-4 mr-2" />
                                 Eliminar
@@ -722,88 +759,4 @@ export function ProductosView({
               <PaginationItem>
                 <PaginationNext
                   onClick={() => handlePageChange(Math.min(data.totalPages, data.page + 1))}
-                  className={data.page === data.totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
-      )}
-
-      {/* Modal de Formulario - Más ancho */}
-      <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              {selectedProducto ? (
-                <>
-                  <Edit className="h-5 w-5" />
-                  Editar Producto: {selectedProducto.Nombredelproducto}
-                </>
-              ) : (
-                <>
-                  <Plus className="h-5 w-5" />
-                  Nuevo Producto
-                </>
-              )}
-            </DialogTitle>
-          </DialogHeader>
-          <ProductoForm
-            producto={selectedProducto}
-            gruposProductos={gruposProductos}
-            unidades={unidades}
-            areasProduccion={areasProduccion}
-            almacenes={almacenes}
-            onSuccess={handleFormSuccess}
-            onCancel={handleCloseForm}
-          />
-        </DialogContent>
-      </Dialog>
-
-      {/* Modal de Detalles */}
-      <Dialog open={showDetail} onOpenChange={setShowDetail}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Detalles del Producto</DialogTitle>
-          </DialogHeader>
-          {selectedProducto && (
-            <ProductoDetail
-              producto={selectedProducto}
-              gruposProductos={gruposProductos}
-              unidades={unidades}
-              areasProduccion={areasProduccion}
-              almacenes={almacenes}
-              onEdit={() => {
-                setShowDetail(false)
-                setShowForm(true)
-              }}
-              onClose={() => {
-                setShowDetail(false)
-                setSelectedProducto(null)
-              }}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Diálogo de Confirmación de Eliminación */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta acción marcará el producto "{productoToDelete?.Nombredelproducto}" como suspendido. Podrás
-              reactivarlo más tarde si es necesario.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
-              Eliminar
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
-  )
-}
+                  className={data.page === data.\
