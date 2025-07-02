@@ -111,7 +111,7 @@ export function ProductosView({
   // Filtros con valores por defecto seguros
   const [filters, setFilters] = useState<SearchProductosInput>({
     search: searchParams.get("search") || "",
-    tipo: (searchParams.get("tipo") as any) || undefined,
+    tipo: (searchParams.get("tipo") as "Platillo" | "Producto" | "Botella") || undefined,
     favorito:
       searchParams.get("favorito") === "true" ? true : searchParams.get("favorito") === "false" ? false : undefined,
     suspendido:
@@ -146,7 +146,7 @@ export function ProductosView({
         if (result.success) {
           setData(result.data)
         }
-      } catch (error) {
+      } catch {
         toast.error("Error al cargar productos")
       } finally {
         setLoading(false)
@@ -161,7 +161,7 @@ export function ProductosView({
     setFilters((prev) => ({ ...prev, search: value, page: 1 }))
   }
 
-  const handleFilterChange = (key: keyof SearchProductosInput, value: any) => {
+  const handleFilterChange = (key: keyof SearchProductosInput, value: string | number | boolean | undefined) => {
     setFilters((prev) => ({ ...prev, [key]: value, page: 1 }))
   }
 
@@ -195,7 +195,7 @@ export function ProductosView({
       } else {
         toast.error(result.message)
       }
-    } catch (error) {
+    } catch {
       toast.error("Error al eliminar producto")
     } finally {
       setDeleteDialogOpen(false)
@@ -212,7 +212,7 @@ export function ProductosView({
       } else {
         toast.error(result.message)
       }
-    } catch (error) {
+    } catch {
       toast.error("Error al actualizar favorito")
     }
   }
@@ -736,7 +736,7 @@ export function ProductosView({
             <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-sm text-blue-800">
                 💡 <strong>Tip:</strong> Puedes seguir agregando productos sin cerrar este modal. Haz clic en
-                "Actualizar" para ver los cambios en la lista.
+                &quot;Actualizar&quot; para ver los cambios en la lista.
               </p>
             </div>
           )}
@@ -775,7 +775,7 @@ export function ProductosView({
           <AlertDialogHeader>
             <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción marcará el producto "{productoToDelete?.Nombredelproducto}" como suspendido. Podrás
+              Esta acción marcará el producto &quot;{productoToDelete?.Nombredelproducto}&quot; como suspendido. Podrás
               reactivarlo más tarde si es necesario.
             </AlertDialogDescription>
           </AlertDialogHeader>

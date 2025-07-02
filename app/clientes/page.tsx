@@ -13,7 +13,7 @@ import { mockClientes } from "@/lib/data/mock-data"
 import type { Cliente } from "@/lib/types"
 
 export default function ClientesPage() {
-  const [clientes, setClientes] = useState<Cliente[]>(mockClientes)
+  const [clientes] = useState<Cliente[]>(mockClientes)
   const [busqueda, setBusqueda] = useState("")
   const [dialogAbierto, setDialogAbierto] = useState(false)
   const [clienteSeleccionado, setClienteSeleccionado] = useState<Cliente | null>(null)
@@ -28,11 +28,6 @@ export default function ClientesPage() {
   const abrirDetalleCliente = (cliente: Cliente) => {
     setClienteSeleccionado(cliente)
     setDialogAbierto(true)
-  }
-
-  const cerrarDialog = () => {
-    setDialogAbierto(false)
-    setClienteSeleccionado(null)
   }
 
   return (

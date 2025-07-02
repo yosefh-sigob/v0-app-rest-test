@@ -13,6 +13,8 @@ import { Badge } from "@/components/ui/badge"
 import { Plus, Trash2, GripVertical, Star, MessageSquare, CheckSquare, ToggleLeft } from "lucide-react"
 import type { PreguntaEncuesta } from "@/lib/types"
 
+type TipoPregunta = "calificacion" | "multiple" | "texto" | "si_no"
+
 export default function CrearEncuestaPage() {
   const [titulo, setTitulo] = useState("")
   const [descripcion, setDescripcion] = useState("")
@@ -42,7 +44,7 @@ export default function CrearEncuestaPage() {
     }
   }
 
-  const getTipoIcon = (tipo: string) => {
+  const getTipoIcon = (tipo: TipoPregunta) => {
     switch (tipo) {
       case "calificacion":
         return <Star className="h-4 w-4" />
@@ -141,7 +143,7 @@ export default function CrearEncuestaPage() {
                     <Label>Tipo de Pregunta</Label>
                     <Select
                       value={preguntaEditando.tipo}
-                      onValueChange={(value: any) => actualizarPregunta(preguntaEditando.id, { tipo: value })}
+                      onValueChange={(value: TipoPregunta) => actualizarPregunta(preguntaEditando.id, { tipo: value })}
                     >
                       <SelectTrigger>
                         <SelectValue />

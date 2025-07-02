@@ -1,40 +1,32 @@
 import { z } from "zod"
 
-export const TipoProductoEnum = z.enum(["Platillo", "Producto", "Botella"])
-export const NivelLicenciaEnum = z.enum(["Gratis", "Lite", "Pro", "Franquicia"])
-
 export const createProductoSchema = z.object({
-  GrupoProductoULID: z.number().min(1, "Selecciona un grupo de producto"),
-  SubgrupoProductoULID: z.number().optional(),
-  ClaveProducto: z.string().min(1, "La clave es requerida").max(10, "Máximo 10 caracteres"),
-  TipoProducto: TipoProductoEnum,
-  Nombredelproducto: z.string().min(1, "El nombre es requerido").max(20, "Máximo 20 caracteres"),
-  Favorito: z.boolean().default(false),
+  Nombredelproducto: z.string().min(1, "El nombre del producto es requerido").max(255),
+  ClaveProducto: z.string().min(1, "La clave del producto es requerida").max(50),
+  TipoProducto: z.enum(["Platillo", "Producto", "Botella"]),
   Descripcion: z.string().optional(),
-  ExentoImpuesto: z.boolean().default(false),
-  PrecioAbierto: z.boolean().default(false),
-  UnidadesULID: z.number().min(1, "Selecciona una unidad"),
-  AreaProduccionULID: z.number().optional(),
-  AlmacenULID: z.number().optional(),
-  ControlStock: z.boolean().default(false),
-  PrecioxUtilidadad: z.boolean().default(false),
-  Facturable: z.boolean().default(true),
-  ClaveTributaria: z.string().max(20).optional(),
-  Suspendido: z.boolean().default(false),
+  GrupoProductoID: z.number().optional(),
+  UnidadID: z.number().optional(),
+  AreaProduccionID: z.number().optional(),
+  AlmacenID: z.number().optional(),
+  PermiteDescuento: z.boolean().default(true),
+  ControlaStock: z.boolean().default(false),
+  AceptaPropina: z.boolean().default(false),
+  PreguntaCoccion: z.boolean().default(false),
   Comedor: z.boolean().default(true),
   ADomicilio: z.boolean().default(false),
   Mostrador: z.boolean().default(false),
   Enlinea: z.boolean().default(false),
-  EnAPP: z.boolean().default(false),
   EnMenuQR: z.boolean().default(false),
-  ClasificacionQRULID: z.number().optional(),
+  Favorito: z.boolean().default(false),
+  Suspendido: z.boolean().default(false),
 })
 
 export const updateProductoSchema = createProductoSchema.partial()
 
 export const searchProductosSchema = z.object({
   search: z.string().optional(),
-  tipo: TipoProductoEnum.optional(),
+  tipo: z.enum(["Platillo", "Producto", "Botella"]).optional(),
   favorito: z.boolean().optional(),
   suspendido: z.boolean().optional(),
   grupoId: z.number().optional(),

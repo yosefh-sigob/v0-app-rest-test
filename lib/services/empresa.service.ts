@@ -1,37 +1,81 @@
-import { db } from "@/lib/database/connection"
-import { empresa } from "@/lib/database/schema"
-import { eq } from "drizzle-orm"
-import type { Empresa, NewEmpresa } from "@/lib/database/connection"
+import type { Empresa } from "@/interfaces/database"
 
 export class EmpresaService {
-  static async crear(data: NewEmpresa): Promise<Empresa> {
-    const [nuevaEmpresa] = await db.insert(empresa).values(data).returning()
-    return nuevaEmpresa
+  static async getById(id: string): Promise<Empresa | null> {
+    // Simular delay de red
+    await new Promise((resolve) => setTimeout(resolve, 500))
+
+    // Mock data
+    return {
+      EmpresaULID: id,
+      NombreComercial: "Restaurante El Buen Sabor",
+      RazonSocial: "El Buen Sabor S.A. de C.V.",
+      RFC: "EBS123456789",
+      Direccion: "Av. Principal 123, Col. Centro",
+      Telefono: "555-0100",
+      Email: "contacto@elbuensabor.com",
+      SitioWeb: "www.elbuensabor.com",
+      Logo: "/placeholder-logo.png",
+      FechaCreacion: new Date("2023-01-01"),
+      FechaActualizacion: new Date("2024-01-01"),
+    }
   }
 
-  static async obtenerPorId(id: string): Promise<Empresa | null> {
-    const [empresaEncontrada] = await db.select().from(empresa).where(eq(empresa.EmpresaULID, id)).limit(1)
+  static async getAll(): Promise<Empresa[]> {
+    await new Promise((resolve) => setTimeout(resolve, 300))
 
-    return empresaEncontrada || null
+    return [
+      {
+        EmpresaULID: "01HKQR8X9M2N3P4Q5R6S7T8U9A",
+        NombreComercial: "Restaurante El Buen Sabor",
+        RazonSocial: "El Buen Sabor S.A. de C.V.",
+        RFC: "EBS123456789",
+        Direccion: "Av. Principal 123, Col. Centro",
+        Telefono: "555-0100",
+        Email: "contacto@elbuensabor.com",
+        SitioWeb: "www.elbuensabor.com",
+        Logo: "/placeholder-logo.png",
+        FechaCreacion: new Date("2023-01-01"),
+        FechaActualizacion: new Date("2024-01-01"),
+      },
+    ]
   }
 
-  static async obtenerTodas(): Promise<Empresa[]> {
-    return await db.select().from(empresa)
+  static async create(data: Partial<Empresa>): Promise<Empresa> {
+    await new Promise((resolve) => setTimeout(resolve, 800))
+
+    return {
+      EmpresaULID: `01HKQR8X9M2N3P4Q5R6S7T8U9${Date.now()}`,
+      NombreComercial: data.NombreComercial || "",
+      RazonSocial: data.RazonSocial || "",
+      RFC: data.RFC || "",
+      Direccion: data.Direccion || "",
+      Telefono: data.Telefono || "",
+      Email: data.Email || "",
+      SitioWeb: data.SitioWeb || "",
+      Logo: data.Logo || "",
+      FechaCreacion: new Date(),
+      FechaActualizacion: new Date(),
+    }
   }
 
-  static async actualizar(id: string, data: Partial<NewEmpresa>): Promise<Empresa | null> {
-    const [empresaActualizada] = await db
-      .update(empresa)
-      .set({ ...data, Fecha_UltimoCambio: new Date() })
-      .where(eq(empresa.EmpresaULID, id))
-      .returning()
+  static async update(id: string, data: Partial<Empresa>): Promise<Empresa> {
+    await new Promise((resolve) => setTimeout(resolve, 600))
 
-    return empresaActualizada || null
+    const existing = await this.getById(id)
+    if (!existing) {
+      throw new Error("Empresa no encontrada")
+    }
+
+    return {
+      ...existing,
+      ...data,
+      FechaActualizacion: new Date(),
+    }
   }
 
-  static async eliminar(id: string): Promise<boolean> {
-    const resultado = await db.delete(empresa).where(eq(empresa.EmpresaULID, id))
-
-    return resultado.rowCount > 0
+  static async delete(id: string): Promise<boolean> {
+    await new Promise((resolve) => setTimeout(resolve, 400))
+    return true
   }
 }
