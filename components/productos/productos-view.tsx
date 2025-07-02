@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +15,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import {
   Pagination,
   PaginationContent,
@@ -47,6 +58,8 @@ import {
   X,
   RefreshCw,
 } from "lucide-react"
+import { ProductoForm } from "./producto-form"
+import { ProductoDetail } from "./producto-detail"
 import { LicenseGuard } from "@/components/license-guard"
 import { LicenseSelector } from "@/components/license-selector"
 import { useLicense } from "@/contexts/license-context"
@@ -505,9 +518,9 @@ export function ProductosView({
                       <h3 className="font-semibold text-sm leading-tight">{producto.Nombredelproducto}</h3>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             className="h-8 w-8 p-0 hover:bg-gray-100 focus:bg-gray-100 data-[state=open]:bg-gray-100"
                           >
                             <MoreVertical className="h-4 w-4" />
@@ -515,7 +528,7 @@ export function ProductosView({
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48" sideOffset={5}>
-                          <DropdownMenuItem 
+                          <DropdownMenuItem
                             onClick={(e) => {
                               e.preventDefault()
                               handleView(producto)
@@ -526,7 +539,7 @@ export function ProductosView({
                             Ver detalles
                           </DropdownMenuItem>
                           <LicenseGuard feature="gestionProductos" fallback={null}>
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               onClick={(e) => {
                                 e.preventDefault()
                                 handleEdit(producto)
@@ -537,7 +550,7 @@ export function ProductosView({
                               Editar
                             </DropdownMenuItem>
                           </LicenseGuard>
-                          <DropdownMenuItem 
+                          <DropdownMenuItem
                             onClick={(e) => {
                               e.preventDefault()
                               handleToggleFavorite(producto)
@@ -653,9 +666,9 @@ export function ProductosView({
 
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               className="h-8 w-8 p-0 hover:bg-gray-100 focus:bg-gray-100 data-[state=open]:bg-gray-100"
                             >
                               <MoreVertical className="h-4 w-4" />
@@ -663,7 +676,7 @@ export function ProductosView({
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-48" sideOffset={5}>
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               onClick={(e) => {
                                 e.preventDefault()
                                 handleView(producto)
@@ -674,7 +687,7 @@ export function ProductosView({
                               Ver detalles
                             </DropdownMenuItem>
                             <LicenseGuard feature="gestionProductos" fallback={null}>
-                              <DropdownMenuItem 
+                              <DropdownMenuItem
                                 onClick={(e) => {
                                   e.preventDefault()
                                   handleEdit(producto)
@@ -685,7 +698,7 @@ export function ProductosView({
                                 Editar
                               </DropdownMenuItem>
                             </LicenseGuard>
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               onClick={(e) => {
                                 e.preventDefault()
                                 handleToggleFavorite(producto)
@@ -759,4 +772,96 @@ export function ProductosView({
               <PaginationItem>
                 <PaginationNext
                   onClick={() => handlePageChange(Math.min(data.totalPages, data.page + 1))}
-                  className={data.page === data.\
+                  className={data.page === data.totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
+
+      {/* Modal de formulario - ANCHO 80% */}
+      <Dialog open={showForm} onOpenChange={setShowForm}>
+        <DialogContent className="w-[80vw] max-w-none max-h-[95vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {selectedProducto ? (
+                <>
+                  <Edit className="h-5 w-5" />
+                  Editar Producto: {selectedProducto.Nombredelproducto}
+                </>
+              ) : (
+                <>
+                  <Plus className="h-5 w-5" />
+                  Nuevo Producto
+                </>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+          <ProductoForm
+            producto={selectedProducto}
+            gruposProductos={gruposProductos}
+            unidades={unidades}
+            areasProduccion={areasProduccion}
+            almacenes={almacenes}
+            onSuccess={handleFormSuccess}
+            onCancel={handleCloseForm}
+          />
+          {!selectedProducto && (
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-800">
+                💡 <strong>Tip:</strong> Puedes seguir agregando productos sin cerrar este modal. Haz clic en
+                "Actualizar" para ver los cambios en la lista.
+              </p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de detalles */}
+      <Dialog open={showDetail} onOpenChange={setShowDetail}>
+        <DialogContent className="w-[80vw] max-w-none max-h-[95vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Eye className="h-5 w-5" />
+              Detalles del Producto
+            </DialogTitle>
+          </DialogHeader>
+          {selectedProducto && (
+            <ProductoDetail
+              producto={selectedProducto}
+              gruposProductos={gruposProductos}
+              unidades={unidades}
+              areasProduccion={areasProduccion}
+              almacenes={almacenes}
+              onEdit={() => {
+                setShowDetail(false)
+                setShowForm(true)
+              }}
+              onClose={() => setShowDetail(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de confirmación de eliminación */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción marcará el producto "{productoToDelete?.Nombredelproducto}" como suspendido. Podrás
+              reactivarlo más tarde si es necesario.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+              Sí, eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  )
+}
