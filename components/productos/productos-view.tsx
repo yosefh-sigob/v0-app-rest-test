@@ -25,7 +25,7 @@ import {
 import { toast } from "@/hooks/use-toast"
 import { ProductoForm } from "./producto-form"
 import { ProductoDetail } from "./producto-detail"
-import { getProductos, deleteProducto, toggleFavorito } from "@/actions/productos.actions"
+import { getProductos, deleteProducto, toggleFavoriteProducto } from "@/actions/productos.actions"
 import type { Producto } from "@/schemas/productos.schemas"
 
 interface ProductosViewProps {
@@ -127,7 +127,7 @@ export function ProductosView({ initialProductos = [] }: ProductosViewProps) {
       } else {
         toast({
           title: "Error",
-          description: result.error || "No se pudo eliminar el producto",
+          description: result.message || "No se pudo eliminar el producto",
           variant: "destructive",
         })
       }
@@ -142,7 +142,7 @@ export function ProductosView({ initialProductos = [] }: ProductosViewProps) {
 
   const handleToggleFavorito = async (producto: Producto) => {
     try {
-      const result = await toggleFavorito(producto.ProductoULID)
+      const result = await toggleFavoriteProducto(producto.ProductoULID)
       if (result.success) {
         setProductos((prev) =>
           prev.map((p) => (p.ProductoULID === producto.ProductoULID ? { ...p, Favorito: !p.Favorito } : p)),
