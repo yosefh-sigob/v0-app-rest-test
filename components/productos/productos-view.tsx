@@ -1,668 +1,651 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useEffect } from "react"
+import { Plus, Search, Grid3X3, List, Star, Eye, Edit, Trash2, Package, ShoppingCart, Utensils } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { toast } from "sonner"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
+import { Separator } from "@/components/ui/separator"
 import {
-  Plus,
-  Search,
-  Filter,
-  Package,
-  Utensils,
-  Wine,
-  Star,
-  Edit,
-  Trash2,
-  Eye,
-  Home,
-  Truck,
-  ShoppingCart,
-  Smartphone,
-  QrCode,
-  Heart,
-  AlertCircle,
-  Grid3X3,
-  List,
-  SortAsc,
-  SortDesc,
-} from "lucide-react"
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { toast } from "@/hooks/use-toast"
 import { ProductoForm } from "./producto-form"
 import { ProductoDetail } from "./producto-detail"
-import { deleteProducto, toggleFavoriteProducto } from "@/actions/productos.actions"
-import { getImageSrc } from "@/lib/utils/image"
-import type { Producto } from "@/interfaces/database"
+import { getProductos, deleteProducto, toggleFavorito } from "@/actions/productos.actions"
+import type { Producto } from "@/schemas/productos.schemas"
 
 interface ProductosViewProps {
-  productos?: Producto[]
-  gruposProductos?: Array<{ id: number; nombre: string }>
-  unidades?: Array<{ id: number; nombre: string; abreviacion: string }>
-  areasProduccion?: Array<{ id: number; nombre: string }>
-  almacenes?: Array<{ id: number; nombre: string }>
+  initialProductos: Producto[]
 }
 
-const TIPO_ICONS = {
-  Platillo: <Utensils className="h-4 w-4" />,
-  Producto: <Package className="h-4 w-4" />,
-  Botella: <Wine className="h-4 w-4" />,
-}
-
-type ViewMode = "grid" | "list"
-type SortField = "nombre" | "codigo" | "tipo" | "fecha"
-type SortOrder = "asc" | "desc"
-
-export function ProductosView({
-  productos = [],
-  gruposProductos = [],
-  unidades = [],
-  areasProduccion = [],
-  almacenes = [],
-}: ProductosViewProps) {
+export function ProductosView({ initialProductos = [] }: ProductosViewProps) {
+  const [productos, setProductos] = useState<Producto[]>(initialProductos)
+  const [filteredProductos, setFilteredProductos] = useState<Producto[]>(initialProductos)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedTipo, setSelectedTipo] = useState<string>("all")
-  const [selectedGrupo, setSelectedGrupo] = useState<string>("all")
-  const [selectedEstado, setSelectedEstado] = useState<string>("all")
-  const [showForm, setShowForm] = useState(false)
-  const [showDetail, setShowDetail] = useState(false)
-  const [editingProducto, setEditingProducto] = useState<Producto | null>(null)
+  const [showFavoritos, setShowFavoritos] = useState(false)
+  const [showSuspendidos, setShowSuspendidos] = useState(false)
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
+  const [sortBy, setSortBy] = useState<string>("nombre")
+  const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const [isEditOpen, setIsEditOpen] = useState(false)
+  const [isDetailOpen, setIsDetailOpen] = useState(false)
   const [selectedProducto, setSelectedProducto] = useState<Producto | null>(null)
-  const [viewMode, setViewMode] = useState<ViewMode>("grid")
-  const [sortField, setSortField] = useState<SortField>("nombre")
-  const [sortOrder, setSortOrder] = useState<SortOrder>("asc")
+  const [isLoading, setIsLoading] = useState(false)
 
-  // Validar que productos sea un array
-  const safeProductos = Array.isArray(productos) ? productos : []
+  // Filtrar y ordenar productos
+  useEffect(() => {
+    let filtered = [...productos]
 
-  // Filtros y búsqueda
-  const filteredProductos = useMemo(() => {
-    if (!Array.isArray(safeProductos) || safeProductos.length === 0) {
-      return []
+    // Filtro por búsqueda
+    if (searchTerm) {
+      filtered = filtered.filter(
+        (producto) =>
+          producto.Nombredelproducto.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          producto.ClaveProducto.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (producto.Descripcion && producto.Descripcion.toLowerCase().includes(searchTerm.toLowerCase())),
+      )
     }
 
-    const filtered = safeProductos.filter((producto) => {
-      if (!producto) return false
+    // Filtro por tipo
+    if (selectedTipo !== "all") {
+      filtered = filtered.filter((producto) => producto.TipoProducto === selectedTipo)
+    }
 
-      const matchesSearch =
-        (producto.Nombredelproducto || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (producto.ClaveProducto || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (producto.Descripcion && producto.Descripcion.toLowerCase().includes(searchTerm.toLowerCase()))
+    // Filtro por favoritos
+    if (showFavoritos) {
+      filtered = filtered.filter((producto) => producto.Favorito)
+    }
 
-      const matchesTipo = selectedTipo === "all" || producto.TipoProducto === selectedTipo
-      const matchesGrupo = selectedGrupo === "all" || producto.GrupoProductoID?.toString() === selectedGrupo
-      const matchesEstado =
-        selectedEstado === "all" ||
-        (selectedEstado === "activo" && !producto.Suspendido) ||
-        (selectedEstado === "suspendido" && producto.Suspendido) ||
-        (selectedEstado === "favorito" && producto.Favorito)
-
-      return matchesSearch && matchesTipo && matchesGrupo && matchesEstado
-    })
+    // Filtro por suspendidos
+    if (showSuspendidos) {
+      filtered = filtered.filter((producto) => producto.Suspendido)
+    } else {
+      filtered = filtered.filter((producto) => !producto.Suspendido)
+    }
 
     // Ordenamiento
     filtered.sort((a, b) => {
-      if (!a || !b) return 0
-
-      let aValue: string | number
-      let bValue: string | number
-
-      switch (sortField) {
+      switch (sortBy) {
         case "nombre":
-          aValue = (a.Nombredelproducto || "").toLowerCase()
-          bValue = (b.Nombredelproducto || "").toLowerCase()
-          break
-        case "codigo":
-          aValue = (a.ClaveProducto || "").toLowerCase()
-          bValue = (b.ClaveProducto || "").toLowerCase()
-          break
+          return a.Nombredelproducto.localeCompare(b.Nombredelproducto)
+        case "clave":
+          return a.ClaveProducto.localeCompare(b.ClaveProducto)
         case "tipo":
-          aValue = (a.TipoProducto || "").toLowerCase()
-          bValue = (b.TipoProducto || "").toLowerCase()
-          break
+          return a.TipoProducto.localeCompare(b.TipoProducto)
         case "fecha":
-          aValue = new Date(a.FechaActualizacion || 0).getTime()
-          bValue = new Date(b.FechaActualizacion || 0).getTime()
-          break
+          return new Date(b.Fecha_UltimoCambio || "").getTime() - new Date(a.Fecha_UltimoCambio || "").getTime()
         default:
-          aValue = (a.Nombredelproducto || "").toLowerCase()
-          bValue = (b.Nombredelproducto || "").toLowerCase()
-      }
-
-      if (sortOrder === "asc") {
-        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0
-      } else {
-        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0
+          return 0
       }
     })
 
-    return filtered
-  }, [safeProductos, searchTerm, selectedTipo, selectedGrupo, selectedEstado, sortField, sortOrder])
+    setFilteredProductos(filtered)
+  }, [productos, searchTerm, selectedTipo, showFavoritos, showSuspendidos, sortBy])
 
-  const handleCreateProducto = () => {
-    setEditingProducto(null)
-    setShowForm(true)
-  }
-
-  const handleEditProducto = (producto: Producto) => {
-    setEditingProducto(producto)
-    setShowForm(true)
-  }
-
-  const handleViewProducto = (producto: Producto) => {
-    setSelectedProducto(producto)
-    setShowDetail(true)
-  }
-
-  const handleDeleteProducto = async (producto: Producto) => {
-    if (window.confirm(`¿Estás seguro de que deseas eliminar "${producto.Nombredelproducto}"?`)) {
-      try {
-        const result = await deleteProducto(producto.ProductoULID)
-        if (result.success) {
-          toast.success(result.message)
-          window.location.reload()
-        } else {
-          toast.error(result.message)
-        }
-      } catch (error) {
-        toast.error("Error al eliminar el producto")
-      }
-    }
-  }
-
-  const handleToggleFavorite = async (producto: Producto) => {
+  const handleRefresh = async () => {
+    setIsLoading(true)
     try {
-      const result = await toggleFavoriteProducto(producto.ProductoULID)
-      if (result.success) {
-        toast.success(result.message)
-        window.location.reload()
-      } else {
-        toast.error(result.message)
+      const result = await getProductos({ page: 1, limit: 100 })
+      if (result.success && result.data) {
+        setProductos(result.data.productos)
       }
     } catch (error) {
-      toast.error("Error al actualizar el producto")
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar los productos",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
     }
   }
 
-  const handleFormSuccess = () => {
-    setShowForm(false)
-    setEditingProducto(null)
-    window.location.reload()
+  const handleDelete = async (producto: Producto) => {
+    try {
+      const result = await deleteProducto(producto.ProductoULID)
+      if (result.success) {
+        setProductos((prev) => prev.filter((p) => p.ProductoULID !== producto.ProductoULID))
+        toast({
+          title: "Éxito",
+          description: "Producto eliminado correctamente",
+        })
+      } else {
+        toast({
+          title: "Error",
+          description: result.error || "No se pudo eliminar el producto",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Error al eliminar el producto",
+        variant: "destructive",
+      })
+    }
   }
 
-  const handleFormCancel = () => {
-    setShowForm(false)
-    setEditingProducto(null)
+  const handleToggleFavorito = async (producto: Producto) => {
+    try {
+      const result = await toggleFavorito(producto.ProductoULID)
+      if (result.success) {
+        setProductos((prev) =>
+          prev.map((p) => (p.ProductoULID === producto.ProductoULID ? { ...p, Favorito: !p.Favorito } : p)),
+        )
+        toast({
+          title: "Éxito",
+          description: `Producto ${!producto.Favorito ? "agregado a" : "removido de"} favoritos`,
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Error al actualizar favorito",
+        variant: "destructive",
+      })
+    }
   }
 
-  const handleDetailClose = () => {
-    setShowDetail(false)
+  const handleProductoCreated = (newProducto: Producto) => {
+    setProductos((prev) => [newProducto, ...prev])
+    setIsCreateOpen(false)
+    toast({
+      title: "Éxito",
+      description: "Producto creado correctamente",
+    })
+  }
+
+  const handleProductoUpdated = (updatedProducto: Producto) => {
+    setProductos((prev) => prev.map((p) => (p.ProductoULID === updatedProducto.ProductoULID ? updatedProducto : p)))
+    setIsEditOpen(false)
     setSelectedProducto(null)
+    toast({
+      title: "Éxito",
+      description: "Producto actualizado correctamente",
+    })
   }
 
-  const getChannelBadges = (producto: Producto) => {
-    const channels = []
-    if (producto.Comedor) channels.push({ icon: <Home className="h-3 w-3" />, label: "Comedor" })
-    if (producto.ADomicilio) channels.push({ icon: <Truck className="h-3 w-3" />, label: "Domicilio" })
-    if (producto.Mostrador) channels.push({ icon: <ShoppingCart className="h-3 w-3" />, label: "Mostrador" })
-    if (producto.Enlinea) channels.push({ icon: <Smartphone className="h-3 w-3" />, label: "En línea" })
-    if (producto.EnMenuQR) channels.push({ icon: <QrCode className="h-3 w-3" />, label: "QR" })
-    return channels
+  const getProductoIcon = (tipo: string) => {
+    switch (tipo) {
+      case "Platillo":
+        return <Utensils className="h-4 w-4" />
+      case "Botella":
+        return <ShoppingCart className="h-4 w-4" />
+      default:
+        return <Package className="h-4 w-4" />
+    }
+  }
+
+  const getProductoColor = (tipo: string) => {
+    switch (tipo) {
+      case "Platillo":
+        return "bg-orange-100 text-orange-800 border-orange-200"
+      case "Botella":
+        return "bg-blue-100 text-blue-800 border-blue-200"
+      default:
+        return "bg-green-100 text-green-800 border-green-200"
+    }
   }
 
   const stats = {
-    total: safeProductos.length,
-    activos: safeProductos.filter((p) => p && !p.Suspendido).length,
-    favoritos: safeProductos.filter((p) => p && p.Favorito).length,
-    suspendidos: safeProductos.filter((p) => p && p.Suspendido).length,
+    total: productos.length,
+    platillos: productos.filter((p) => p.TipoProducto === "Platillo").length,
+    productos: productos.filter((p) => p.TipoProducto === "Producto").length,
+    botellas: productos.filter((p) => p.TipoProducto === "Botella").length,
+    favoritos: productos.filter((p) => p.Favorito).length,
+    suspendidos: productos.filter((p) => p.Suspendido).length,
   }
 
   return (
-    <div className="space-y-8">
-      {/* Header con estadísticas */}
-      <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-xl p-6 text-white">
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-lg p-6 text-white">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Gestión de Productos</h1>
-            <p className="text-orange-100">Administra tu catálogo de productos de manera eficiente</p>
+            <h1 className="text-3xl font-bold mb-2">🍽️ Gestión de Productos</h1>
+            <p className="text-orange-100">Administra tu catálogo de productos, platillos y bebidas</p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+          <div className="grid grid-cols-3 gap-4 text-center">
             <div className="bg-white/20 rounded-lg p-3">
               <div className="text-2xl font-bold">{stats.total}</div>
               <div className="text-sm text-orange-100">Total</div>
-            </div>
-            <div className="bg-white/20 rounded-lg p-3">
-              <div className="text-2xl font-bold">{stats.activos}</div>
-              <div className="text-sm text-orange-100">Activos</div>
             </div>
             <div className="bg-white/20 rounded-lg p-3">
               <div className="text-2xl font-bold">{stats.favoritos}</div>
               <div className="text-sm text-orange-100">Favoritos</div>
             </div>
             <div className="bg-white/20 rounded-lg p-3">
-              <div className="text-2xl font-bold">{stats.suspendidos}</div>
-              <div className="text-sm text-orange-100">Suspendidos</div>
+              <div className="text-2xl font-bold">{stats.platillos}</div>
+              <div className="text-sm text-orange-100">Platillos</div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Controles y filtros */}
+      {/* Controles */}
       <Card>
         <CardHeader>
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <CardTitle className="flex items-center gap-2">
-              <Filter className="h-5 w-5 text-blue-600" />
-              Filtros y Búsqueda
-            </CardTitle>
+          <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+            <div className="flex-1 flex flex-col sm:flex-row gap-4">
+              {/* Búsqueda */}
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder="Buscar productos..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+
+              {/* Filtros */}
+              <div className="flex gap-2">
+                <Select value={selectedTipo} onValueChange={setSelectedTipo}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder="Tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los tipos</SelectItem>
+                    <SelectItem value="Platillo">🍽️ Platillos</SelectItem>
+                    <SelectItem value="Producto">📦 Productos</SelectItem>
+                    <SelectItem value="Botella">🍷 Botellas</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder="Ordenar" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="nombre">Por nombre</SelectItem>
+                    <SelectItem value="clave">Por clave</SelectItem>
+                    <SelectItem value="tipo">Por tipo</SelectItem>
+                    <SelectItem value="fecha">Por fecha</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Acciones */}
             <div className="flex items-center gap-2">
-              <Button
-                variant={viewMode === "grid" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setViewMode("grid")}
-              >
-                <Grid3X3 className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === "list" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setViewMode("list")}
-              >
-                <List className="h-4 w-4" />
-              </Button>
-              <Button onClick={handleCreateProducto} className="bg-orange-600 hover:bg-orange-700">
-                <Plus className="h-4 w-4 mr-2" />
-                Nuevo Producto
-              </Button>
+              <div className="flex items-center space-x-2">
+                <Switch id="favoritos" checked={showFavoritos} onCheckedChange={setShowFavoritos} />
+                <Label htmlFor="favoritos" className="text-sm">
+                  ⭐ Favoritos
+                </Label>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Switch id="suspendidos" checked={showSuspendidos} onCheckedChange={setShowSuspendidos} />
+                <Label htmlFor="suspendidos" className="text-sm">
+                  🚫 Suspendidos
+                </Label>
+              </div>
+
+              <Separator orientation="vertical" className="h-6" />
+
+              <div className="flex items-center gap-1 border rounded-md">
+                <Button
+                  variant={viewMode === "grid" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("grid")}
+                >
+                  <Grid3X3 className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === "list" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("list")}
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+              </div>
+
+              <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+                <DialogTrigger asChild>
+                  <Button className="bg-orange-500 hover:bg-orange-600">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Nuevo Producto
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="w-[80vw] max-w-[80vw] max-h-[90vh] overflow-y-auto p-0">
+                  <DialogHeader className="p-6 pb-0">
+                    <DialogTitle className="text-xl font-bold">✨ Crear Nuevo Producto</DialogTitle>
+                  </DialogHeader>
+                  <div className="p-6 pt-0">
+                    <ProductoForm onSuccess={handleProductoCreated} onCancel={() => setIsCreateOpen(false)} />
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-            {/* Búsqueda */}
-            <div className="lg:col-span-2 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                placeholder="Buscar productos..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-11"
-              />
-            </div>
-
-            {/* Filtro por tipo */}
-            <Select value={selectedTipo} onValueChange={setSelectedTipo}>
-              <SelectTrigger className="h-11">
-                <SelectValue placeholder="Tipo" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los tipos</SelectItem>
-                <SelectItem value="Platillo">
-                  <div className="flex items-center gap-2">
-                    <Utensils className="h-4 w-4" />
-                    Platillo
-                  </div>
-                </SelectItem>
-                <SelectItem value="Producto">
-                  <div className="flex items-center gap-2">
-                    <Package className="h-4 w-4" />
-                    Producto
-                  </div>
-                </SelectItem>
-                <SelectItem value="Botella">
-                  <div className="flex items-center gap-2">
-                    <Wine className="h-4 w-4" />
-                    Botella
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* Filtro por grupo */}
-            <Select value={selectedGrupo} onValueChange={setSelectedGrupo}>
-              <SelectTrigger className="h-11">
-                <SelectValue placeholder="Categoría" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas las categorías</SelectItem>
-                {Array.isArray(gruposProductos) &&
-                  gruposProductos.map((grupo) => (
-                    <SelectItem key={grupo.id} value={grupo.id.toString()}>
-                      {grupo.nombre}
-                    </SelectItem>
-                  ))}
-              </SelectContent>
-            </Select>
-
-            {/* Filtro por estado */}
-            <Select value={selectedEstado} onValueChange={setSelectedEstado}>
-              <SelectTrigger className="h-11">
-                <SelectValue placeholder="Estado" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los estados</SelectItem>
-                <SelectItem value="activo">Activos</SelectItem>
-                <SelectItem value="suspendido">Suspendidos</SelectItem>
-                <SelectItem value="favorito">Favoritos</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* Ordenamiento */}
-            <div className="flex gap-2">
-              <Select
-                value={`${sortField}-${sortOrder}`}
-                onValueChange={(value) => {
-                  const [field, order] = value.split("-") as [SortField, SortOrder]
-                  setSortField(field)
-                  setSortOrder(order)
-                }}
-              >
-                <SelectTrigger className="h-11">
-                  <SelectValue placeholder="Ordenar" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="nombre-asc">
-                    <div className="flex items-center gap-2">
-                      <SortAsc className="h-4 w-4" />
-                      Nombre A-Z
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="nombre-desc">
-                    <div className="flex items-center gap-2">
-                      <SortDesc className="h-4 w-4" />
-                      Nombre Z-A
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="codigo-asc">Código A-Z</SelectItem>
-                  <SelectItem value="codigo-desc">Código Z-A</SelectItem>
-                  <SelectItem value="tipo-asc">Tipo A-Z</SelectItem>
-                  <SelectItem value="tipo-desc">Tipo Z-A</SelectItem>
-                  <SelectItem value="fecha-desc">Más recientes</SelectItem>
-                  <SelectItem value="fecha-asc">Más antiguos</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Resultados */}
-          <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
-            <span>
-              Mostrando {filteredProductos.length} de {safeProductos.length} productos
-            </span>
-            {(searchTerm || selectedTipo !== "all" || selectedGrupo !== "all" || selectedEstado !== "all") && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setSearchTerm("")
-                  setSelectedTipo("all")
-                  setSelectedGrupo("all")
-                  setSelectedEstado("all")
-                }}
-              >
-                Limpiar filtros
-              </Button>
-            )}
-          </div>
-        </CardContent>
       </Card>
 
       {/* Lista de productos */}
-      {filteredProductos.length === 0 ? (
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[...Array(6)].map((_, i) => (
+            <Card key={i} className="animate-pulse">
+              <CardContent className="p-4">
+                <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                <div className="h-3 bg-gray-200 rounded mb-4"></div>
+                <div className="h-20 bg-gray-200 rounded"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : filteredProductos.length === 0 ? (
         <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <AlertCircle className="h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No se encontraron productos</h3>
-            <p className="text-gray-600 text-center mb-4">
-              {searchTerm || selectedTipo !== "all" || selectedGrupo !== "all" || selectedEstado !== "all"
-                ? "Intenta ajustar los filtros de búsqueda"
+          <CardContent className="p-12 text-center">
+            <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-600 mb-2">No hay productos</h3>
+            <p className="text-gray-500 mb-4">
+              {searchTerm || selectedTipo !== "all" || showFavoritos || showSuspendidos
+                ? "No se encontraron productos con los filtros aplicados"
                 : "Comienza creando tu primer producto"}
             </p>
-            {!searchTerm && selectedTipo === "all" && selectedGrupo === "all" && selectedEstado === "all" && (
-              <Button onClick={handleCreateProducto} className="bg-orange-600 hover:bg-orange-700">
+            {!searchTerm && selectedTipo === "all" && !showFavoritos && !showSuspendidos && (
+              <Button onClick={() => setIsCreateOpen(true)} className="bg-orange-500 hover:bg-orange-600">
                 <Plus className="h-4 w-4 mr-2" />
                 Crear Primer Producto
               </Button>
             )}
           </CardContent>
         </Card>
-      ) : viewMode === "grid" ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      ) : (
+        <div
+          className={
+            viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" : "space-y-2"
+          }
+        >
           {filteredProductos.map((producto) => (
             <Card
               key={producto.ProductoULID}
-              className="group hover:shadow-lg transition-all duration-200 cursor-pointer border-2 hover:border-orange-200"
-              onClick={() => handleViewProducto(producto)}
+              className={`group hover:shadow-lg transition-all duration-200 cursor-pointer ${
+                viewMode === "list" ? "hover:bg-gray-50" : ""
+              }`}
+              onClick={() => {
+                setSelectedProducto(producto)
+                setIsDetailOpen(true)
+              }}
             >
-              <CardContent className="p-0">
-                <div className="relative">
-                  <img
-                    src={getImageSrc(producto.Imagen) || "/placeholder.svg"}
-                    alt={producto.Nombredelproducto}
-                    className="w-full h-48 object-cover rounded-t-lg"
-                  />
-                  <div className="absolute top-2 left-2 flex gap-1">
-                    {producto.Favorito && (
-                      <Badge className="bg-yellow-500 text-white">
-                        <Star className="h-3 w-3 mr-1 fill-current" />
-                        Favorito
-                      </Badge>
-                    )}
-                    {producto.Suspendido && <Badge variant="destructive">Suspendido</Badge>}
-                  </div>
-                  <div className="absolute top-2 right-2">
-                    <Badge variant="outline" className="bg-white/90 backdrop-blur-sm">
-                      {TIPO_ICONS[producto.TipoProducto]}
-                      <span className="ml-1 text-xs">{producto.TipoProducto}</span>
-                    </Badge>
-                  </div>
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors rounded-t-lg" />
-                </div>
+              <CardContent className={viewMode === "grid" ? "p-4" : "p-3"}>
+                {viewMode === "grid" ? (
+                  <div className="space-y-3">
+                    {/* Imagen */}
+                    <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                      {producto.Imagen ? (
+                        <img
+                          src={producto.Imagen || "/placeholder.svg"}
+                          alt={producto.Nombredelproducto}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                          {getProductoIcon(producto.TipoProducto)}
+                        </div>
+                      )}
 
-                <div className="p-4 space-y-3">
-                  <div>
-                    <h3 className="font-semibold text-lg text-gray-900 group-hover:text-orange-600 transition-colors line-clamp-1">
-                      {producto.Nombredelproducto}
-                    </h3>
-                    <p className="text-sm text-gray-600 font-mono">{producto.ClaveProducto}</p>
-                  </div>
+                      {/* Badges flotantes */}
+                      <div className="absolute top-2 left-2 flex gap-1">
+                        {producto.Favorito && (
+                          <Badge className="bg-yellow-500 text-white">
+                            <Star className="h-3 w-3" />
+                          </Badge>
+                        )}
+                        {producto.Suspendido && <Badge variant="destructive">Suspendido</Badge>}
+                      </div>
 
-                  {producto.Descripcion && <p className="text-sm text-gray-600 line-clamp-2">{producto.Descripcion}</p>}
-
-                  {/* Canales de venta */}
-                  <div className="flex flex-wrap gap-1">
-                    {getChannelBadges(producto)
-                      .slice(0, 3)
-                      .map((channel, index) => (
-                        <Badge key={index} variant="secondary" className="text-xs px-2 py-1">
-                          {channel.icon}
-                          <span className="ml-1">{channel.label}</span>
-                        </Badge>
-                      ))}
-                    {getChannelBadges(producto).length > 3 && (
-                      <Badge variant="secondary" className="text-xs px-2 py-1">
-                        +{getChannelBadges(producto).length - 3}
-                      </Badge>
-                    )}
-                  </div>
-
-                  {/* Acciones */}
-                  <div className="flex items-center justify-between pt-2 border-t">
-                    <div className="flex gap-1">
+                      {/* Botón de favorito */}
                       <Button
-                        variant="ghost"
                         size="sm"
+                        variant="ghost"
+                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 hover:bg-white"
                         onClick={(e) => {
                           e.stopPropagation()
-                          handleToggleFavorite(producto)
+                          handleToggleFavorito(producto)
                         }}
-                        className={`h-8 w-8 p-0 ${producto.Favorito ? "text-yellow-500" : "text-gray-400"}`}
                       >
-                        <Heart className={`h-4 w-4 ${producto.Favorito ? "fill-current" : ""}`} />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleViewProducto(producto)
-                        }}
-                        className="h-8 w-8 p-0 text-blue-600"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleEditProducto(producto)
-                        }}
-                        className="h-8 w-8 p-0 text-green-600"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleDeleteProducto(producto)
-                        }}
-                        className="h-8 w-8 p-0 text-red-600"
-                      >
-                        <Trash2 className="h-4 w-4" />
+                        <Star className={`h-4 w-4 ${producto.Favorito ? "fill-yellow-400 text-yellow-400" : ""}`} />
                       </Button>
                     </div>
-                    <Badge variant="outline" className="text-xs">
-                      {new Date(producto.FechaActualizacion).toLocaleDateString()}
-                    </Badge>
+
+                    {/* Información */}
+                    <div className="space-y-2">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-sm truncate">{producto.Nombredelproducto}</h3>
+                          <p className="text-xs text-gray-500">{producto.ClaveProducto}</p>
+                        </div>
+                        <Badge className={`ml-2 text-xs ${getProductoColor(producto.TipoProducto)}`}>
+                          {getProductoIcon(producto.TipoProducto)}
+                          <span className="ml-1">{producto.TipoProducto}</span>
+                        </Badge>
+                      </div>
+
+                      {producto.Descripcion && (
+                        <p className="text-xs text-gray-600 line-clamp-2">{producto.Descripcion}</p>
+                      )}
+
+                      {/* Canales de venta */}
+                      <div className="flex flex-wrap gap-1">
+                        {producto.Comedor && (
+                          <Badge variant="outline" className="text-xs">
+                            🏠 Comedor
+                          </Badge>
+                        )}
+                        {producto.ADomicilio && (
+                          <Badge variant="outline" className="text-xs">
+                            🚚 Domicilio
+                          </Badge>
+                        )}
+                        {producto.Mostrador && (
+                          <Badge variant="outline" className="text-xs">
+                            🏪 Mostrador
+                          </Badge>
+                        )}
+                        {producto.Enlinea && (
+                          <Badge variant="outline" className="text-xs">
+                            💻 Online
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Acciones */}
+                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex-1 bg-transparent"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setSelectedProducto(producto)
+                          setIsDetailOpen(true)
+                        }}
+                      >
+                        <Eye className="h-3 w-3 mr-1" />
+                        Ver
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex-1 bg-transparent"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setSelectedProducto(producto)
+                          setIsEditOpen(true)
+                        }}
+                      >
+                        <Edit className="h-3 w-3 mr-1" />
+                        Editar
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50 bg-transparent"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>¿Eliminar producto?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Esta acción no se puede deshacer. El producto "{producto.Nombredelproducto}" será
+                              eliminado permanentemente.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDelete(producto)}
+                              className="bg-red-600 hover:bg-red-700"
+                            >
+                              Eliminar
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  // Vista de lista
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      {producto.Imagen ? (
+                        <img
+                          src={producto.Imagen || "/placeholder.svg"}
+                          alt={producto.Nombredelproducto}
+                          className="w-full h-full object-cover rounded-lg"
+                        />
+                      ) : (
+                        getProductoIcon(producto.TipoProducto)
+                      )}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-semibold truncate">{producto.Nombredelproducto}</h3>
+                        {producto.Favorito && <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />}
+                        {producto.Suspendido && (
+                          <Badge variant="destructive" className="text-xs">
+                            Suspendido
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-500 mb-1">{producto.ClaveProducto}</p>
+                      {producto.Descripcion && <p className="text-sm text-gray-600 truncate">{producto.Descripcion}</p>}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Badge className={getProductoColor(producto.TipoProducto)}>
+                        {getProductoIcon(producto.TipoProducto)}
+                        <span className="ml-1">{producto.TipoProducto}</span>
+                      </Badge>
+
+                      <div className="flex gap-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setSelectedProducto(producto)
+                            setIsDetailOpen(true)
+                          }}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setSelectedProducto(producto)
+                            setIsEditOpen(true)
+                          }}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className={`${producto.Favorito ? "text-yellow-500" : ""}`}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleToggleFavorito(producto)
+                          }}
+                        >
+                          <Star className={`h-4 w-4 ${producto.Favorito ? "fill-current" : ""}`} />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}
         </div>
-      ) : (
-        /* Vista de lista */
-        <Card>
-          <CardContent className="p-0">
-            <div className="divide-y">
-              {filteredProductos.map((producto) => (
-                <div
-                  key={producto.ProductoULID}
-                  className="flex items-center gap-4 p-4 hover:bg-gray-50 cursor-pointer transition-colors"
-                  onClick={() => handleViewProducto(producto)}
-                >
-                  <img
-                    src={getImageSrc(producto.Imagen) || "/placeholder.svg"}
-                    alt={producto.Nombredelproducto}
-                    className="w-16 h-16 object-cover rounded-lg"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold text-gray-900 truncate">{producto.Nombredelproducto}</h3>
-                      {producto.Favorito && <Star className="h-4 w-4 text-yellow-500 fill-current" />}
-                      {producto.Suspendido && (
-                        <Badge variant="destructive" className="text-xs">
-                          Suspendido
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-4 text-sm text-gray-600">
-                      <span className="font-mono">{producto.ClaveProducto}</span>
-                      <div className="flex items-center gap-1">
-                        {TIPO_ICONS[producto.TipoProducto]}
-                        {producto.TipoProducto}
-                      </div>
-                      <span>{getChannelBadges(producto).length} canales</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleToggleFavorite(producto)
-                      }}
-                      className={`h-8 w-8 p-0 ${producto.Favorito ? "text-yellow-500" : "text-gray-400"}`}
-                    >
-                      <Heart className={`h-4 w-4 ${producto.Favorito ? "fill-current" : ""}`} />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleEditProducto(producto)
-                      }}
-                      className="h-8 w-8 p-0 text-green-600"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleDeleteProducto(producto)
-                      }}
-                      className="h-8 w-8 p-0 text-red-600"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
       )}
 
-      {/* Modal de formulario - 80% del ancho de pantalla */}
-      <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className="w-[80vw] max-w-[80vw] max-h-[90vh] overflow-hidden p-0">
-          <DialogHeader className="bg-gradient-to-r from-orange-500 to-red-500 text-white p-6">
-            <DialogTitle className="text-2xl font-bold">
-              {editingProducto ? "Editar Producto" : "Crear Nuevo Producto"}
-            </DialogTitle>
+      {/* Modal de edición */}
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent className="w-[80vw] max-w-[80vw] max-h-[90vh] overflow-y-auto p-0">
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle className="text-xl font-bold">✏️ Editar Producto</DialogTitle>
           </DialogHeader>
-          <div className="flex-1 overflow-y-auto p-6">
-            <ProductoForm
-              producto={editingProducto}
-              gruposProductos={gruposProductos}
-              unidades={unidades}
-              areasProduccion={areasProduccion}
-              almacenes={almacenes}
-              onSuccess={handleFormSuccess}
-              onCancel={handleFormCancel}
-            />
+          <div className="p-6 pt-0">
+            {selectedProducto && (
+              <ProductoForm
+                producto={selectedProducto}
+                onSuccess={handleProductoUpdated}
+                onCancel={() => {
+                  setIsEditOpen(false)
+                  setSelectedProducto(null)
+                }}
+              />
+            )}
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Modal de detalles - 80% del ancho de pantalla */}
-      <Dialog open={showDetail} onOpenChange={setShowDetail}>
-        <DialogContent className="w-[80vw] max-w-[80vw] max-h-[90vh] overflow-hidden p-0">
-          <DialogHeader className="bg-gradient-to-r from-blue-500 to-purple-500 text-white p-6">
-            <DialogTitle className="text-2xl font-bold">Detalles del Producto</DialogTitle>
+      {/* Modal de detalles */}
+      <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
+        <DialogContent className="w-[80vw] max-w-[80vw] max-h-[90vh] overflow-y-auto p-0">
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle className="text-xl font-bold">👁️ Detalles del Producto</DialogTitle>
           </DialogHeader>
-          <div className="flex-1 overflow-y-auto p-6">
+          <div className="p-6 pt-0">
             {selectedProducto && (
               <ProductoDetail
                 producto={selectedProducto}
-                gruposProductos={gruposProductos}
-                unidades={unidades}
-                areasProduccion={areasProduccion}
-                almacenes={almacenes}
                 onEdit={() => {
-                  setShowDetail(false)
-                  handleEditProducto(selectedProducto)
+                  setIsDetailOpen(false)
+                  setIsEditOpen(true)
                 }}
-                onClose={handleDetailClose}
+                onClose={() => {
+                  setIsDetailOpen(false)
+                  setSelectedProducto(null)
+                }}
               />
             )}
           </div>
