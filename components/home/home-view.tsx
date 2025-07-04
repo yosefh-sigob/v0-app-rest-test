@@ -15,17 +15,44 @@ import {
   ChefHat,
   CreditCard,
   TrendingUp,
-  Clock,
   MapPin,
+  AlertTriangle,
+  CheckCircle,
+  Info,
 } from "lucide-react"
 
-interface HomeViewProps {
-  data: {
-    ventasHoy: number
-    ordenesActivas: number
-    mesasOcupadas: number
-    clientesAtendidos: number
+interface DashboardData {
+  ventasHoy: {
+    total: number
+    ordenes: number
+    promedio: number
+    crecimiento: number
   }
+  mesasOcupadas: {
+    ocupadas: number
+    total: number
+    porcentaje: number
+  }
+  productosPopulares: Array<{
+    nombre: string
+    ventas: number
+    ingresos: number
+  }>
+  reservacionesHoy: Array<{
+    hora: string
+    cliente: string
+    personas: number
+    mesa: number
+  }>
+  alertas: Array<{
+    tipo: string
+    mensaje: string
+    urgencia: string
+  }>
+}
+
+interface HomeViewProps {
+  data: DashboardData
 }
 
 export function HomeView({ data }: HomeViewProps) {
@@ -61,27 +88,35 @@ export function HomeView({ data }: HomeViewProps) {
   const quickStats = [
     {
       title: "Ventas Hoy",
-      value: `$${data.ventasHoy.toLocaleString()}`,
+      value: `$${data.ventasHoy.total.toLocaleString()}`,
+      subtitle: `${data.ventasHoy.ordenes} órdenes`,
       icon: TrendingUp,
       color: "text-green-600",
-    },
-    {
-      title: "Órdenes Activas",
-      value: data.ordenesActivas.toString(),
-      icon: Clock,
-      color: "text-blue-600",
+      change: `+${data.ventasHoy.crecimiento}%`,
     },
     {
       title: "Mesas Ocupadas",
-      value: data.mesasOcupadas.toString(),
+      value: `${data.mesasOcupadas.ocupadas}/${data.mesasOcupadas.total}`,
+      subtitle: `${data.mesasOcupadas.porcentaje}% ocupación`,
       icon: MapPin,
       color: "text-orange-600",
+      change: "Normal",
     },
     {
-      title: "Clientes Atendidos",
-      value: data.clientesAtendidos.toString(),
-      icon: Users,
+      title: "Promedio por Orden",
+      value: `$${data.ventasHoy.promedio.toFixed(2)}`,
+      subtitle: "Ticket promedio",
+      icon: BarChart3,
+      color: "text-blue-600",
+      change: "Estable",
+    },
+    {
+      title: "Reservaciones Hoy",
+      value: data.reservacionesHoy.length.toString(),
+      subtitle: "Confirmadas",
+      icon: Calendar,
       color: "text-purple-600",
+      change: "Programadas",
     },
   ]
 
@@ -130,6 +165,32 @@ export function HomeView({ data }: HomeViewProps) {
     },
   ]
 
+  const getAlertIcon = (urgencia: string) => {
+    switch (urgencia) {
+      case "alta":
+        return <AlertTriangle className="w-4 h-4 text-red-500" />
+      case "media":
+        return <Info className="w-4 h-4 text-yellow-500" />
+      case "baja":
+        return <CheckCircle className="w-4 h-4 text-green-500" />
+      default:
+        return <Info className="w-4 h-4 text-blue-500" />
+    }
+  }
+
+  const getAlertColor = (urgencia: string) => {
+    switch (urgencia) {
+      case "alta":
+        return "border-red-200 bg-red-50"
+      case "media":
+        return "border-yellow-200 bg-yellow-50"
+      case "baja":
+        return "border-green-200 bg-green-50"
+      default:
+        return "border-blue-200 bg-blue-50"
+    }
+  }
+
   if (selectedRole) {
     const role = roles.find((r) => r.id === selectedRole)
     return (
@@ -156,85 +217,149 @@ export function HomeView({ data }: HomeViewProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50">
-      <div className="container mx-auto py-8 space-y-8">
-        {/* Header */}
-        <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold text-gray-900">Sistema de Restaurante</h1>
-          <p className="text-xl text-gray-600">Selecciona tu rol para comenzar</p>
-        </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">Dashboard Principal</h1>
+        <p className="text-gray-600">Resumen de actividad del restaurante</p>
+      </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {quickStats.map((stat, index) => (
-            <Card key={index}>
-              <CardContent className="flex items-center p-6">
-                <div className={`p-2 rounded-lg ${stat.color} bg-opacity-10 mr-4`}>
-                  <stat.icon className={`w-6 h-6 ${stat.color}`} />
-                </div>
+      {/* Quick Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {quickStats.map((stat, index) => (
+          <Card key={index}>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                  <p className="text-2xl font-bold">{stat.value}</p>
+                  <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                  <p className="text-sm text-gray-500">{stat.subtitle}</p>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Role Selection */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {roles.map((role) => (
-            <Card
-              key={role.id}
-              className="cursor-pointer hover:shadow-lg transition-shadow duration-200"
-              onClick={() => setSelectedRole(role.id)}
-            >
-              <CardHeader className="text-center">
-                <div className={`mx-auto w-16 h-16 rounded-full ${role.color} flex items-center justify-center mb-4`}>
-                  <role.icon className="w-8 h-8 text-white" />
+                <div className={`p-3 rounded-full bg-gray-100`}>
+                  <stat.icon className={`w-6 h-6 ${stat.color}`} />
                 </div>
-                <CardTitle className="text-xl">{role.title}</CardTitle>
-                <CardDescription>{role.description}</CardDescription>
-              </CardHeader>
-              <CardContent className="text-center">
-                <Button className="w-full">Acceder como {role.title}</Button>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+              </div>
+              <div className="mt-4">
+                <Badge variant="outline" className="text-xs">
+                  {stat.change}
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
-        {/* Quick Access Modules */}
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Acceso Rápido</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {modules.map((module, index) => (
-              <Card key={index} className="hover:shadow-md transition-shadow duration-200">
-                <CardContent className="p-6">
-                  <Link href={module.href} className="block">
-                    <div className="flex items-center space-x-4">
-                      <div className={`p-3 rounded-lg ${module.color}`}>
-                        <module.icon className="w-6 h-6" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-900">{module.title}</h3>
-                        <p className="text-sm text-gray-600">{module.description}</p>
-                      </div>
-                    </div>
-                  </Link>
-                </CardContent>
-              </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Productos Populares */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <TrendingUp className="w-5 h-5" />
+              <span>Productos Populares</span>
+            </CardTitle>
+            <CardDescription>Los más vendidos hoy</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {data.productosPopulares.map((producto, index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">{producto.nombre}</p>
+                    <p className="text-sm text-gray-500">{producto.ventas} vendidos</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold">${producto.ingresos.toFixed(2)}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Reservaciones Hoy */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Calendar className="w-5 h-5" />
+              <span>Reservaciones Hoy</span>
+            </CardTitle>
+            <CardDescription>Próximas reservas confirmadas</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {data.reservacionesHoy.map((reservacion, index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">{reservacion.cliente}</p>
+                    <p className="text-sm text-gray-500">
+                      {reservacion.personas} personas • Mesa {reservacion.mesa}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <Badge variant="outline">{reservacion.hora}</Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Alertas */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <AlertTriangle className="w-5 h-5" />
+            <span>Alertas del Sistema</span>
+          </CardTitle>
+          <CardDescription>Notificaciones importantes</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {data.alertas.map((alerta, index) => (
+              <div key={index} className={`p-3 rounded-lg border ${getAlertColor(alerta.urgencia)}`}>
+                <div className="flex items-center space-x-3">
+                  {getAlertIcon(alerta.urgencia)}
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">{alerta.mensaje}</p>
+                    <p className="text-xs text-gray-500 capitalize">{alerta.tipo}</p>
+                  </div>
+                  <Badge variant="outline" className="text-xs capitalize">
+                    {alerta.urgencia}
+                  </Badge>
+                </div>
+              </div>
             ))}
           </div>
-        </div>
+        </CardContent>
+      </Card>
 
-        {/* Footer */}
-        <div className="text-center py-8">
-          <p className="text-gray-600">Sistema de Gestión de Restaurantes v2.0</p>
-          <Badge variant="outline" className="mt-2">
-            Licencia: Gratis
-          </Badge>
-        </div>
-      </div>
+      {/* Quick Access Modules */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Acceso Rápido a Módulos</CardTitle>
+          <CardDescription>Accede directamente a las funciones principales</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {modules.map((module, index) => (
+              <Link key={index} href={module.href}>
+                <div className="p-4 rounded-lg border hover:shadow-md transition-shadow duration-200 cursor-pointer">
+                  <div className="flex items-center space-x-4">
+                    <div className={`p-3 rounded-lg ${module.color}`}>
+                      <module.icon className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900">{module.title}</h3>
+                      <p className="text-sm text-gray-600">{module.description}</p>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

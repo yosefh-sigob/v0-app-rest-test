@@ -9,8 +9,8 @@ import { AuthProvider } from "@/contexts/auth-context"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "AppRest - Sistema de Gestión de Restaurante",
-  description: "Sistema completo de gestión para restaurantes con POS, inventario, reservaciones y más",
+  title: "AppRest - Sistema de Gestión de Restaurantes",
+  description: "Sistema completo para la gestión de restaurantes con POS, inventario, mesas y más",
     generator: 'v0.dev'
 }
 

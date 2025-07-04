@@ -1,18 +1,27 @@
 "use client"
+
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { ChefHat, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Separator } from "@/components/ui/separator"
 import { useAuth } from "@/contexts/auth-context"
-import { getNavigationByRole, getRoleBadgeColor } from "./role-navigation"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { getNavigationByRole, getRoleColor } from "./role-navigation"
 import { cn } from "@/lib/utils"
 
 interface AuthSidebarProps {
   isOpen: boolean
   onToggle: () => void
+}
+
+function getUserInitials(nombreCompleto: string): string {
+  if (!nombreCompleto || typeof nombreCompleto !== "string") return "U"
+
+  const names = nombreCompleto.trim().split(" ")
+  if (names.length === 1) return names[0].charAt(0).toUpperCase()
+
+  return (names[0].charAt(0) + names[names.length - 1].charAt(0)).toUpperCase()
 }
 
 export function AuthSidebar({ isOpen, onToggle }: AuthSidebarProps) {
@@ -22,97 +31,100 @@ export function AuthSidebar({ isOpen, onToggle }: AuthSidebarProps) {
   if (!user) return null
 
   const navigation = getNavigationByRole(user.rol)
-
-  const getUserInitials = (nombreCompleto: string) => {
-    if (!nombreCompleto || typeof nombreCompleto !== "string") return "U"
-    return nombreCompleto
-      .split(" ")
-      .map((name) => name[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2)
-  }
+  const roleColor = getRoleColor(user.rol)
+  const userInitials = getUserInitials(user.nombreCompleto)
 
   return (
-    <div
-      className={cn(
-        "relative flex flex-col bg-white border-r border-gray-200 transition-all duration-300",
-        isOpen ? "w-64" : "w-16",
-      )}
-    >
-      {/* Toggle Button */}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={onToggle}
-        className="absolute -right-3 top-6 z-10 h-6 w-6 rounded-full border bg-white shadow-md hover:bg-gray-50"
-      >
-        {isOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-      </Button>
-
-      {/* User Info */}
-      <div className="p-4">
-        <div className={cn("flex items-center", isOpen ? "space-x-3" : "justify-center")}>
-          <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center">
-            <span className="text-orange-600 font-medium text-sm">{getUserInitials(user.nombreCompleto)}</span>
-          </div>
-          {isOpen && (
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">{user.nombreCompleto}</p>
-              <Badge variant="secondary" className={`text-xs ${getRoleBadgeColor(user.rol)}`}>
-                {user.rol}
-              </Badge>
-            </div>
-          )}
+    <>
+      {/* Mobile overlay */}
+      {isOpen && (
+        <div className="fixed inset-0 z-40 lg:hidden" onClick={onToggle}>
+          <div className="absolute inset-0 bg-black opacity-50" />
         </div>
-      </div>
+      )}
 
-      <Separator />
+      {/* Sidebar */}
+      <aside
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-amber-900 to-amber-800 text-white transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:inset-0",
+          isOpen ? "translate-x-0" : "-translate-x-full",
+        )}
+      >
+        <div className="flex flex-col h-full">
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 border-b border-amber-700">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-amber-600 rounded-full flex items-center justify-center">
+                <ChefHat className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold">AppRest</h2>
+                <p className="text-xs text-amber-200">Gestión Restaurante</p>
+              </div>
+            </div>
+            <Button variant="ghost" size="sm" onClick={onToggle} className="lg:hidden text-white hover:bg-amber-700">
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
 
-      {/* Navigation */}
-      <ScrollArea className="flex-1 px-3">
-        <div className="space-y-2 py-4">
-          {navigation.map((item) => {
-            const isActive = pathname === item.href
-            const Icon = item.icon
+          {/* User info */}
+          <div className="p-4 border-b border-amber-700">
+            <div className="flex items-center space-x-3">
+              <div className={`w-10 h-10 rounded-full ${roleColor} flex items-center justify-center`}>
+                <span className="text-white font-semibold text-sm">{userInitials}</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-white truncate">{user.nombreCompleto}</p>
+                <div className="flex items-center space-x-2 mt-1">
+                  <Badge variant="secondary" className="text-xs">
+                    {user.rol}
+                  </Badge>
+                  <Badge variant="outline" className="text-xs text-amber-200 border-amber-200">
+                    {user.nivelLicencia}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+          </div>
 
-            return (
-              <Link key={item.href} href={item.href}>
-                <Button
-                  variant={isActive ? "secondary" : "ghost"}
-                  className={cn(
-                    "w-full justify-start h-10",
-                    isOpen ? "px-3" : "px-0 justify-center",
-                    isActive && "bg-orange-100 text-orange-700 hover:bg-orange-100",
-                  )}
-                >
-                  <Icon className={cn("h-5 w-5", isOpen && "mr-3")} />
-                  {isOpen && (
-                    <div className="flex-1 text-left">
-                      <span className="font-medium">{item.title}</span>
+          {/* Navigation */}
+          <ScrollArea className="flex-1 px-3 py-4">
+            <nav className="space-y-2">
+              {navigation.map((item) => {
+                const isActive = pathname === item.href
+                const Icon = item.icon
+
+                return (
+                  <Link key={item.href} href={item.href} onClick={() => onToggle()}>
+                    <div
+                      className={cn(
+                        "flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                        isActive ? "bg-amber-600 text-white" : "text-amber-100 hover:bg-amber-700 hover:text-white",
+                      )}
+                    >
+                      <Icon className="w-5 h-5 flex-shrink-0" />
+                      <span className="flex-1">{item.title}</span>
                       {item.badge && (
-                        <Badge variant="secondary" className="ml-2 text-xs">
+                        <Badge variant="secondary" className="text-xs">
                           {item.badge}
                         </Badge>
                       )}
                     </div>
-                  )}
-                </Button>
-              </Link>
-            )
-          })}
-        </div>
-      </ScrollArea>
+                  </Link>
+                )
+              })}
+            </nav>
+          </ScrollArea>
 
-      {/* Footer */}
-      {isOpen && (
-        <div className="p-4 border-t">
-          <div className="text-xs text-gray-500 space-y-1">
-            <p>Empresa: {user.nombreEmpresa}</p>
-            <p>Licencia: {user.nivelLicencia}</p>
+          {/* Footer */}
+          <div className="p-4 border-t border-amber-700">
+            <div className="text-center">
+              <p className="text-xs text-amber-200">{user.nombreEmpresa}</p>
+              <p className="text-xs text-amber-300 mt-1">v2.0.0</p>
+            </div>
           </div>
         </div>
-      )}
-    </div>
+      </aside>
+    </>
   )
 }

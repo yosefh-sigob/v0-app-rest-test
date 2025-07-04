@@ -3,57 +3,56 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { Eye, EyeOff, ChefHat, User, Lock, Hash } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { useAuth } from "@/contexts/auth-context"
 import { loginSchema, type LoginFormData } from "@/schemas/auth.schemas"
-import { ChefHat, Eye, EyeOff, Loader2, User, Lock, Hash } from "lucide-react"
 
 const demoUsers = [
   {
     usuario: "admin",
     contraseña: "admin123",
     pin: "1234",
-    nombre: "Administrador Sistema",
     rol: "Administrador",
-    color: "bg-purple-100 text-purple-800",
+    descripcion: "Acceso completo al sistema",
+    color: "bg-purple-500",
   },
   {
     usuario: "gerente",
     contraseña: "gerente123",
     pin: "7890",
-    nombre: "María García López",
     rol: "Gerente",
-    color: "bg-indigo-100 text-indigo-800",
+    descripcion: "Gestión y reportes",
+    color: "bg-indigo-500",
   },
   {
     usuario: "cajero",
     contraseña: "cajero123",
     pin: "9012",
-    nombre: "Carlos Rodríguez",
     rol: "Cajero",
-    color: "bg-green-100 text-green-800",
+    descripcion: "Punto de venta y cobros",
+    color: "bg-green-500",
   },
   {
     usuario: "mesero",
     contraseña: "mesero123",
     pin: "5678",
-    nombre: "Ana Martínez",
     rol: "Mesero",
-    color: "bg-blue-100 text-blue-800",
+    descripcion: "Mesas y órdenes",
+    color: "bg-blue-500",
   },
   {
     usuario: "cocinero",
     contraseña: "cocina123",
     pin: "3456",
-    nombre: "José Luis Hernández",
     rol: "Cocinero",
-    color: "bg-orange-100 text-orange-800",
+    descripcion: "Cocina e inventario",
+    color: "bg-orange-500",
   },
 ]
 
@@ -73,35 +72,32 @@ export function LoginForm() {
 
   const onSubmit = async (data: LoginFormData) => {
     const success = await login(data)
-    if (success) {
-      // Redirect will be handled by the auth context
-      window.location.href = "/dashboard"
+    if (!success) {
+      form.setError("root", {
+        message: "Credenciales inválidas. Verifica usuario, contraseña y PIN.",
+      })
     }
   }
 
-  const fillDemoUser = (demoUser: (typeof demoUsers)[0]) => {
-    form.setValue("usuario", demoUser.usuario)
-    form.setValue("contraseña", demoUser.contraseña)
-    form.setValue("pin", demoUser.pin)
+  const fillDemoUser = (user: (typeof demoUsers)[0]) => {
+    form.setValue("usuario", user.usuario)
+    form.setValue("contraseña", user.contraseña)
+    form.setValue("pin", user.pin)
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-amber-50 p-4">
-      <Card className="w-full max-w-md shadow-xl">
-        <CardHeader className="text-center space-y-4">
-          <div className="flex justify-center">
-            <div className="p-3 bg-orange-100 rounded-full">
-              <ChefHat className="h-8 w-8 text-orange-600" />
-            </div>
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-orange-500 to-amber-600 rounded-full flex items-center justify-center mb-4">
+            <ChefHat className="w-8 h-8 text-white" />
           </div>
-          <div>
-            <CardTitle className="text-2xl font-bold text-gray-900">AppRest</CardTitle>
-            <CardDescription className="text-gray-600">Sistema de Gestión de Restaurante</CardDescription>
-          </div>
+          <CardTitle className="text-2xl font-bold">AppRest</CardTitle>
+          <CardDescription>Sistema de Gestión de Restaurantes</CardDescription>
         </CardHeader>
 
         <CardContent>
-          <Tabs defaultValue="login" className="space-y-4">
+          <Tabs defaultValue="login" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="login">Iniciar Sesión</TabsTrigger>
               <TabsTrigger value="demo">Usuarios Demo</TabsTrigger>
@@ -119,7 +115,7 @@ export function LoginForm() {
                         <FormControl>
                           <div className="relative">
                             <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                            <Input {...field} placeholder="Ingresa tu usuario" className="pl-10" />
+                            <Input placeholder="Ingresa tu usuario" className="pl-10" {...field} />
                           </div>
                         </FormControl>
                         <FormMessage />
@@ -137,19 +133,23 @@ export function LoginForm() {
                           <div className="relative">
                             <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                             <Input
-                              {...field}
                               type={showPassword ? "text" : "password"}
                               placeholder="Ingresa tu contraseña"
                               className="pl-10 pr-10"
+                              {...field}
                             />
                             <Button
                               type="button"
                               variant="ghost"
                               size="sm"
-                              className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                              className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                               onClick={() => setShowPassword(!showPassword)}
                             >
-                              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                              {showPassword ? (
+                                <EyeOff className="h-4 w-4 text-gray-400" />
+                              ) : (
+                                <Eye className="h-4 w-4 text-gray-400" />
+                              )}
                             </Button>
                           </div>
                         </FormControl>
@@ -168,20 +168,24 @@ export function LoginForm() {
                           <div className="relative">
                             <Hash className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                             <Input
-                              {...field}
                               type={showPin ? "text" : "password"}
                               placeholder="Ingresa tu PIN"
                               className="pl-10 pr-10"
                               maxLength={6}
+                              {...field}
                             />
                             <Button
                               type="button"
                               variant="ghost"
                               size="sm"
-                              className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                              className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                               onClick={() => setShowPin(!showPin)}
                             >
-                              {showPin ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                              {showPin ? (
+                                <EyeOff className="h-4 w-4 text-gray-400" />
+                              ) : (
+                                <Eye className="h-4 w-4 text-gray-400" />
+                              )}
                             </Button>
                           </div>
                         </FormControl>
@@ -190,15 +194,12 @@ export function LoginForm() {
                     )}
                   />
 
+                  {form.formState.errors.root && (
+                    <div className="text-sm text-red-600 text-center">{form.formState.errors.root.message}</div>
+                  )}
+
                   <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Iniciando sesión...
-                      </>
-                    ) : (
-                      "Iniciar Sesión"
-                    )}
+                    {isLoading ? "Iniciando sesión..." : "Iniciar Sesión"}
                   </Button>
                 </form>
               </Form>
@@ -209,31 +210,28 @@ export function LoginForm() {
                 Haz clic en cualquier usuario para auto-completar las credenciales
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {demoUsers.map((user) => (
                   <Button
                     key={user.usuario}
                     variant="outline"
-                    className="w-full h-auto p-4 justify-start bg-transparent"
+                    className="w-full justify-start h-auto p-4 bg-transparent"
                     onClick={() => fillDemoUser(user)}
                   >
                     <div className="flex items-center space-x-3 w-full">
-                      <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
-                        <span className="text-sm font-medium">
-                          {user.nombre
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")
-                            .slice(0, 2)}
-                        </span>
+                      <div className={`w-10 h-10 rounded-full ${user.color} flex items-center justify-center`}>
+                        <span className="text-white font-semibold text-sm">{user.usuario.charAt(0).toUpperCase()}</span>
                       </div>
                       <div className="flex-1 text-left">
-                        <div className="font-medium">{user.nombre}</div>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Badge variant="secondary" className={`text-xs ${user.color}`}>
+                        <div className="flex items-center space-x-2">
+                          <span className="font-medium">{user.usuario}</span>
+                          <Badge variant="secondary" className="text-xs">
                             {user.rol}
                           </Badge>
-                          <span className="text-xs text-gray-500">@{user.usuario}</span>
+                        </div>
+                        <div className="text-sm text-gray-500">{user.descripcion}</div>
+                        <div className="text-xs text-gray-400 mt-1">
+                          PIN: {user.pin} • Contraseña: {user.contraseña}
                         </div>
                       </div>
                     </div>
@@ -241,15 +239,18 @@ export function LoginForm() {
                 ))}
               </div>
 
-              <Separator />
-
-              <div className="text-xs text-gray-500 space-y-1">
-                <p>
-                  <strong>Credenciales:</strong> Todas usan contraseña {"{rol}"}123 y PIN único
-                </p>
-                <p>
-                  <strong>Ejemplo:</strong> admin/admin123/1234
-                </p>
+              <div className="text-center">
+                <Button
+                  onClick={() => {
+                    // Switch to login tab after filling
+                    const loginTab = document.querySelector('[value="login"]') as HTMLElement
+                    loginTab?.click()
+                  }}
+                  variant="ghost"
+                  size="sm"
+                >
+                  Ir al formulario de login →
+                </Button>
               </div>
             </TabsContent>
           </Tabs>
