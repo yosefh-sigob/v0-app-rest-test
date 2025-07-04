@@ -1,26 +1,112 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { createProductoSchema, updateProductoSchema, type SearchProductosInput } from "@/schemas/productos.schemas"
 import {
-  searchProductos,
-  addProducto,
-  updateProducto as updateProductoMock,
-  deleteProducto as deleteProductoMock,
-  toggleFavoriteProducto as toggleFavoriteMock,
-} from "@/lib/data/mock-data"
+  createProductoSchema,
+  updateProductoSchema,
+  type CreateProductoInput,
+  type UpdateProductoInput,
+  type Producto,
+} from "@/schemas/produtos.schemas"
+import { generateULID } from "@/utils/ulid"
 
-// Simular delay de red
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+// Mock data para simular base de datos
+const mockProductos: Producto[] = [
+  {
+    ProductoULID: generateULID(),
+    ClaveProducto: "HAM001",
+    TipoProducto: "Platillo",
+    Nombredelproducto: "Hamburguesa Clásica",
+    Descripcion: "Hamburguesa con carne, lechuga, tomate y queso",
+    Favorito: true,
+    ExentoImpuesto: false,
+    PrecioAbierto: false,
+    ControlStock: true,
+    PrecioxUtilidad: false,
+    Facturable: true,
+    Suspendido: false,
+    Comedor: true,
+    ADomicilio: true,
+    Mostrador: false,
+    Enlinea: true,
+    EnAPP: false,
+    EnMenuQR: true,
+    Fecha_UltimoCambio: new Date().toISOString(),
+  },
+  {
+    ProductoULID: generateULID(),
+    ClaveProducto: "REF001",
+    TipoProducto: "Botella",
+    Nombredelproducto: "Coca Cola 600ml",
+    Descripcion: "Refresco de cola en botella de vidrio",
+    Favorito: false,
+    ExentoImpuesto: false,
+    PrecioAbierto: false,
+    ControlStock: true,
+    PrecioxUtilidad: true,
+    Facturable: true,
+    Suspendido: false,
+    Comedor: true,
+    ADomicilio: true,
+    Mostrador: true,
+    Enlinea: false,
+    EnAPP: false,
+    EnMenuQR: false,
+    Fecha_UltimoCambio: new Date().toISOString(),
+  },
+]
 
-export async function createProducto(data: unknown) {
-  await delay(1000) // Simular latencia de red
-
+export async function getProductos(params: { page?: number; limit?: number } = {}) {
   try {
+    const { page = 1, limit = 10 } = params
+
+    // Simular delay de red
+    await new Promise((resolve) => setTimeout(resolve, 100))
+
+    const startIndex = (page - 1) * limit
+    const endIndex = startIndex + limit
+    const productos = mockProductos.slice(startIndex, endIndex)
+
+    return {
+      success: true,
+      data: {
+        productos,
+        total: mockProductos.length,
+        page,
+        limit,
+      },
+    }
+  } catch (error) {
+    return {
+      success: false,
+      message: "Error al obtener productos",
+    }
+  }
+}
+
+export async function createProducto(data: CreateProductoInput) {
+  try {
+    // Validar datos
     const validatedData = createProductoSchema.parse(data)
 
-    // Usar la función mock para agregar el producto
-    const newProducto = addProducto(validatedData)
+    // Verificar que no exista la clave
+    const existingProducto = mockProductos.find((p) => p.ClaveProducto === validatedData.ClaveProducto)
+    if (existingProducto) {
+      return {
+        success: false,
+        message: "Ya existe un producto con esta clave",
+      }
+    }
+
+    // Crear nuevo producto
+    const newProducto: Producto = {
+      ...validatedData,
+      ProductoULID: generateULID(),
+      Fecha_UltimoCambio: new Date().toISOString(),
+      Fecha_Sync: new Date().toISOString(),
+    }
+
+    mockProductos.unshift(newProducto)
 
     revalidatePath("/productos")
 
@@ -33,26 +119,45 @@ export async function createProducto(data: unknown) {
     return {
       success: false,
       message: "Error al crear el producto",
-      error: error instanceof Error ? error.message : "Error desconocido",
     }
   }
 }
 
-export async function updateProducto(id: string, data: unknown) {
-  await delay(800)
-
+export async function updateProducto(id: string, data: UpdateProductoInput) {
   try {
+    // Validar datos
     const validatedData = updateProductoSchema.parse(data)
 
-    // Usar la función mock para actualizar el producto
-    const updatedProducto = updateProductoMock(id, validatedData)
-
-    if (!updatedProducto) {
+    // Buscar producto
+    const index = mockProductos.findIndex((p) => p.ProductoULID === id)
+    if (index === -1) {
       return {
         success: false,
         message: "Producto no encontrado",
       }
     }
+
+    // Verificar clave única si se está actualizando
+    if (validatedData.ClaveProducto) {
+      const existingProducto = mockProductos.find(
+        (p) => p.ClaveProducto === validatedData.ClaveProducto && p.ProductoULID !== id,
+      )
+      if (existingProducto) {
+        return {
+          success: false,
+          message: "Ya existe un producto con esta clave",
+        }
+      }
+    }
+
+    // Actualizar producto
+    const updatedProducto: Producto = {
+      ...mockProductos[index],
+      ...validatedData,
+      Fecha_UltimoCambio: new Date().toISOString(),
+    }
+
+    mockProductos[index] = updatedProducto
 
     revalidatePath("/productos")
 
@@ -65,49 +170,21 @@ export async function updateProducto(id: string, data: unknown) {
     return {
       success: false,
       message: "Error al actualizar el producto",
-      error: error instanceof Error ? error.message : "Error desconocido",
-    }
-  }
-}
-
-export async function getProductos(filters: SearchProductosInput) {
-  await delay(500)
-
-  try {
-    const data = searchProductos(filters)
-
-    return {
-      success: true,
-      data,
-    }
-  } catch (error) {
-    return {
-      success: false,
-      message: "Error al obtener productos",
-      data: {
-        productos: [],
-        total: 0,
-        page: 1,
-        totalPages: 0,
-        limit: 20,
-      },
     }
   }
 }
 
 export async function deleteProducto(id: string) {
-  await delay(600)
-
   try {
-    // Usar la función mock para eliminar (suspender) el producto
-    const success = deleteProductoMock(id)
-
-    if (!success) {
+    const index = mockProductos.findIndex((p) => p.ProductoULID === id)
+    if (index === -1) {
       return {
         success: false,
         message: "Producto no encontrado",
       }
     }
+
+    mockProductos.splice(index, 1)
 
     revalidatePath("/productos")
 
@@ -124,25 +201,27 @@ export async function deleteProducto(id: string) {
 }
 
 export async function toggleFavoriteProducto(id: string) {
-  await delay(400)
-
   try {
-    // Usar la función mock para alternar favorito
-    const updatedProducto = toggleFavoriteMock(id)
-
-    if (!updatedProducto) {
+    const index = mockProductos.findIndex((p) => p.ProductoULID === id)
+    if (index === -1) {
       return {
         success: false,
         message: "Producto no encontrado",
       }
     }
 
+    mockProductos[index] = {
+      ...mockProductos[index],
+      Favorito: !mockProductos[index].Favorito,
+      Fecha_UltimoCambio: new Date().toISOString(),
+    }
+
     revalidatePath("/productos")
 
     return {
       success: true,
-      message: `Producto ${updatedProducto.Favorito ? "agregado a" : "removido de"} favoritos`,
-      data: updatedProducto,
+      message: "Estado de favorito actualizado",
+      data: mockProductos[index],
     }
   } catch (error) {
     return {

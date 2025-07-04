@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import type { Produto } from "@/schemas/produtos.schemas" // Import Produto type
 
 import { useState } from "react"
 import { useForm } from "react-hook-form"
@@ -17,17 +18,19 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Upload, X, Save, ArrowLeft, Package, Settings, ShoppingCart, ImageIcon } from "lucide-react"
 import { createProducto, updateProducto } from "@/actions/productos.actions"
-import { createProductoSchema, updateProductoSchema, type Producto } from "@/schemas/productos.schemas"
+import {
+  createProductoSchema,
+  updateProductoSchema,
+  type CreateProductoInput,
+  type UpdateProductoInput,
+} from "@/schemas/produtos.schemas"
 import { toast } from "@/hooks/use-toast"
-import type { z } from "zod"
 
 interface ProductoFormProps {
-  producto?: Producto
-  onSuccess: (producto: Producto) => void
+  producto?: Produto
+  onSuccess: (producto: Produto) => void
   onCancel: () => void
 }
-
-type FormData = z.infer<typeof createProductoSchema>
 
 export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -36,11 +39,11 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
 
   const isEditing = !!producto
 
-  const form = useForm<FormData>({
+  const form = useForm<CreateProductoInput | UpdateProductoInput>({
     resolver: zodResolver(isEditing ? updateProductoSchema : createProductoSchema),
     defaultValues: {
       ClaveProducto: producto?.ClaveProducto || "",
-      TipoProducto: producto?.TipoProducto || "Producto",
+      TipoProducto: producto?.TipoProducto || "Produto",
       Nombredelproducto: producto?.Nombredelproducto || "",
       Descripcion: producto?.Descripcion || "",
       Favorito: producto?.Favorito || false,
@@ -85,14 +88,14 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
     form.setValue("Imagen", "")
   }
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data: CreateProductoInput | UpdateProductoInput) => {
     setIsSubmitting(true)
     try {
       let result
       if (isEditing && producto) {
-        result = await updateProducto(producto.ProductoULID, data)
+        result = await updateProducto(producto.ProductoULID, data as UpdateProductoInput)
       } else {
-        result = await createProducto(data)
+        result = await createProducto(data as CreateProductoInput)
       }
 
       if (result.success) {
@@ -104,14 +107,14 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
       } else {
         toast({
           title: "Error",
-          description: result.message || "Error al procesar el producto",
+          description: result.message || "Error al procesar el produto",
           variant: "destructive",
         })
       }
     } catch (error) {
       toast({
         title: "Error",
-        description: "Error inesperado al procesar el producto",
+        description: "Error inesperado al procesar el produto",
         variant: "destructive",
       })
     } finally {
@@ -121,7 +124,7 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
 
   const tipoProductoOptions = [
     { value: "Platillo", label: "🍽️ Platillo", description: "Comida preparada con receta" },
-    { value: "Producto", label: "📦 Producto", description: "Artículo que se vende tal como se compra" },
+    { value: "Produto", label: "📦 Produto", description: "Artículo que se vende tal como se compra" },
     { value: "Botella", label: "🍷 Botella", description: "Bebidas alcohólicas y no alcohólicas" },
   ]
 
@@ -167,7 +170,7 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="ClaveProducto">Clave del Producto *</Label>
+                  <Label htmlFor="ClaveProducto">Clave del Produto *</Label>
                   <Input
                     id="ClaveProducto"
                     placeholder="Ej: PROD001"
@@ -180,7 +183,7 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="TipoProducto">Tipo de Producto *</Label>
+                  <Label htmlFor="TipoProducto">Tipo de Produto *</Label>
                   <Select
                     value={form.watch("TipoProducto")}
                     onValueChange={(value) => form.setValue("TipoProducto", value as any)}
@@ -206,7 +209,7 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="Nombredelproducto">Nombre del Producto *</Label>
+                <Label htmlFor="Nombredelproducto">Nombre del Produto *</Label>
                 <Input
                   id="Nombredelproducto"
                   placeholder="Ej: Hamburguesa Clásica"
@@ -221,7 +224,7 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
                 <Label htmlFor="Descripcion">Descripción</Label>
                 <Textarea
                   id="Descripcion"
-                  placeholder="Describe el producto, ingredientes, características..."
+                  placeholder="Describe el produto, ingredientes, características..."
                   rows={3}
                   {...form.register("Descripcion")}
                 />
@@ -245,7 +248,7 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <ImageIcon className="h-5 w-5 text-blue-600" />
-                Imagen del Producto
+                Imagen del Produto
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -302,7 +305,7 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Settings className="h-5 w-5 text-purple-600" />
-                Configuración del Producto
+                Configuración del Produto
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -313,9 +316,9 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
                     <div className="flex items-center justify-between">
                       <div>
                         <Label htmlFor="Favorito" className="font-medium">
-                          ⭐ Producto Favorito
+                          ⭐ Produto Favorito
                         </Label>
-                        <p className="text-sm text-gray-500">Marcar como producto destacado</p>
+                        <p className="text-sm text-gray-500">Marcar como produto destacado</p>
                       </div>
                       <Switch
                         id="Favorito"
@@ -327,7 +330,7 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
                     <div className="flex items-center justify-between">
                       <div>
                         <Label htmlFor="Suspendido" className="font-medium">
-                          🚫 Producto Suspendido
+                          🚫 Produto Suspendido
                         </Label>
                         <p className="text-sm text-gray-500">Ocultar del menú temporalmente</p>
                       </div>
@@ -429,7 +432,7 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <p className="text-gray-600">Selecciona en qué canales estará disponible este producto:</p>
+                <p className="text-gray-600">Selecciona en qué canales estará disponible este produto:</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {canalesVenta.map((canal) => (
                     <div key={canal.key} className="border rounded-lg p-4">
@@ -481,7 +484,7 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
         </Button>
         <Button type="submit" disabled={isSubmitting} className="bg-orange-600 hover:bg-orange-700">
           <Save className="h-4 w-4 mr-2" />
-          {isSubmitting ? "Guardando..." : isEditing ? "Actualizar Producto" : "Crear Producto"}
+          {isSubmitting ? "Guardando..." : isEditing ? "Actualizar Produto" : "Crear Produto"}
         </Button>
       </div>
     </form>

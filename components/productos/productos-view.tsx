@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
@@ -26,7 +26,7 @@ import { toast } from "@/hooks/use-toast"
 import { ProductoForm } from "./producto-form"
 import { ProductoDetail } from "./producto-detail"
 import { getProductos, deleteProducto, toggleFavoriteProducto } from "@/actions/productos.actions"
-import type { Producto } from "@/schemas/productos.schemas"
+import type { Producto } from "@/schemas/produtos.schemas"
 
 interface ProductosViewProps {
   initialProductos: Producto[]
@@ -316,22 +316,10 @@ export function ProductosView({ initialProductos = [] }: ProductosViewProps) {
                 </Button>
               </div>
 
-              <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-                <DialogTrigger asChild>
-                  <Button className="bg-orange-500 hover:bg-orange-600">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Nuevo Producto
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="w-[80vw] max-w-[80vw] max-h-[90vh] overflow-y-auto p-0">
-                  <DialogHeader className="p-6 pb-0">
-                    <DialogTitle className="text-xl font-bold">✨ Crear Nuevo Producto</DialogTitle>
-                  </DialogHeader>
-                  <div className="p-6 pt-0">
-                    <ProductoForm onSuccess={handleProductoCreated} onCancel={() => setIsCreateOpen(false)} />
-                  </div>
-                </DialogContent>
-              </Dialog>
+              <Button className="bg-orange-500 hover:bg-orange-600" onClick={() => setIsCreateOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Nuevo Producto
+              </Button>
             </div>
           </div>
         </CardHeader>
@@ -606,6 +594,18 @@ export function ProductosView({ initialProductos = [] }: ProductosViewProps) {
           ))}
         </div>
       )}
+
+      {/* Modal de creación */}
+      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+        <DialogContent className="w-[80vw] max-w-[80vw] max-h-[90vh] overflow-y-auto p-0">
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle className="text-xl font-bold">✨ Crear Nuevo Producto</DialogTitle>
+          </DialogHeader>
+          <div className="p-6 pt-0">
+            <ProductoForm onSuccess={handleProductoCreated} onCancel={() => setIsCreateOpen(false)} />
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Modal de edición */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
