@@ -1,147 +1,235 @@
 "use client"
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
-import { useAuth } from "@/contexts/auth-context"
-import { RolUsuario } from "@/interfaces/auth"
+import { UserRole } from "@/interfaces/auth"
 import {
   LayoutDashboard,
+  Utensils,
   Users,
-  Package,
-  UserCheck,
+  CreditCard,
   Calendar,
   MessageSquare,
-  CreditCard,
-  ChefHat,
-  Settings,
   BarChart3,
-  Receipt,
-  ShoppingCart,
-  Truck,
+  Settings,
+  ChefHat,
+  MapPin,
+  Package,
+  ClipboardList,
+  TrendingUp,
+  FileText,
 } from "lucide-react"
 
-interface NavigationItem {
-  name: string
+export interface NavigationItem {
+  title: string
   href: string
   icon: any
-  roles: RolUsuario[]
+  description?: string
   badge?: string
 }
 
-const navigationItems: NavigationItem[] = [
-  {
-    name: "Dashboard",
-    href: "/dashboard",
-    icon: LayoutDashboard,
-    roles: [RolUsuario.ADMINISTRADOR, RolUsuario.GERENTE, RolUsuario.CAJERO],
-  },
-  {
-    name: "Punto de Venta",
-    href: "/ventas/pos",
-    icon: CreditCard,
-    roles: [RolUsuario.CAJERO, RolUsuario.ADMINISTRADOR, RolUsuario.GERENTE],
-  },
-  {
-    name: "Mesas",
-    href: "/mesas",
-    icon: Users,
-    roles: [RolUsuario.MESERO, RolUsuario.ADMINISTRADOR, RolUsuario.GERENTE],
-  },
-  {
-    name: "Órdenes",
-    href: "/ordenes",
-    icon: Receipt,
-    roles: [RolUsuario.MESERO, RolUsuario.COCINERO, RolUsuario.ADMINISTRADOR, RolUsuario.GERENTE],
-  },
-  {
-    name: "Cocina",
-    href: "/cocina",
-    icon: ChefHat,
-    roles: [RolUsuario.COCINERO, RolUsuario.ADMINISTRADOR, RolUsuario.GERENTE],
-  },
-  {
-    name: "Productos",
-    href: "/productos",
-    icon: Package,
-    roles: [RolUsuario.ADMINISTRADOR, RolUsuario.GERENTE],
-  },
-  {
-    name: "Clientes",
-    href: "/clientes",
-    icon: UserCheck,
-    roles: [RolUsuario.ADMINISTRADOR, RolUsuario.GERENTE, RolUsuario.CAJERO],
-  },
-  {
-    name: "Reservaciones",
-    href: "/reservaciones",
-    icon: Calendar,
-    roles: [RolUsuario.ADMINISTRADOR, RolUsuario.GERENTE, RolUsuario.MESERO],
-  },
-  {
-    name: "Encuestas",
-    href: "/encuestas/crear",
-    icon: MessageSquare,
-    roles: [RolUsuario.ADMINISTRADOR, RolUsuario.GERENTE],
-  },
-  {
-    name: "Reportes",
-    href: "/reportes",
-    icon: BarChart3,
-    roles: [RolUsuario.ADMINISTRADOR, RolUsuario.GERENTE],
-  },
-  {
-    name: "Inventario",
-    href: "/inventario",
-    icon: ShoppingCart,
-    roles: [RolUsuario.ADMINISTRADOR, RolUsuario.GERENTE],
-  },
-  {
-    name: "Delivery",
-    href: "/delivery",
-    icon: Truck,
-    roles: [RolUsuario.ADMINISTRADOR, RolUsuario.GERENTE, RolUsuario.CAJERO],
-  },
-  {
-    name: "Configuración",
-    href: "/configuracion",
-    icon: Settings,
-    roles: [RolUsuario.ADMINISTRADOR],
-  },
-]
+export function getRoleNavigation(role: UserRole): NavigationItem[] {
+  const baseNavigation: NavigationItem[] = [
+    {
+      title: "Dashboard",
+      href: "/dashboard",
+      icon: LayoutDashboard,
+      description: "Panel principal",
+    },
+  ]
 
-export function RoleNavigation() {
-  const pathname = usePathname()
-  const { usuario } = useAuth()
+  switch (role) {
+    case UserRole.ADMINISTRADOR:
+      return [
+        ...baseNavigation,
+        {
+          title: "Productos",
+          href: "/productos",
+          icon: Utensils,
+          description: "Gestionar catálogo",
+        },
+        {
+          title: "Mesas",
+          href: "/mesas",
+          icon: MapPin,
+          description: "Administrar mesas",
+        },
+        {
+          title: "Clientes",
+          href: "/clientes",
+          icon: Users,
+          description: "Base de clientes",
+        },
+        {
+          title: "Reservaciones",
+          href: "/reservaciones",
+          icon: Calendar,
+          description: "Gestionar reservas",
+        },
+        {
+          title: "POS",
+          href: "/ventas/pos",
+          icon: CreditCard,
+          description: "Punto de venta",
+        },
+        {
+          title: "Encuestas SMS",
+          href: "/encuestas",
+          icon: MessageSquare,
+          description: "Campañas SMS",
+        },
+        {
+          title: "Reportes",
+          href: "/reportes",
+          icon: BarChart3,
+          description: "Análisis y estadísticas",
+        },
+        {
+          title: "Configuración",
+          href: "/configuracion",
+          icon: Settings,
+          description: "Ajustes del sistema",
+        },
+      ]
 
-  if (!usuario) return null
+    case UserRole.MESERO:
+      return [
+        ...baseNavigation,
+        {
+          title: "Mis Mesas",
+          href: "/mesero",
+          icon: MapPin,
+          description: "Mesas asignadas",
+        },
+        {
+          title: "Tomar Orden",
+          href: "/mesero/orden",
+          icon: ClipboardList,
+          description: "Nueva orden",
+        },
+        {
+          title: "Reservaciones",
+          href: "/reservaciones",
+          icon: Calendar,
+          description: "Ver reservas",
+        },
+        {
+          title: "Clientes",
+          href: "/clientes",
+          icon: Users,
+          description: "Información de clientes",
+        },
+      ]
 
-  // Filtrar navegación según el rol del usuario
-  const allowedItems = navigationItems.filter((item) => item.roles.includes(usuario.Rol))
+    case UserRole.CAJERO:
+      return [
+        ...baseNavigation,
+        {
+          title: "Punto de Venta",
+          href: "/cajero",
+          icon: CreditCard,
+          description: "Procesar pagos",
+        },
+        {
+          title: "Clientes",
+          href: "/clientes",
+          icon: Users,
+          description: "Gestionar clientes",
+        },
+        {
+          title: "Reportes Ventas",
+          href: "/reportes/ventas",
+          icon: TrendingUp,
+          description: "Reportes de caja",
+        },
+        {
+          title: "Facturas",
+          href: "/facturas",
+          icon: FileText,
+          description: "Facturación",
+        },
+      ]
 
-  return (
-    <nav className="flex-1 px-4 py-6 space-y-2">
-      {allowedItems.map((item) => {
-        const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
-        return (
-          <Link
-            key={item.name}
-            href={item.href}
-            className={cn(
-              "flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors group",
-              isActive
-                ? "bg-amber-800 text-amber-100 shadow-lg"
-                : "text-amber-200 hover:bg-amber-800/50 hover:text-amber-100",
-            )}
-          >
-            <item.icon className="mr-3 h-5 w-5" />
-            <span className="flex-1">{item.name}</span>
-            {item.badge && (
-              <span className="ml-2 px-2 py-1 text-xs bg-amber-600 text-amber-100 rounded-full">{item.badge}</span>
-            )}
-          </Link>
-        )
-      })}
-    </nav>
-  )
+    case UserRole.COCINERO:
+      return [
+        ...baseNavigation,
+        {
+          title: "Órdenes Cocina",
+          href: "/cocina",
+          icon: ChefHat,
+          description: "Órdenes pendientes",
+        },
+        {
+          title: "Inventario",
+          href: "/inventario",
+          icon: Package,
+          description: "Stock de ingredientes",
+        },
+        {
+          title: "Productos",
+          href: "/productos",
+          icon: Utensils,
+          description: "Ver catálogo",
+        },
+      ]
+
+    case UserRole.GERENTE:
+      return [
+        ...baseNavigation,
+        {
+          title: "Productos",
+          href: "/productos",
+          icon: Utensils,
+          description: "Gestionar catálogo",
+        },
+        {
+          title: "Mesas",
+          href: "/mesas",
+          icon: MapPin,
+          description: "Administrar mesas",
+        },
+        {
+          title: "Clientes",
+          href: "/clientes",
+          icon: Users,
+          description: "Base de clientes",
+        },
+        {
+          title: "Reservaciones",
+          href: "/reservaciones",
+          icon: Calendar,
+          description: "Gestionar reservas",
+        },
+        {
+          title: "Reportes",
+          href: "/reportes",
+          icon: BarChart3,
+          description: "Análisis completo",
+        },
+        {
+          title: "Encuestas SMS",
+          href: "/encuestas",
+          icon: MessageSquare,
+          description: "Campañas SMS",
+        },
+      ]
+
+    default:
+      return baseNavigation
+  }
+}
+
+export function getRoleBadgeColor(role: UserRole): string {
+  switch (role) {
+    case UserRole.ADMINISTRADOR:
+      return "bg-purple-100 text-purple-800"
+    case UserRole.MESERO:
+      return "bg-blue-100 text-blue-800"
+    case UserRole.CAJERO:
+      return "bg-green-100 text-green-800"
+    case UserRole.COCINERO:
+      return "bg-orange-100 text-orange-800"
+    case UserRole.GERENTE:
+      return "bg-indigo-100 text-indigo-800"
+    default:
+      return "bg-gray-100 text-gray-800"
+  }
 }

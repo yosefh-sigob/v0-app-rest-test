@@ -1,125 +1,105 @@
 "use client"
-
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { ChefHat, Menu, X, LogOut } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Badge } from "@/components/ui/badge"
 import { useAuth } from "@/contexts/auth-context"
-import { RoleNavigation } from "./role-navigation"
-import { RolUsuario } from "@/interfaces/auth"
+import { getRoleNavigation, getRoleBadgeColor } from "./role-navigation"
+import { ChevronLeft } from "lucide-react"
 
-const getRoleBadgeColor = (rol: RolUsuario) => {
-  switch (rol) {
-    case RolUsuario.ADMINISTRADOR:
-      return "bg-red-100 text-red-800 border-red-200"
-    case RolUsuario.GERENTE:
-      return "bg-purple-100 text-purple-800 border-purple-200"
-    case RolUsuario.CAJERO:
-      return "bg-green-100 text-green-800 border-green-200"
-    case RolUsuario.MESERO:
-      return "bg-blue-100 text-blue-800 border-blue-200"
-    case RolUsuario.COCINERO:
-      return "bg-orange-100 text-orange-800 border-orange-200"
-    default:
-      return "bg-gray-100 text-gray-800 border-gray-200"
-  }
+interface AuthSidebarProps {
+  isOpen: boolean
+  onToggle: () => void
 }
 
-export function AuthSidebar() {
-  const [isCollapsed, setIsCollapsed] = useState(false)
-  const { usuario, logout } = useAuth()
+export function AuthSidebar({ isOpen, onToggle }: AuthSidebarProps) {
+  const { user } = useAuth()
+  const pathname = usePathname()
 
-  if (!usuario) return null
+  if (!user) return null
 
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((word) => word.charAt(0))
-      .join("")
-      .toUpperCase()
-      .slice(0, 2)
-  }
-
-  const handleLogout = async () => {
-    await logout()
-  }
+  const navigation = getRoleNavigation(user.role)
 
   return (
     <>
-      {/* Mobile menu button */}
-      <div className="lg:hidden fixed top-4 left-4 z-50">
-        <Button variant="outline" size="sm" onClick={() => setIsCollapsed(!isCollapsed)} className="bg-white shadow-md">
-          {isCollapsed ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-        </Button>
-      </div>
+      {/* Mobile Overlay */}
+      {isOpen && <div className="fixed inset-0 z-40 bg-black/50 md:hidden" onClick={onToggle} />}
 
       {/* Sidebar */}
-      <div
+      <aside
         className={cn(
-          "restaurant-sidebar fixed inset-y-0 left-0 z-40 w-64 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0",
-          isCollapsed ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
+          "fixed left-0 top-16 z-50 h-[calc(100vh-4rem)] w-64 transform border-r bg-background transition-transform duration-200 ease-in-out md:relative md:top-0 md:h-screen md:translate-x-0",
+          isOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
         <div className="flex h-full flex-col">
-          {/* Logo y empresa */}
-          <div className="flex items-center justify-between px-6 py-6 border-b border-amber-800">
-            <div className="flex items-center space-x-3">
-              <ChefHat className="h-8 w-8 text-amber-300" />
-              <div>
-                <h2 className="text-xl font-bold text-amber-100">AppRest</h2>
-                <p className="text-xs text-amber-300">{usuario.NombreEmpresa}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Información del usuario */}
-          <div className="px-4 py-4 border-b border-amber-800">
-            <div className="flex items-center space-x-3">
-              <Avatar className="h-10 w-10">
-                <AvatarImage src={usuario.Avatar || "/placeholder.svg"} alt={usuario.NombreCompleto} />
-                <AvatarFallback className="bg-gradient-to-br from-amber-500 to-orange-600 text-white">
-                  {getInitials(usuario.NombreCompleto)}
-                </AvatarFallback>
-              </Avatar>
+          {/* User Info */}
+          <div className="p-4 border-b">
+            <div className="flex items-center justify-between">
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-amber-100 truncate">{usuario.NombreCompleto}</p>
-                <div className="flex items-center gap-1 mt-1">
-                  <Badge
-                    variant="outline"
-                    className={cn("text-xs border-amber-300 text-amber-100", getRoleBadgeColor(usuario.Rol))}
-                  >
-                    {usuario.Rol}
-                  </Badge>
-                </div>
+                <p className="text-sm font-medium truncate">{user.fullName}</p>
+                <Badge variant="secondary" className={`text-xs mt-1 ${getRoleBadgeColor(user.role)}`}>
+                  {user.role}
+                </Badge>
               </div>
+              <Button variant="ghost" size="sm" onClick={onToggle} className="md:hidden">
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
             </div>
           </div>
 
-          {/* Navigation basada en roles */}
-          <RoleNavigation />
+          {/* Navigation */}
+          <ScrollArea className="flex-1 px-3 py-4">
+            <nav className="space-y-2">
+              {navigation.map((item) => {
+                const isActive = pathname === item.href
+                const Icon = item.icon
 
-          {/* Footer con logout */}
-          <div className="px-4 py-4 border-t border-amber-800 space-y-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full border-amber-300 text-amber-100 hover:bg-amber-800 bg-transparent"
-              onClick={handleLogout}
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Cerrar Sesión
-            </Button>
-            <p className="text-xs text-amber-300 text-center">© 2024 AppRest v1.0</p>
+                return (
+                  <Link key={item.href} href={item.href}>
+                    <Button
+                      variant={isActive ? "secondary" : "ghost"}
+                      className={cn(
+                        "w-full justify-start h-auto p-3",
+                        isActive && "bg-orange-100 text-orange-900 hover:bg-orange-200",
+                      )}
+                      onClick={() => {
+                        // Close sidebar on mobile after navigation
+                        if (window.innerWidth < 768) {
+                          onToggle()
+                        }
+                      }}
+                    >
+                      <Icon className="mr-3 h-5 w-5 flex-shrink-0" />
+                      <div className="flex-1 text-left">
+                        <div className="font-medium">{item.title}</div>
+                        {item.description && <div className="text-xs text-muted-foreground">{item.description}</div>}
+                      </div>
+                      {item.badge && (
+                        <Badge variant="secondary" className="ml-2 text-xs">
+                          {item.badge}
+                        </Badge>
+                      )}
+                    </Button>
+                  </Link>
+                )
+              })}
+            </nav>
+          </ScrollArea>
+
+          {/* Footer */}
+          <div className="p-4 border-t">
+            <div className="text-center">
+              <p className="text-xs text-muted-foreground">AppRest v2.0</p>
+              <Badge variant="outline" className="mt-1 text-xs">
+                Licencia: Pro
+              </Badge>
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* Overlay for mobile */}
-      {isCollapsed && (
-        <div className="fixed inset-0 z-30 bg-black bg-opacity-50 lg:hidden" onClick={() => setIsCollapsed(false)} />
-      )}
+      </aside>
     </>
   )
 }

@@ -1,111 +1,94 @@
 "use client"
 
-import type React from "react"
-import { createContext, useContext, useState, useEffect } from "react"
-import type { UsuarioAuth, LoginCredentials } from "@/interfaces/auth"
-import { loginAction, logoutAction, verificarSesionAction } from "@/actions/auth.actions"
-import { toast } from "sonner"
-
-interface AuthContextType {
-  usuario: UsuarioAuth | null
-  isLoading: boolean
-  isAuthenticated: boolean
-  login: (credentials: LoginCredentials) => Promise<boolean>
-  logout: () => Promise<void>
-  verificarSesion: () => Promise<void>
-}
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
+import type { User, AuthContextType, LoginCredentials } from "@/interfaces/auth"
+import { authenticateUser } from "@/actions/auth.actions"
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [usuario, setUsuario] = useState<UsuarioAuth | null>(null)
+export function useAuth() {
+  const context = useContext(AuthContext)
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider")
+  }
+  return context
+}
+
+interface AuthProviderProps {
+  children: ReactNode
+}
+
+export function AuthProvider({ children }: AuthProviderProps) {
+  const [user, setUser] = useState<User | null>(null)
+  const [token, setToken] = useState<string | null>(null)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
-  const isAuthenticated = !!usuario
+  useEffect(() => {
+    checkAuth()
+  }, [])
+
+  const checkAuth = () => {
+    try {
+      const storedToken = localStorage.getItem("auth_token")
+      const storedUser = localStorage.getItem("auth_user")
+
+      if (storedToken && storedUser) {
+        const userData = JSON.parse(storedUser)
+        setToken(storedToken)
+        setUser(userData)
+        setIsAuthenticated(true)
+      }
+    } catch (error) {
+      console.error("Error checking auth:", error)
+      logout()
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const login = async (credentials: LoginCredentials): Promise<boolean> => {
     try {
       setIsLoading(true)
-      const result = await loginAction(credentials)
+      const result = await authenticateUser(credentials)
 
-      if (result.success && result.data) {
-        setUsuario(result.data.usuario)
-        localStorage.setItem("auth_token", result.data.token)
-        localStorage.setItem("auth_user", JSON.stringify(result.data.usuario))
-        toast.success(`¡Bienvenido ${result.data.usuario.NombreCompleto}!`)
+      if (result.success && result.user && result.token) {
+        setUser(result.user)
+        setToken(result.token)
+        setIsAuthenticated(true)
+
+        localStorage.setItem("auth_token", result.token)
+        localStorage.setItem("auth_user", JSON.stringify(result.user))
+
         return true
-      } else {
-        toast.error(result.error || "Error al iniciar sesión")
-        return false
       }
+
+      return false
     } catch (error) {
-      toast.error("Error de conexión")
+      console.error("Login error:", error)
       return false
     } finally {
       setIsLoading(false)
     }
   }
 
-  const logout = async (): Promise<void> => {
-    try {
-      await logoutAction()
-      setUsuario(null)
-      localStorage.removeItem("auth_token")
-      localStorage.removeItem("auth_user")
-      toast.success("Sesión cerrada correctamente")
-    } catch (error) {
-      toast.error("Error al cerrar sesión")
-    }
+  const logout = () => {
+    setUser(null)
+    setToken(null)
+    setIsAuthenticated(false)
+    localStorage.removeItem("auth_token")
+    localStorage.removeItem("auth_user")
   }
 
-  const verificarSesion = async (): Promise<void> => {
-    try {
-      const token = localStorage.getItem("auth_token")
-      const userData = localStorage.getItem("auth_user")
-
-      if (token && userData) {
-        const result = await verificarSesionAction(token)
-        if (result.success && result.data) {
-          setUsuario(JSON.parse(userData))
-        } else {
-          // Token inválido, limpiar
-          localStorage.removeItem("auth_token")
-          localStorage.removeItem("auth_user")
-          setUsuario(null)
-        }
-      }
-    } catch (error) {
-      console.error("Error verificando sesión:", error)
-      setUsuario(null)
-    } finally {
-      setIsLoading(false)
-    }
+  const value: AuthContextType = {
+    user,
+    token,
+    isAuthenticated,
+    isLoading,
+    login,
+    logout,
+    checkAuth,
   }
 
-  useEffect(() => {
-    verificarSesion()
-  }, [])
-
-  return (
-    <AuthContext.Provider
-      value={{
-        usuario,
-        isLoading,
-        isAuthenticated,
-        login,
-        logout,
-        verificarSesion,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  )
-}
-
-export function useAuth() {
-  const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error("useAuth debe ser usado dentro de un AuthProvider")
-  }
-  return context
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

@@ -6,7 +6,7 @@ export default async function ProductosPage() {
   const productos = await obtenerProductos()
 
   return (
-    <AuthenticatedLayout title="Gestión de Productos">
+    <AuthenticatedLayout>
       <ProductosView productos={productos} />
     </AuthenticatedLayout>
   )

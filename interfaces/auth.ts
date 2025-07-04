@@ -1,4 +1,16 @@
-export enum RolUsuario {
+export interface User {
+  id: string
+  username: string
+  email: string
+  fullName: string
+  role: UserRole
+  pin: string
+  isActive: boolean
+  lastLogin?: Date
+  empresaId: string
+}
+
+export enum UserRole {
   ADMINISTRADOR = "Administrador",
   MESERO = "Mesero",
   CAJERO = "Cajero",
@@ -6,29 +18,21 @@ export enum RolUsuario {
   GERENTE = "Gerente",
 }
 
-export interface UsuarioAuth {
-  UsuarioULID: string
-  NombreCompleto: string
-  Usuario: string
-  Correo: string
-  Celular: string
-  Puesto: string
-  Rol: RolUsuario
-  EsAdministrador: boolean
-  EmpresaULID: string
-  NombreEmpresa: string
-  NivelLicencia: string
-  Avatar?: string
-}
-
-export interface SesionAuth {
-  usuario: UsuarioAuth
-  token: string
-  expiracion: Date
+export interface AuthState {
+  user: User | null
+  token: string | null
+  isAuthenticated: boolean
+  isLoading: boolean
 }
 
 export interface LoginCredentials {
-  usuario: string
-  contraseña: string
-  pin?: string
+  username: string
+  password: string
+  pin: string
+}
+
+export interface AuthContextType extends AuthState {
+  login: (credentials: LoginCredentials) => Promise<boolean>
+  logout: () => void
+  checkAuth: () => void
 }

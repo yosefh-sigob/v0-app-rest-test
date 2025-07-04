@@ -2,45 +2,52 @@
 
 import type React from "react"
 
+import { useState, useEffect } from "react"
 import { useAuth } from "@/contexts/auth-context"
 import { LoginForm } from "@/components/auth/login-form"
-import { AuthSidebar } from "./auth-sidebar"
 import { AuthHeader } from "./auth-header"
+import { AuthSidebar } from "./auth-sidebar"
 import { Skeleton } from "@/components/ui/skeleton"
 
 interface AuthenticatedLayoutProps {
   children: React.ReactNode
-  title?: string
 }
 
-export function AuthenticatedLayout({ children, title }: AuthenticatedLayoutProps) {
+export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
   const { isAuthenticated, isLoading } = useAuth()
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
-  // Mostrar loading mientras se verifica la sesión
+  // Close sidebar when clicking outside on mobile
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setSidebarOpen(false)
+      }
+    }
+
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [])
+
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
+        <div className="flex h-16 items-center justify-between border-b px-4">
+          <Skeleton className="h-8 w-32" />
+          <Skeleton className="h-8 w-24" />
+        </div>
         <div className="flex">
-          {/* Sidebar skeleton */}
-          <div className="hidden lg:block w-64 bg-gradient-to-b from-amber-900 to-amber-800 p-6">
+          <div className="hidden md:block w-64 border-r p-4">
             <div className="space-y-4">
-              <Skeleton className="h-8 w-32 bg-amber-700" />
-              <Skeleton className="h-4 w-24 bg-amber-700" />
-              <div className="space-y-2 mt-8">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <Skeleton key={i} className="h-10 w-full bg-amber-700" />
-                ))}
-              </div>
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
             </div>
           </div>
-
-          {/* Main content skeleton */}
-          <div className="flex-1">
-            <div className="h-16 bg-white border-b border-gray-200 px-6 py-4">
+          <div className="flex-1 p-6">
+            <div className="space-y-4">
               <Skeleton className="h-8 w-48" />
-            </div>
-            <div className="p-6 space-y-4">
-              <Skeleton className="h-8 w-64" />
               <Skeleton className="h-32 w-full" />
               <Skeleton className="h-32 w-full" />
             </div>
@@ -50,20 +57,20 @@ export function AuthenticatedLayout({ children, title }: AuthenticatedLayoutProp
     )
   }
 
-  // Si no está autenticado, mostrar login
   if (!isAuthenticated) {
     return <LoginForm />
   }
 
-  // Layout autenticado
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
+      <AuthHeader onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+
       <div className="flex">
-        <AuthSidebar />
-        <div className="flex-1 lg:ml-0">
-          <AuthHeader title={title} />
-          <main className="p-6">{children}</main>
-        </div>
+        <AuthSidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
+
+        <main className="flex-1 md:ml-0">
+          <div className="container mx-auto p-6">{children}</div>
+        </main>
       </div>
     </div>
   )
