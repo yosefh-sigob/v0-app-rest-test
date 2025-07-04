@@ -23,8 +23,9 @@ export interface User {
   nivelLicencia: NivelLicencia
   empresaId: string
   nombreEmpresa: string
-  avatar?: string
   activo: boolean
+  avatar?: string
+  ultimoLogin?: Date
 }
 
 export interface LoginCredentials {

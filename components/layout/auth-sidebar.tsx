@@ -1,90 +1,67 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { ChefHat, X } from "lucide-react"
+import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import { getNavigationByRole, getRoleColor } from "./role-navigation"
-import { cn } from "@/lib/utils"
 
 interface AuthSidebarProps {
   isOpen: boolean
   onToggle: () => void
 }
 
-function getUserInitials(nombreCompleto: string): string {
-  if (!nombreCompleto || typeof nombreCompleto !== "string") return "U"
-
-  const names = nombreCompleto.trim().split(" ")
-  if (names.length === 1) return names[0].charAt(0).toUpperCase()
-
-  return (names[0].charAt(0) + names[names.length - 1].charAt(0)).toUpperCase()
-}
-
 export function AuthSidebar({ isOpen, onToggle }: AuthSidebarProps) {
   const { user } = useAuth()
   const pathname = usePathname()
+  const [isCollapsed, setIsCollapsed] = useState(false)
 
   if (!user) return null
 
   const navigation = getNavigationByRole(user.rol)
   const roleColor = getRoleColor(user.rol)
-  const userInitials = getUserInitials(user.nombreCompleto)
+
+  const toggleCollapsed = () => {
+    setIsCollapsed(!isCollapsed)
+  }
 
   return (
     <>
       {/* Mobile overlay */}
-      {isOpen && (
-        <div className="fixed inset-0 z-40 lg:hidden" onClick={onToggle}>
-          <div className="absolute inset-0 bg-black opacity-50" />
-        </div>
-      )}
+      {isOpen && <div className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden" onClick={onToggle} />}
 
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-amber-900 to-amber-800 text-white transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:inset-0",
+          "fixed left-0 top-0 z-50 h-full bg-white border-r transition-all duration-300 lg:relative lg:translate-x-0",
           isOpen ? "translate-x-0" : "-translate-x-full",
+          isCollapsed ? "w-16" : "w-64",
         )}
       >
-        <div className="flex flex-col h-full">
+        <div className="flex h-full flex-col">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-amber-700">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-amber-600 rounded-full flex items-center justify-center">
-                <ChefHat className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h2 className="text-lg font-bold">AppRest</h2>
-                <p className="text-xs text-amber-200">Gestión Restaurante</p>
-              </div>
-            </div>
-            <Button variant="ghost" size="sm" onClick={onToggle} className="lg:hidden text-white hover:bg-amber-700">
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-
-          {/* User info */}
-          <div className="p-4 border-b border-amber-700">
-            <div className="flex items-center space-x-3">
-              <div className={`w-10 h-10 rounded-full ${roleColor} flex items-center justify-center`}>
-                <span className="text-white font-semibold text-sm">{userInitials}</span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-white truncate">{user.nombreCompleto}</p>
-                <div className="flex items-center space-x-2 mt-1">
-                  <Badge variant="secondary" className="text-xs">
-                    {user.rol}
-                  </Badge>
-                  <Badge variant="outline" className="text-xs text-amber-200 border-amber-200">
-                    {user.nivelLicencia}
-                  </Badge>
+          <div className="flex h-16 items-center justify-between px-4 border-b">
+            {!isCollapsed && (
+              <div className="flex items-center space-x-2">
+                <div className={`w-8 h-8 rounded-full ${roleColor} flex items-center justify-center`}>
+                  <span className="text-white font-semibold text-sm">
+                    {user.nombreCompleto.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                <div>
+                  <p className="text-sm font-medium">{user.nombreCompleto.split(" ")[0]}</p>
+                  <p className="text-xs text-gray-500">{user.rol}</p>
                 </div>
               </div>
-            </div>
+            )}
+            <Button variant="ghost" size="sm" onClick={toggleCollapsed} className="hidden lg:flex">
+              {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+            </Button>
           </div>
 
           {/* Navigation */}
@@ -95,21 +72,27 @@ export function AuthSidebar({ isOpen, onToggle }: AuthSidebarProps) {
                 const Icon = item.icon
 
                 return (
-                  <Link key={item.href} href={item.href} onClick={() => onToggle()}>
-                    <div
+                  <Link key={item.href} href={item.href}>
+                    <Button
+                      variant={isActive ? "secondary" : "ghost"}
                       className={cn(
-                        "flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                        isActive ? "bg-amber-600 text-white" : "text-amber-100 hover:bg-amber-700 hover:text-white",
+                        "w-full justify-start h-10",
+                        isActive && "bg-orange-100 text-orange-900 hover:bg-orange-200",
+                        isCollapsed && "px-2",
                       )}
                     >
-                      <Icon className="w-5 h-5 flex-shrink-0" />
-                      <span className="flex-1">{item.title}</span>
-                      {item.badge && (
-                        <Badge variant="secondary" className="text-xs">
-                          {item.badge}
-                        </Badge>
+                      <Icon className={cn("h-4 w-4", isCollapsed ? "mx-auto" : "mr-3")} />
+                      {!isCollapsed && (
+                        <>
+                          <span className="flex-1 text-left">{item.title}</span>
+                          {item.badge && (
+                            <Badge variant="destructive" className="ml-auto text-xs">
+                              {item.badge}
+                            </Badge>
+                          )}
+                        </>
                       )}
-                    </div>
+                    </Button>
                   </Link>
                 )
               })}
@@ -117,11 +100,13 @@ export function AuthSidebar({ isOpen, onToggle }: AuthSidebarProps) {
           </ScrollArea>
 
           {/* Footer */}
-          <div className="p-4 border-t border-amber-700">
-            <div className="text-center">
-              <p className="text-xs text-amber-200">{user.nombreEmpresa}</p>
-              <p className="text-xs text-amber-300 mt-1">v2.0.0</p>
-            </div>
+          <div className="border-t p-4">
+            {!isCollapsed && (
+              <div className="text-center">
+                <p className="text-xs text-gray-500">AppRest v1.0</p>
+                <p className="text-xs text-gray-400">© 2024</p>
+              </div>
+            )}
           </div>
         </div>
       </aside>

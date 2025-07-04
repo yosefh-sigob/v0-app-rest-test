@@ -124,9 +124,15 @@ export async function authenticateUser(credentials: LoginCredentials): Promise<A
     // Generate token
     const token = `token_${user.id}_${Date.now()}`
 
+    // Update last login
+    const authenticatedUser = {
+      ...user,
+      ultimoLogin: new Date(),
+    }
+
     return {
       success: true,
-      user,
+      user: authenticatedUser,
       token,
     }
   } catch (error) {

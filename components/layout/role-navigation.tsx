@@ -1,19 +1,19 @@
 import type React from "react"
+import { RolUsuario } from "@/interfaces/auth"
 import {
   LayoutDashboard,
-  Utensils,
-  MapPin,
+  Package,
   Users,
   Calendar,
-  CreditCard,
+  ShoppingCart,
   MessageSquare,
   BarChart3,
   Settings,
   ChefHat,
-  Package,
-  FileText,
+  UtensilsCrossed,
+  Receipt,
+  ClipboardList,
 } from "lucide-react"
-import type { RolUsuario } from "@/interfaces/auth"
 
 export interface NavigationItem {
   title: string
@@ -23,7 +23,7 @@ export interface NavigationItem {
   description?: string
 }
 
-export function getNavigationByRole(rol: RolUsuario): NavigationItem[] {
+export function getNavigationByRole(role: RolUsuario): NavigationItem[] {
   const baseNavigation: NavigationItem[] = [
     {
       title: "Dashboard",
@@ -33,21 +33,21 @@ export function getNavigationByRole(rol: RolUsuario): NavigationItem[] {
     },
   ]
 
-  switch (rol) {
-    case "Administrador":
+  switch (role) {
+    case RolUsuario.ADMINISTRADOR:
       return [
         ...baseNavigation,
         {
           title: "Productos",
           href: "/productos",
-          icon: Utensils,
+          icon: Package,
           description: "Gestión de productos",
         },
         {
           title: "Mesas",
           href: "/mesas",
-          icon: MapPin,
-          description: "Administrar mesas",
+          icon: UtensilsCrossed,
+          description: "Gestión de mesas",
         },
         {
           title: "Clientes",
@@ -64,20 +64,20 @@ export function getNavigationByRole(rol: RolUsuario): NavigationItem[] {
         {
           title: "POS Ventas",
           href: "/ventas/pos",
-          icon: CreditCard,
+          icon: ShoppingCart,
           description: "Punto de venta",
         },
         {
           title: "Encuestas SMS",
-          href: "/encuestas",
+          href: "/encuestas/campanas",
           icon: MessageSquare,
-          description: "Campañas de satisfacción",
+          description: "Campañas de encuestas",
         },
         {
           title: "Reportes",
           href: "/reportes",
           icon: BarChart3,
-          description: "Análisis y estadísticas",
+          description: "Análisis y reportes",
         },
         {
           title: "Configuración",
@@ -87,20 +87,20 @@ export function getNavigationByRole(rol: RolUsuario): NavigationItem[] {
         },
       ]
 
-    case "Gerente":
+    case RolUsuario.GERENTE:
       return [
         ...baseNavigation,
         {
           title: "Productos",
           href: "/productos",
-          icon: Utensils,
+          icon: Package,
           description: "Gestión de productos",
         },
         {
           title: "Mesas",
           href: "/mesas",
-          icon: MapPin,
-          description: "Administrar mesas",
+          icon: UtensilsCrossed,
+          description: "Gestión de mesas",
         },
         {
           title: "Clientes",
@@ -117,24 +117,24 @@ export function getNavigationByRole(rol: RolUsuario): NavigationItem[] {
         {
           title: "POS Ventas",
           href: "/ventas/pos",
-          icon: CreditCard,
+          icon: ShoppingCart,
           description: "Punto de venta",
         },
         {
           title: "Reportes",
           href: "/reportes",
           icon: BarChart3,
-          description: "Análisis y estadísticas",
+          description: "Análisis y reportes",
         },
       ]
 
-    case "Cajero":
+    case RolUsuario.CAJERO:
       return [
         ...baseNavigation,
         {
           title: "POS Ventas",
           href: "/ventas/pos",
-          icon: CreditCard,
+          icon: ShoppingCart,
           description: "Punto de venta",
         },
         {
@@ -152,41 +152,41 @@ export function getNavigationByRole(rol: RolUsuario): NavigationItem[] {
         {
           title: "Facturas",
           href: "/facturas",
-          icon: FileText,
+          icon: Receipt,
           description: "Gestión de facturas",
         },
       ]
 
-    case "Mesero":
+    case RolUsuario.MESERO:
       return [
         ...baseNavigation,
         {
           title: "Mesas",
           href: "/mesas",
-          icon: MapPin,
-          description: "Mis mesas asignadas",
+          icon: UtensilsCrossed,
+          description: "Gestión de mesas",
         },
         {
           title: "Órdenes",
           href: "/ordenes",
-          icon: Utensils,
-          description: "Tomar órdenes",
+          icon: ClipboardList,
+          description: "Gestión de órdenes",
         },
         {
           title: "Reservaciones",
           href: "/reservaciones",
           icon: Calendar,
-          description: "Ver reservas",
+          description: "Gestión de reservas",
         },
         {
           title: "Clientes",
           href: "/clientes",
           icon: Users,
-          description: "Información de clientes",
+          description: "Base de clientes",
         },
       ]
 
-    case "Cocinero":
+    case RolUsuario.COCINERO:
       return [
         ...baseNavigation,
         {
@@ -194,19 +194,19 @@ export function getNavigationByRole(rol: RolUsuario): NavigationItem[] {
           href: "/cocina",
           icon: ChefHat,
           badge: "3",
-          description: "Órdenes pendientes",
+          description: "Órdenes de cocina",
         },
         {
           title: "Inventario",
           href: "/inventario",
           icon: Package,
-          description: "Stock de ingredientes",
+          description: "Control de inventario",
         },
         {
           title: "Productos",
           href: "/productos",
-          icon: Utensils,
-          description: "Recetas y productos",
+          icon: Package,
+          description: "Gestión de productos",
         },
       ]
 
@@ -215,28 +215,51 @@ export function getNavigationByRole(rol: RolUsuario): NavigationItem[] {
   }
 }
 
-export function getRoleColor(rol: RolUsuario): string {
-  switch (rol) {
-    case "Administrador":
+export function getRoleColor(role: RolUsuario): string {
+  switch (role) {
+    case RolUsuario.ADMINISTRADOR:
       return "bg-purple-500"
-    case "Gerente":
+    case RolUsuario.GERENTE:
       return "bg-indigo-500"
-    case "Cajero":
+    case RolUsuario.CAJERO:
       return "bg-green-500"
-    case "Mesero":
+    case RolUsuario.MESERO:
       return "bg-blue-500"
-    case "Cocinero":
+    case RolUsuario.COCINERO:
       return "bg-orange-500"
     default:
       return "bg-gray-500"
   }
 }
 
-export function getRoleBadgeVariant(rol: RolUsuario): "default" | "secondary" | "destructive" | "outline" {
-  switch (rol) {
-    case "Administrador":
+export function getRoleBadgeColor(role: RolUsuario): string {
+  switch (role) {
+    case RolUsuario.ADMINISTRADOR:
+      return "bg-purple-100 text-purple-800"
+    case RolUsuario.GERENTE:
+      return "bg-indigo-100 text-indigo-800"
+    case RolUsuario.CAJERO:
+      return "bg-green-100 text-green-800"
+    case RolUsuario.MESERO:
+      return "bg-blue-100 text-blue-800"
+    case RolUsuario.COCINERO:
+      return "bg-orange-100 text-orange-800"
+    default:
+      return "bg-gray-100 text-gray-800"
+  }
+}
+
+export function getRoleBadgeVariant(role: RolUsuario): "default" | "secondary" | "destructive" | "outline" {
+  switch (role) {
+    case RolUsuario.ADMINISTRADOR:
+      return "destructive"
+    case RolUsuario.GERENTE:
       return "default"
-    case "Gerente":
+    case RolUsuario.CAJERO:
+      return "secondary"
+    case RolUsuario.MESERO:
+      return "outline"
+    case RolUsuario.COCINERO:
       return "secondary"
     default:
       return "outline"

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Bell, Menu, LogOut, User, Settings } from "lucide-react"
+import { Bell, Menu, LogOut, User, Settings, ChefHat } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -39,17 +39,24 @@ export function AuthHeader({ onToggleSidebar }: AuthHeaderProps) {
   const roleColor = getRoleColor(user.rol)
   const roleBadgeVariant = getRoleBadgeVariant(user.rol)
 
+  const handleLogout = () => {
+    logout()
+  }
+
   return (
-    <header className="h-16 border-b bg-white px-4 flex items-center justify-between">
+    <header className="h-16 border-b bg-white px-4 flex items-center justify-between sticky top-0 z-50">
       {/* Left side */}
       <div className="flex items-center space-x-4">
         <Button variant="ghost" size="sm" onClick={onToggleSidebar} className="lg:hidden">
           <Menu className="h-4 w-4" />
         </Button>
 
-        <div className="hidden lg:block">
-          <h1 className="text-xl font-semibold text-gray-900">AppRest</h1>
-          <p className="text-sm text-gray-500">Sistema de Gestión</p>
+        <div className="flex items-center space-x-2">
+          <ChefHat className="h-8 w-8 text-orange-600" />
+          <div className="hidden sm:block">
+            <h1 className="text-xl font-semibold text-gray-900">AppRest</h1>
+            <p className="text-sm text-gray-500">Sistema de Gestión</p>
+          </div>
         </div>
       </div>
 
@@ -111,12 +118,14 @@ export function AuthHeader({ onToggleSidebar }: AuthHeaderProps) {
               <User className="mr-2 h-4 w-4" />
               <span>Perfil</span>
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Settings className="mr-2 h-4 w-4" />
-              <span>Configuración</span>
-            </DropdownMenuItem>
+            {user.esAdministrador && (
+              <DropdownMenuItem>
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Configuración</span>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={logout} className="text-red-600">
+            <DropdownMenuItem onClick={handleLogout} className="text-red-600">
               <LogOut className="mr-2 h-4 w-4" />
               <span>Cerrar Sesión</span>
             </DropdownMenuItem>
