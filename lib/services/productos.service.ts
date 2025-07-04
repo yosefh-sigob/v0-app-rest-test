@@ -1,54 +1,37 @@
-import type { Producto, SearchProductosInput } from "@/schemas/productos.schemas"
+import type { Producto } from "@/schemas/productos.schemas"
+import type { SearchProductosInput } from "@/schemas/productos.schemas"
 import {
-  MOCK_PRODUCTOS,
+  getAllProductos,
   getProductoById,
   addProducto,
   updateProducto,
   deleteProducto,
   toggleFavoriteProducto,
+  toggleSuspendProducto,
+  filterProductos,
+  existsClaveProducto,
+  getProductosStats,
 } from "@/lib/mock/productos.mock"
 
 export class ProductosService {
   static async getById(id: string): Promise<Producto | null> {
+    // Simular delay de red
     await new Promise((resolve) => setTimeout(resolve, 300))
     return getProductoById(id)
   }
 
   static async search(filters: SearchProductosInput) {
+    // Simular delay de red
     await new Promise((resolve) => setTimeout(resolve, 500))
 
-    let filteredProducts = [...MOCK_PRODUCTOS]
-
-    // Filtro por búsqueda de texto
-    if (filters.search && filters.search.trim() !== "") {
-      const searchTerm = filters.search.toLowerCase().trim()
-      filteredProducts = filteredProducts.filter(
-        (producto) =>
-          producto.Nombredelproducto.toLowerCase().includes(searchTerm) ||
-          producto.ClaveProducto.toLowerCase().includes(searchTerm) ||
-          (producto.Descripcion && producto.Descripcion.toLowerCase().includes(searchTerm)),
-      )
-    }
-
-    // Filtro por tipo de producto
-    if (filters.tipo) {
-      filteredProducts = filteredProducts.filter((producto) => producto.TipoProducto === filters.tipo)
-    }
-
-    // Filtro por favorito
-    if (filters.favorito !== undefined) {
-      filteredProducts = filteredProducts.filter((producto) => producto.Favorito === filters.favorito)
-    }
-
-    // Filtro por suspendido
-    if (filters.suspendido !== undefined) {
-      filteredProducts = filteredProducts.filter((producto) => producto.Suspendido === filters.suspendido)
-    }
-
-    // Filtro por grupo
-    if (filters.grupoId) {
-      filteredProducts = filteredProducts.filter((producto) => producto.GrupoProductoID === filters.grupoId)
-    }
+    // Aplicar filtros
+    const filteredProducts = filterProductos({
+      search: filters.search,
+      tipo: filters.tipo,
+      favorito: filters.favorito,
+      suspendido: filters.suspendido,
+      grupoId: filters.grupoId,
+    })
 
     // Calcular paginación
     const total = filteredProducts.length
@@ -66,29 +49,101 @@ export class ProductosService {
     }
   }
 
+  static async getAll(): Promise<Producto[]> {
+    // Simular delay de red
+    await new Promise((resolve) => setTimeout(resolve, 200))
+    return getAllProductos()
+  }
+
   static async create(data: Partial<Producto>): Promise<Producto> {
+    // Simular delay de red
     await new Promise((resolve) => setTimeout(resolve, 800))
-    return addProducto(data as Omit<Producto, "ProductoULID" | "Fecha_UltimoCambio">)
+
+    // Validar que la clave no exista
+    if (data.ClaveProducto && existsClaveProducto(data.ClaveProducto)) {
+      throw new Error("Ya existe un producto con esta clave")
+    }
+
+    // Crear el producto
+    const newProducto = addProducto(data as Omit<Producto, "ProductoULID" | "Fecha_UltimoCambio">)
+    return newProducto
   }
 
   static async update(id: string, data: Partial<Producto>): Promise<Producto> {
+    // Simular delay de red
     await new Promise((resolve) => setTimeout(resolve, 600))
 
-    const updated = updateProducto(id, data)
-    if (!updated) {
+    // Validar que el producto existe
+    const existingProducto = getProductoById(id)
+    if (!existingProducto) {
       throw new Error("Producto no encontrado")
     }
 
-    return updated
+    // Validar que la clave no exista en otro producto
+    if (data.ClaveProducto && existsClaveProducto(data.ClaveProducto, id)) {
+      throw new Error("Ya existe un producto con esta clave")
+    }
+
+    // Actualizar el producto
+    const updatedProducto = updateProducto(id, data)
+    if (!updatedProducto) {
+      throw new Error("Error al actualizar el producto")
+    }
+
+    return updatedProducto
   }
 
   static async delete(id: string): Promise<boolean> {
+    // Simular delay de red
     await new Promise((resolve) => setTimeout(resolve, 400))
+
+    // Verificar que el producto existe
+    const existingProducto = getProductoById(id)
+    if (!existingProducto) {
+      throw new Error("Producto no encontrado")
+    }
+
+    // Eliminar el producto
     return deleteProducto(id)
   }
 
   static async toggleFavorite(id: string): Promise<Producto | null> {
+    // Simular delay de red
     await new Promise((resolve) => setTimeout(resolve, 300))
+
+    // Verificar que el producto existe
+    const existingProducto = getProductoById(id)
+    if (!existingProducto) {
+      throw new Error("Producto no encontrado")
+    }
+
+    // Alternar favorito
     return toggleFavoriteProducto(id)
+  }
+
+  static async toggleSuspend(id: string): Promise<Producto | null> {
+    // Simular delay de red
+    await new Promise((resolve) => setTimeout(resolve, 300))
+
+    // Verificar que el producto existe
+    const existingProducto = getProductoById(id)
+    if (!existingProducto) {
+      throw new Error("Producto no encontrado")
+    }
+
+    // Alternar suspendido
+    return toggleSuspendProducto(id)
+  }
+
+  static async getStats() {
+    // Simular delay de red
+    await new Promise((resolve) => setTimeout(resolve, 200))
+    return getProductosStats()
+  }
+
+  static async validateClaveProducto(clave: string, excludeId?: string): Promise<boolean> {
+    // Simular delay de red
+    await new Promise((resolve) => setTimeout(resolve, 100))
+    return !existsClaveProducto(clave, excludeId)
   }
 }

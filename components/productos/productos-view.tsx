@@ -1,7 +1,20 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, Search, Grid3X3, List, Star, Eye, Edit, Trash2, Package, ShoppingCart, Utensils } from "lucide-react"
+import {
+  Plus,
+  Search,
+  Grid3X3,
+  List,
+  Star,
+  Eye,
+  Edit,
+  Trash2,
+  Package,
+  ShoppingCart,
+  Utensils,
+  RefreshCw,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
@@ -25,12 +38,21 @@ import {
 import { toast } from "@/hooks/use-toast"
 import { ProductoForm } from "./producto-form"
 import { ProductoDetail } from "./producto-detail"
-import { getProductos, deleteProducto, toggleFavoriteProducto } from "@/actions/productos.actions"
+import {
+  getAllProductos,
+  deleteProducto,
+  toggleFavoriteProducto,
+  toggleSuspendProducto,
+} from "@/actions/productos.actions"
 import type { Producto } from "@/schemas/productos.schemas"
 
-export function ProductosView() {
-  const [productos, setProductos] = useState<Producto[]>([])
-  const [filteredProductos, setFilteredProductos] = useState<Producto[]>([])
+interface ProductosViewProps {
+  initialProductos?: Producto[]
+}
+
+export function ProductosView({ initialProductos = [] }: ProductosViewProps) {
+  const [productos, setProductos] = useState<Producto[]>(initialProductos)
+  const [filteredProductos, setFilteredProductos] = useState<Producto[]>(initialProductos)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedTipo, setSelectedTipo] = useState<string>("all")
   const [showFavoritos, setShowFavoritos] = useState(false)
@@ -41,12 +63,8 @@ export function ProductosView() {
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [isDetailOpen, setIsDetailOpen] = useState(false)
   const [selectedProducto, setSelectedProducto] = useState<Producto | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-
-  // Cargar productos iniciales
-  useEffect(() => {
-    loadProductos()
-  }, [])
+  const [isLoading, setIsLoading] = useState(false)
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   // Filtrar y ordenar productos
   useEffect(() => {
@@ -98,21 +116,31 @@ export function ProductosView() {
     setFilteredProductos(filtered)
   }, [productos, searchTerm, selectedTipo, showFavoritos, showSuspendidos, sortBy])
 
-  const loadProductos = async () => {
-    setIsLoading(true)
+  const handleRefresh = async () => {
+    setIsRefreshing(true)
     try {
-      const result = await getProductos({ page: 1, limit: 100 })
+      const result = await getAllProductos()
       if (result.success && result.data) {
-        setProductos(result.data.productos)
+        setProductos(result.data)
+        toast({
+          title: "Éxito",
+          description: "Productos actualizados correctamente",
+        })
+      } else {
+        toast({
+          title: "Error",
+          description: result.message || "No se pudieron cargar los productos",
+          variant: "destructive",
+        })
       }
     } catch (error) {
       toast({
         title: "Error",
-        description: "No se pudieron cargar los productos",
+        description: "Error al actualizar productos",
         variant: "destructive",
       })
     } finally {
-      setIsLoading(false)
+      setIsRefreshing(false)
     }
   }
 
@@ -123,7 +151,7 @@ export function ProductosView() {
         setProductos((prev) => prev.filter((p) => p.ProductoULID !== producto.ProductoULID))
         toast({
           title: "Éxito",
-          description: "Producto eliminado correctamente",
+          description: result.message || "Producto eliminado correctamente",
         })
       } else {
         toast({
@@ -144,19 +172,48 @@ export function ProductosView() {
   const handleToggleFavorito = async (producto: Producto) => {
     try {
       const result = await toggleFavoriteProducto(producto.ProductoULID)
-      if (result.success) {
-        setProductos((prev) =>
-          prev.map((p) => (p.ProductoULID === producto.ProductoULID ? { ...p, Favorito: !p.Favorito } : p)),
-        )
+      if (result.success && result.data) {
+        setProductos((prev) => prev.map((p) => (p.ProductoULID === producto.ProductoULID ? result.data! : p)))
         toast({
           title: "Éxito",
-          description: `Producto ${!producto.Favorito ? "agregado a" : "removido de"} favoritos`,
+          description: result.message,
+        })
+      } else {
+        toast({
+          title: "Error",
+          description: result.message || "Error al actualizar favorito",
+          variant: "destructive",
         })
       }
     } catch (error) {
       toast({
         title: "Error",
         description: "Error al actualizar favorito",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleToggleSuspend = async (producto: Producto) => {
+    try {
+      const result = await toggleSuspendProducto(producto.ProductoULID)
+      if (result.success && result.data) {
+        setProductos((prev) => prev.map((p) => (p.ProductoULID === producto.ProductoULID ? result.data! : p)))
+        toast({
+          title: "Éxito",
+          description: result.message,
+        })
+      } else {
+        toast({
+          title: "Error",
+          description: result.message || "Error al cambiar estado",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Error al cambiar estado del producto",
         variant: "destructive",
       })
     }
@@ -316,6 +373,10 @@ export function ProductosView() {
                   <List className="h-4 w-4" />
                 </Button>
               </div>
+
+              <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isRefreshing}>
+                <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+              </Button>
 
               <Button className="bg-orange-500 hover:bg-orange-600" onClick={() => setIsCreateOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />

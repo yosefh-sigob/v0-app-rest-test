@@ -1,4 +1,5 @@
 import type { Producto } from "@/schemas/productos.schemas"
+import { generateULID } from "@/utils/ulid"
 
 // Datos mock para grupos de productos
 export const MOCK_GRUPOS_PRODUCTOS = [
@@ -45,8 +46,8 @@ export const MOCK_ALMACENES = [
   { id: 5, nombre: "Barra" },
 ]
 
-// Productos mock completos
-export const MOCK_PRODUCTOS: Producto[] = [
+// Variable mutable para productos - simula una base de datos local
+const PRODUCTOS_DATA: Producto[] = [
   // Tacos
   {
     ProductoULID: "01HKQR8X9M2N3P4Q5R6S7T8U9V",
@@ -54,7 +55,7 @@ export const MOCK_PRODUCTOS: Producto[] = [
     TipoProducto: "Platillo",
     Nombredelproducto: "Taco de Carnitas",
     Descripcion: "Taco de carnitas con cebolla, cilantro y salsa verde",
-    Imagen: "/placeholder.svg?height=200&width=300",
+    Imagen: "/placeholder.svg?height=200&width=300&text=Taco+Carnitas",
     Favorito: true,
     ExentoImpuesto: false,
     PrecioAbierto: false,
@@ -80,7 +81,7 @@ export const MOCK_PRODUCTOS: Producto[] = [
     TipoProducto: "Platillo",
     Nombredelproducto: "Taco de Pastor",
     Descripcion: "Taco de pastor con piña, cebolla y cilantro",
-    Imagen: "/placeholder.svg?height=200&width=300",
+    Imagen: "/placeholder.svg?height=200&width=300&text=Taco+Pastor",
     Favorito: false,
     ExentoImpuesto: false,
     PrecioAbierto: false,
@@ -106,7 +107,7 @@ export const MOCK_PRODUCTOS: Producto[] = [
     TipoProducto: "Platillo",
     Nombredelproducto: "Taco de Asada",
     Descripcion: "Taco de carne asada con guacamole y pico de gallo",
-    Imagen: "/placeholder.svg?height=200&width=300",
+    Imagen: "/placeholder.svg?height=200&width=300&text=Taco+Asada",
     Favorito: true,
     ExentoImpuesto: false,
     PrecioAbierto: false,
@@ -133,7 +134,7 @@ export const MOCK_PRODUCTOS: Producto[] = [
     TipoProducto: "Platillo",
     Nombredelproducto: "Hamburguesa Clásica",
     Descripcion: "Hamburguesa de carne de res con lechuga, tomate, cebolla y papas fritas",
-    Imagen: "/placeholder.svg?height=200&width=300",
+    Imagen: "/placeholder.svg?height=200&width=300&text=Hamburguesa+Clasica",
     Favorito: true,
     ExentoImpuesto: false,
     PrecioAbierto: false,
@@ -159,7 +160,7 @@ export const MOCK_PRODUCTOS: Producto[] = [
     TipoProducto: "Platillo",
     Nombredelproducto: "Hamburguesa BBQ",
     Descripcion: "Hamburguesa con salsa BBQ, tocino, cebolla caramelizada y queso cheddar",
-    Imagen: "/placeholder.svg?height=200&width=300",
+    Imagen: "/placeholder.svg?height=200&width=300&text=Hamburguesa+BBQ",
     Favorito: false,
     ExentoImpuesto: false,
     PrecioAbierto: false,
@@ -186,7 +187,7 @@ export const MOCK_PRODUCTOS: Producto[] = [
     TipoProducto: "Platillo",
     Nombredelproducto: "Pizza Margherita",
     Descripcion: "Pizza con salsa de tomate, mozzarella fresca y albahaca",
-    Imagen: "/placeholder.svg?height=200&width=300",
+    Imagen: "/placeholder.svg?height=200&width=300&text=Pizza+Margherita",
     Favorito: true,
     ExentoImpuesto: false,
     PrecioAbierto: false,
@@ -212,7 +213,7 @@ export const MOCK_PRODUCTOS: Producto[] = [
     TipoProducto: "Platillo",
     Nombredelproducto: "Pizza Pepperoni",
     Descripcion: "Pizza con pepperoni, mozzarella y salsa de tomate",
-    Imagen: "/placeholder.svg?height=200&width=300",
+    Imagen: "/placeholder.svg?height=200&width=300&text=Pizza+Pepperoni",
     Favorito: false,
     ExentoImpuesto: false,
     PrecioAbierto: false,
@@ -239,7 +240,7 @@ export const MOCK_PRODUCTOS: Producto[] = [
     TipoProducto: "Platillo",
     Nombredelproducto: "Ensalada César",
     Descripcion: "Ensalada con lechuga romana, crutones, parmesano y aderezo césar",
-    Imagen: "/placeholder.svg?height=200&width=300",
+    Imagen: "/placeholder.svg?height=200&width=300&text=Ensalada+Cesar",
     Favorito: false,
     ExentoImpuesto: false,
     PrecioAbierto: false,
@@ -266,7 +267,7 @@ export const MOCK_PRODUCTOS: Producto[] = [
     TipoProducto: "Producto",
     Nombredelproducto: "Coca Cola",
     Descripcion: "Refresco de cola 355ml",
-    Imagen: "/placeholder.svg?height=200&width=300",
+    Imagen: "/placeholder.svg?height=200&width=300&text=Coca+Cola",
     Favorito: false,
     ExentoImpuesto: false,
     PrecioAbierto: false,
@@ -292,7 +293,7 @@ export const MOCK_PRODUCTOS: Producto[] = [
     TipoProducto: "Producto",
     Nombredelproducto: "Agua Natural",
     Descripcion: "Agua natural 500ml",
-    Imagen: "/placeholder.svg?height=200&width=300",
+    Imagen: "/placeholder.svg?height=200&width=300&text=Agua+Natural",
     Favorito: false,
     ExentoImpuesto: false,
     PrecioAbierto: false,
@@ -318,7 +319,7 @@ export const MOCK_PRODUCTOS: Producto[] = [
     TipoProducto: "Botella",
     Nombredelproducto: "Cerveza Corona",
     Descripcion: "Cerveza Corona 355ml",
-    Imagen: "/placeholder.svg?height=200&width=300",
+    Imagen: "/placeholder.svg?height=200&width=300&text=Cerveza+Corona",
     Favorito: true,
     ExentoImpuesto: false,
     PrecioAbierto: false,
@@ -345,7 +346,7 @@ export const MOCK_PRODUCTOS: Producto[] = [
     TipoProducto: "Platillo",
     Nombredelproducto: "Flan Napolitano",
     Descripcion: "Flan casero con caramelo y crema batida",
-    Imagen: "/placeholder.svg?height=200&width=300",
+    Imagen: "/placeholder.svg?height=200&width=300&text=Flan+Napolitano",
     Favorito: false,
     ExentoImpuesto: false,
     PrecioAbierto: false,
@@ -371,7 +372,7 @@ export const MOCK_PRODUCTOS: Producto[] = [
     TipoProducto: "Platillo",
     Nombredelproducto: "Pastel de Chocolate",
     Descripcion: "Rebanada de pastel de chocolate con betún",
-    Imagen: "/placeholder.svg?height=200&width=300",
+    Imagen: "/placeholder.svg?height=200&width=300&text=Pastel+Chocolate",
     Favorito: true,
     ExentoImpuesto: false,
     PrecioAbierto: false,
@@ -398,7 +399,7 @@ export const MOCK_PRODUCTOS: Producto[] = [
     TipoProducto: "Platillo",
     Nombredelproducto: "Huevos Rancheros",
     Descripcion: "Huevos estrellados con salsa ranchera, frijoles y tortillas",
-    Imagen: "/placeholder.svg?height=200&width=300",
+    Imagen: "/placeholder.svg?height=200&width=300&text=Huevos+Rancheros",
     Favorito: false,
     ExentoImpuesto: false,
     PrecioAbierto: false,
@@ -424,7 +425,7 @@ export const MOCK_PRODUCTOS: Producto[] = [
     TipoProducto: "Platillo",
     Nombredelproducto: "Hotcakes",
     Descripcion: "Stack de 3 hotcakes con miel de maple y mantequilla",
-    Imagen: "/placeholder.svg?height=200&width=300",
+    Imagen: "/placeholder.svg?height=200&width=300&text=Hotcakes",
     Favorito: true,
     ExentoImpuesto: false,
     PrecioAbierto: false,
@@ -451,7 +452,7 @@ export const MOCK_PRODUCTOS: Producto[] = [
     TipoProducto: "Platillo",
     Nombredelproducto: "Sopa de Tortilla",
     Descripcion: "Sopa de tortilla con aguacate, queso fresco y crema",
-    Imagen: "/placeholder.svg?height=200&width=300",
+    Imagen: "/placeholder.svg?height=200&width=300&text=Sopa+Tortilla",
     Favorito: false,
     ExentoImpuesto: false,
     PrecioAbierto: false,
@@ -478,7 +479,7 @@ export const MOCK_PRODUCTOS: Producto[] = [
     TipoProducto: "Platillo",
     Nombredelproducto: "Quesadillas",
     Descripcion: "Quesadillas de queso con guacamole y salsa",
-    Imagen: "/placeholder.svg?height=200&width=300",
+    Imagen: "/placeholder.svg?height=200&width=300&text=Quesadillas",
     Favorito: false,
     ExentoImpuesto: false,
     PrecioAbierto: false,
@@ -504,7 +505,7 @@ export const MOCK_PRODUCTOS: Producto[] = [
     TipoProducto: "Platillo",
     Nombredelproducto: "Nachos",
     Descripcion: "Nachos con queso derretido, jalapeños y guacamole",
-    Imagen: "/placeholder.svg?height=200&width=300",
+    Imagen: "/placeholder.svg?height=200&width=300&text=Nachos",
     Favorito: true,
     ExentoImpuesto: false,
     PrecioAbierto: false,
@@ -531,7 +532,7 @@ export const MOCK_PRODUCTOS: Producto[] = [
     TipoProducto: "Platillo",
     Nombredelproducto: "Camarones al Ajillo",
     Descripcion: "Camarones salteados en ajo con arroz y ensalada",
-    Imagen: "/placeholder.svg?height=200&width=300",
+    Imagen: "/placeholder.svg?height=200&width=300&text=Camarones+Ajillo",
     Favorito: true,
     ExentoImpuesto: false,
     PrecioAbierto: false,
@@ -557,7 +558,7 @@ export const MOCK_PRODUCTOS: Producto[] = [
     TipoProducto: "Platillo",
     Nombredelproducto: "Filete de Pescado",
     Descripcion: "Filete de pescado a la plancha con vegetales",
-    Imagen: "/placeholder.svg?height=200&width=300",
+    Imagen: "/placeholder.svg?height=200&width=300&text=Filete+Pescado",
     Favorito: false,
     ExentoImpuesto: false,
     PrecioAbierto: false,
@@ -584,7 +585,7 @@ export const MOCK_PRODUCTOS: Producto[] = [
     TipoProducto: "Producto",
     Nombredelproducto: "Producto Suspendido",
     Descripcion: "Este producto está suspendido temporalmente",
-    Imagen: "/placeholder.svg?height=200&width=300",
+    Imagen: "/placeholder.svg?height=200&width=300&text=Suspendido",
     Favorito: false,
     ExentoImpuesto: false,
     PrecioAbierto: false,
@@ -606,9 +607,21 @@ export const MOCK_PRODUCTOS: Producto[] = [
   },
 ]
 
+// Función para obtener todos los productos
+export function getAllProductos(): Producto[] {
+  return [...PRODUCTOS_DATA]
+}
+
 // Función para obtener un producto por ID
 export function getProductoById(id: string): Producto | null {
-  return MOCK_PRODUCTOS.find((producto) => producto.ProductoULID === id) || null
+  return PRODUCTOS_DATA.find((producto) => producto.ProductoULID === id) || null
+}
+
+// Función para verificar si existe una clave de producto
+export function existsClaveProducto(clave: string, excludeId?: string): boolean {
+  return PRODUCTOS_DATA.some(
+    (producto) => producto.ClaveProducto.toLowerCase() === clave.toLowerCase() && producto.ProductoULID !== excludeId,
+  )
 }
 
 // Función para obtener grupo por ID
@@ -631,55 +644,131 @@ export function getAlmacenById(id: string) {
   return MOCK_ALMACENES.find((almacen) => almacen.id === Number.parseInt(id))
 }
 
-// Función para agregar un producto (simulación)
-export function addProducto(producto: Omit<Producto, "ProductoULID" | "Fecha_UltimoCambio">) {
+// Función para agregar un producto
+export function addProducto(producto: Omit<Producto, "ProductoULID" | "Fecha_UltimoCambio">): Producto {
   const newProducto: Producto = {
     ...producto,
-    ProductoULID: `01HKQR8X9M2N3P4Q5R6S7T8U9${Date.now()}`,
+    ProductoULID: generateULID(),
     Fecha_UltimoCambio: new Date().toISOString(),
   }
-  MOCK_PRODUCTOS.push(newProducto)
+
+  PRODUCTOS_DATA.unshift(newProducto) // Agregar al inicio
   return newProducto
 }
 
-// Función para actualizar un producto (simulación)
-export function updateProducto(id: string, updates: Partial<Producto>) {
-  const index = MOCK_PRODUCTOS.findIndex((producto) => producto.ProductoULID === id)
+// Función para actualizar un producto
+export function updateProducto(id: string, updates: Partial<Producto>): Producto | null {
+  const index = PRODUCTOS_DATA.findIndex((producto) => producto.ProductoULID === id)
   if (index !== -1) {
-    MOCK_PRODUCTOS[index] = {
-      ...MOCK_PRODUCTOS[index],
+    PRODUCTOS_DATA[index] = {
+      ...PRODUCTOS_DATA[index],
       ...updates,
+      ProductoULID: id, // Asegurar que el ID no cambie
       Fecha_UltimoCambio: new Date().toISOString(),
     }
-    return MOCK_PRODUCTOS[index]
+    return PRODUCTOS_DATA[index]
   }
   return null
 }
 
-// Función para eliminar (suspender) un producto
-export function deleteProducto(id: string) {
-  const index = MOCK_PRODUCTOS.findIndex((producto) => producto.ProductoULID === id)
+// Función para eliminar un producto (eliminación física)
+export function deleteProducto(id: string): boolean {
+  const index = PRODUCTOS_DATA.findIndex((producto) => producto.ProductoULID === id)
   if (index !== -1) {
-    MOCK_PRODUCTOS[index] = {
-      ...MOCK_PRODUCTOS[index],
-      Suspendido: true,
-      Fecha_UltimoCambio: new Date().toISOString(),
-    }
+    PRODUCTOS_DATA.splice(index, 1)
     return true
   }
   return false
 }
 
-// Función para alternar favorito
-export function toggleFavoriteProducto(id: string) {
-  const index = MOCK_PRODUCTOS.findIndex((producto) => producto.ProductoULID === id)
+// Función para suspender/reactivar un producto
+export function toggleSuspendProducto(id: string): Producto | null {
+  const index = PRODUCTOS_DATA.findIndex((producto) => producto.ProductoULID === id)
   if (index !== -1) {
-    MOCK_PRODUCTOS[index] = {
-      ...MOCK_PRODUCTOS[index],
-      Favorito: !MOCK_PRODUCTOS[index].Favorito,
+    PRODUCTOS_DATA[index] = {
+      ...PRODUCTOS_DATA[index],
+      Suspendido: !PRODUCTOS_DATA[index].Suspendido,
       Fecha_UltimoCambio: new Date().toISOString(),
     }
-    return MOCK_PRODUCTOS[index]
+    return PRODUCTOS_DATA[index]
   }
   return null
+}
+
+// Función para alternar favorito
+export function toggleFavoriteProducto(id: string): Producto | null {
+  const index = PRODUCTOS_DATA.findIndex((producto) => producto.ProductoULID === id)
+  if (index !== -1) {
+    PRODUCTOS_DATA[index] = {
+      ...PRODUCTOS_DATA[index],
+      Favorito: !PRODUCTOS_DATA[index].Favorito,
+      Fecha_UltimoCambio: new Date().toISOString(),
+    }
+    return PRODUCTOS_DATA[index]
+  }
+  return null
+}
+
+// Función para filtrar productos
+export function filterProductos(filters: {
+  search?: string
+  tipo?: string
+  favorito?: boolean
+  suspendido?: boolean
+  grupoId?: string
+}): Producto[] {
+  let filtered = [...PRODUCTOS_DATA]
+
+  // Filtro por búsqueda de texto
+  if (filters.search && filters.search.trim() !== "") {
+    const searchTerm = filters.search.toLowerCase().trim()
+    filtered = filtered.filter(
+      (producto) =>
+        producto.Nombredelproducto.toLowerCase().includes(searchTerm) ||
+        producto.ClaveProducto.toLowerCase().includes(searchTerm) ||
+        (producto.Descripcion && producto.Descripcion.toLowerCase().includes(searchTerm)),
+    )
+  }
+
+  // Filtro por tipo de producto
+  if (filters.tipo && filters.tipo !== "all") {
+    filtered = filtered.filter((producto) => producto.TipoProducto === filters.tipo)
+  }
+
+  // Filtro por favorito
+  if (filters.favorito !== undefined) {
+    filtered = filtered.filter((producto) => producto.Favorito === filters.favorito)
+  }
+
+  // Filtro por suspendido
+  if (filters.suspendido !== undefined) {
+    filtered = filtered.filter((producto) => producto.Suspendido === filters.suspendido)
+  }
+
+  // Filtro por grupo
+  if (filters.grupoId) {
+    filtered = filtered.filter((producto) => producto.GrupoProductoID === filters.grupoId)
+  }
+
+  return filtered
+}
+
+// Función para obtener estadísticas de productos
+export function getProductosStats() {
+  const productos = getAllProductos()
+  return {
+    total: productos.length,
+    platillos: productos.filter((p) => p.TipoProducto === "Platillo").length,
+    productos: productos.filter((p) => p.TipoProducto === "Producto").length,
+    botellas: productos.filter((p) => p.TipoProducto === "Botella").length,
+    favoritos: productos.filter((p) => p.Favorito).length,
+    suspendidos: productos.filter((p) => p.Suspendido).length,
+    activos: productos.filter((p) => !p.Suspendido).length,
+  }
+}
+
+// Función para resetear datos (útil para testing)
+export function resetProductosData(): void {
+  // Esta función podría recargar los datos iniciales si fuera necesario
+  console.log("Datos de productos reseteados")
 }
