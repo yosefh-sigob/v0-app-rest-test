@@ -1,73 +1,78 @@
 "use server"
 
-import type { LoginCredentials, AuthResponse, User, RolUsuario, NivelLicencia } from "@/interfaces/auth"
+import type { LoginCredentials, AuthResponse, User } from "@/interfaces/auth"
+import { RolUsuario, NivelLicencia } from "@/interfaces/auth"
 
 // Base de datos mock de usuarios
 const MOCK_USERS: User[] = [
   {
-    id: "01HKQM7X8P9R2S3T4U5V6W7X8Y",
+    id: "1",
     usuario: "admin",
     nombreCompleto: "Juan Carlos Administrador",
     correo: "admin@apprest.com",
-    rol: "Administrador" as RolUsuario,
+    rol: RolUsuario.ADMINISTRADOR,
     esAdministrador: true,
-    nivelLicencia: "FRANQUICIA" as NivelLicencia,
-    empresaId: "01HKQM7X8P9R2S3T4U5V6W7X8Z",
+    nivelLicencia: NivelLicencia.FRANQUICIA,
+    empresaId: "emp_001",
     nombreEmpresa: "Restaurante El Buen Sabor",
     activo: true,
     avatar: "/placeholder-user.jpg",
   },
   {
-    id: "01HKQM7X8P9R2S3T4U5V6W7X9A",
+    id: "2",
     usuario: "gerente",
     nombreCompleto: "María Elena Gerente",
     correo: "gerente@apprest.com",
-    rol: "Gerente" as RolUsuario,
+    rol: RolUsuario.GERENTE,
     esAdministrador: false,
-    nivelLicencia: "PRO" as NivelLicencia,
-    empresaId: "01HKQM7X8P9R2S3T4U5V6W7X8Z",
+    nivelLicencia: NivelLicencia.PRO,
+    empresaId: "emp_001",
     nombreEmpresa: "Restaurante El Buen Sabor",
     activo: true,
+    avatar: "/placeholder-user.jpg",
   },
   {
-    id: "01HKQM7X8P9R2S3T4U5V6W7X9B",
+    id: "3",
     usuario: "cajero",
     nombreCompleto: "Pedro Luis Cajero",
     correo: "cajero@apprest.com",
-    rol: "Cajero" as RolUsuario,
+    rol: RolUsuario.CAJERO,
     esAdministrador: false,
-    nivelLicencia: "LITE" as NivelLicencia,
-    empresaId: "01HKQM7X8P9R2S3T4U5V6W7X8Z",
+    nivelLicencia: NivelLicencia.LITE,
+    empresaId: "emp_001",
     nombreEmpresa: "Restaurante El Buen Sabor",
     activo: true,
+    avatar: "/placeholder-user.jpg",
   },
   {
-    id: "01HKQM7X8P9R2S3T4U5V6W7X9C",
+    id: "4",
     usuario: "mesero",
     nombreCompleto: "Ana Sofia Mesero",
     correo: "mesero@apprest.com",
-    rol: "Mesero" as RolUsuario,
+    rol: RolUsuario.MESERO,
     esAdministrador: false,
-    nivelLicencia: "LITE" as NivelLicencia,
-    empresaId: "01HKQM7X8P9R2S3T4U5V6W7X8Z",
+    nivelLicencia: NivelLicencia.LITE,
+    empresaId: "emp_001",
     nombreEmpresa: "Restaurante El Buen Sabor",
     activo: true,
+    avatar: "/placeholder-user.jpg",
   },
   {
-    id: "01HKQM7X8P9R2S3T4U5V6W7X9D",
+    id: "5",
     usuario: "cocinero",
     nombreCompleto: "Roberto Chef Cocinero",
     correo: "cocinero@apprest.com",
-    rol: "Cocinero" as RolUsuario,
+    rol: RolUsuario.COCINERO,
     esAdministrador: false,
-    nivelLicencia: "GRATIS" as NivelLicencia,
-    empresaId: "01HKQM7X8P9R2S3T4U5V6W7X8Z",
+    nivelLicencia: NivelLicencia.GRATIS,
+    empresaId: "emp_001",
     nombreEmpresa: "Restaurante El Buen Sabor",
     activo: true,
+    avatar: "/placeholder-user.jpg",
   },
 ]
 
-// Credenciales mock (en producción esto estaría en base de datos encriptada)
+// Credenciales mock (en producción estarían hasheadas)
 const MOCK_CREDENTIALS = {
   admin: { contraseña: "admin123", pin: "1234" },
   gerente: { contraseña: "gerente123", pin: "7890" },
@@ -83,7 +88,7 @@ export async function authenticateUser(credentials: LoginCredentials): Promise<A
 
     const { usuario, contraseña, pin } = credentials
 
-    // Buscar usuario
+    // Buscar usuario en la base de datos mock
     const user = MOCK_USERS.find((u) => u.usuario === usuario && u.activo)
 
     if (!user) {
@@ -103,11 +108,11 @@ export async function authenticateUser(credentials: LoginCredentials): Promise<A
       }
     }
 
-    // Generar token mock
+    // Generar token mock (en producción sería un JWT real)
     const token = `token_${user.id}_${Date.now()}`
 
     // Actualizar último login
-    const updatedUser = {
+    const updatedUser: User = {
       ...user,
       ultimoLogin: new Date(),
     }
@@ -126,45 +131,19 @@ export async function authenticateUser(credentials: LoginCredentials): Promise<A
   }
 }
 
-export async function validateToken(token: string): Promise<AuthResponse> {
+export async function validateToken(token: string): Promise<User | null> {
   try {
-    // En producción, aquí validarías el token JWT
-    if (!token || !token.startsWith("token_")) {
-      return {
-        success: false,
-        error: "Token inválido",
-      }
+    // En producción aquí se validaría el JWT
+    if (!token.startsWith("token_")) {
+      return null
     }
 
-    // Extraer ID del usuario del token mock
-    const parts = token.split("_")
-    if (parts.length !== 3) {
-      return {
-        success: false,
-        error: "Formato de token inválido",
-      }
-    }
-
-    const userId = parts[1]
+    const userId = token.split("_")[1]
     const user = MOCK_USERS.find((u) => u.id === userId && u.activo)
 
-    if (!user) {
-      return {
-        success: false,
-        error: "Usuario no encontrado",
-      }
-    }
-
-    return {
-      success: true,
-      user,
-      token,
-    }
+    return user || null
   } catch (error) {
     console.error("Error validando token:", error)
-    return {
-      success: false,
-      error: "Error validando sesión",
-    }
+    return null
   }
 }
