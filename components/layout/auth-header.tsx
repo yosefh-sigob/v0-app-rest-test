@@ -31,7 +31,7 @@ export function AuthHeader({ onToggleSidebar }: AuthHeaderProps) {
   }
 
   const getUserInitials = (nombreCompleto: string) => {
-    if (!nombreCompleto) return "U"
+    if (!nombreCompleto || typeof nombreCompleto !== "string") return "U"
     return nombreCompleto
       .split(" ")
       .map((name) => name[0])

@@ -4,120 +4,113 @@ import type { LoginCredentials, AuthResponse, User } from "@/interfaces/auth"
 import { RolUsuario, NivelLicencia } from "@/interfaces/auth"
 import { loginSchema } from "@/schemas/auth.schemas"
 
-// Usuarios demo para el sistema
-const DEMO_USERS: User[] = [
+// Mock users database
+const mockUsers: User[] = [
   {
-    id: "admin-001",
+    id: "1",
     usuario: "admin",
-    nombreCompleto: "Juan Carlos Administrador",
+    nombreCompleto: "Administrador Sistema",
     correo: "admin@apprest.com",
     rol: RolUsuario.ADMINISTRADOR,
     esAdministrador: true,
-    nivelLicencia: NivelLicencia.FRANQUICIA,
-    empresaId: "empresa-001",
-    nombreEmpresa: "Restaurante Demo",
-    activo: true,
-  },
-  {
-    id: "mesero-001",
-    usuario: "mesero",
-    nombreCompleto: "María Elena Mesero",
-    correo: "mesero@apprest.com",
-    rol: RolUsuario.MESERO,
-    esAdministrador: false,
     nivelLicencia: NivelLicencia.PRO,
-    empresaId: "empresa-001",
+    empresaId: "emp1",
     nombreEmpresa: "Restaurante Demo",
     activo: true,
   },
   {
-    id: "cajero-001",
-    usuario: "cajero",
-    nombreCompleto: "Pedro Luis Cajero",
-    correo: "cajero@apprest.com",
-    rol: RolUsuario.CAJERO,
-    esAdministrador: false,
-    nivelLicencia: NivelLicencia.PRO,
-    empresaId: "empresa-001",
-    nombreEmpresa: "Restaurante Demo",
-    activo: true,
-  },
-  {
-    id: "cocinero-001",
-    usuario: "cocinero",
-    nombreCompleto: "Ana Sofia Cocinero",
-    correo: "cocinero@apprest.com",
-    rol: RolUsuario.COCINERO,
-    esAdministrador: false,
-    nivelLicencia: NivelLicencia.LITE,
-    empresaId: "empresa-001",
-    nombreEmpresa: "Restaurante Demo",
-    activo: true,
-  },
-  {
-    id: "gerente-001",
+    id: "2",
     usuario: "gerente",
-    nombreCompleto: "Roberto Carlos Gerente",
+    nombreCompleto: "María García López",
     correo: "gerente@apprest.com",
     rol: RolUsuario.GERENTE,
     esAdministrador: false,
     nivelLicencia: NivelLicencia.PRO,
-    empresaId: "empresa-001",
+    empresaId: "emp1",
+    nombreEmpresa: "Restaurante Demo",
+    activo: true,
+  },
+  {
+    id: "3",
+    usuario: "cajero",
+    nombreCompleto: "Carlos Rodríguez Pérez",
+    correo: "cajero@apprest.com",
+    rol: RolUsuario.CAJERO,
+    esAdministrador: false,
+    nivelLicencia: NivelLicencia.LITE,
+    empresaId: "emp1",
+    nombreEmpresa: "Restaurante Demo",
+    activo: true,
+  },
+  {
+    id: "4",
+    usuario: "mesero",
+    nombreCompleto: "Ana Martínez Silva",
+    correo: "mesero@apprest.com",
+    rol: RolUsuario.MESERO,
+    esAdministrador: false,
+    nivelLicencia: NivelLicencia.LITE,
+    empresaId: "emp1",
+    nombreEmpresa: "Restaurante Demo",
+    activo: true,
+  },
+  {
+    id: "5",
+    usuario: "cocinero",
+    nombreCompleto: "José Luis Hernández",
+    correo: "cocinero@apprest.com",
+    rol: RolUsuario.COCINERO,
+    esAdministrador: false,
+    nivelLicencia: NivelLicencia.GRATIS,
+    empresaId: "emp1",
     nombreEmpresa: "Restaurante Demo",
     activo: true,
   },
 ]
 
-// Credenciales demo (en producción esto vendría de la base de datos)
-const DEMO_CREDENTIALS = {
-  admin: { contraseña: "admin123", pin: "1234" },
-  mesero: { contraseña: "mesero123", pin: "5678" },
-  cajero: { contraseña: "cajero123", pin: "9012" },
-  cocinero: { contraseña: "cocina123", pin: "3456" },
-  gerente: { contraseña: "gerente123", pin: "7890" },
-}
+// Mock credentials database
+const mockCredentials = [
+  { usuario: "admin", contraseña: "admin123", pin: "1234" },
+  { usuario: "gerente", contraseña: "gerente123", pin: "7890" },
+  { usuario: "cajero", contraseña: "cajero123", pin: "9012" },
+  { usuario: "mesero", contraseña: "mesero123", pin: "5678" },
+  { usuario: "cocinero", contraseña: "cocina123", pin: "3456" },
+]
 
 export async function authenticateUser(credentials: LoginCredentials): Promise<AuthResponse> {
   try {
-    // Validar datos de entrada
-    const validatedData = loginSchema.parse(credentials)
+    // Validate input
+    const validatedCredentials = loginSchema.parse(credentials)
 
-    // Simular delay de red
+    // Simulate network delay
     await new Promise((resolve) => setTimeout(resolve, 1000))
 
-    // Buscar usuario
-    const user = DEMO_USERS.find((u) => u.usuario === validatedData.usuario)
+    // Find user credentials
+    const userCredentials = mockCredentials.find(
+      (cred) =>
+        cred.usuario === validatedCredentials.usuario &&
+        cred.contraseña === validatedCredentials.contraseña &&
+        cred.pin === validatedCredentials.pin,
+    )
 
-    if (!user) {
+    if (!userCredentials) {
       return {
         success: false,
-        error: "Usuario no encontrado",
+        error: "Credenciales inválidas. Verifica usuario, contraseña y PIN.",
       }
     }
 
-    // Verificar credenciales
-    const userCredentials = DEMO_CREDENTIALS[user.usuario as keyof typeof DEMO_CREDENTIALS]
+    // Find user data
+    const user = mockUsers.find((u) => u.usuario === userCredentials.usuario)
 
-    if (
-      !userCredentials ||
-      userCredentials.contraseña !== validatedData.contraseña ||
-      userCredentials.pin !== validatedData.pin
-    ) {
+    if (!user || !user.activo) {
       return {
         success: false,
-        error: "Credenciales inválidas",
+        error: "Usuario no encontrado o inactivo.",
       }
     }
 
-    // Verificar si el usuario está activo
-    if (!user.activo) {
-      return {
-        success: false,
-        error: "Usuario inactivo",
-      }
-    }
-
-    // Generar token (en producción sería un JWT real)
+    // Generate token (in real app, use JWT)
     const token = `token_${user.id}_${Date.now()}`
 
     return {
@@ -129,28 +122,23 @@ export async function authenticateUser(credentials: LoginCredentials): Promise<A
     console.error("Authentication error:", error)
     return {
       success: false,
-      error: "Error interno del servidor",
+      error: "Error interno del servidor.",
     }
   }
 }
 
-export async function verifyToken(token: string): Promise<AuthResponse> {
-  try {
-    // En producción, aquí verificarías el JWT
-    if (!token || !token.startsWith("token_")) {
-      return {
-        success: false,
-        error: "Token inválido",
-      }
-    }
+export async function verifyToken(token: string): Promise<{ valid: boolean; user?: User }> {
+  // In a real app, verify JWT token
+  // For now, just check if token exists and extract user ID
+  if (!token.startsWith("token_")) {
+    return { valid: false }
+  }
 
-    return {
-      success: true,
-    }
-  } catch (error) {
-    return {
-      success: false,
-      error: "Error verificando token",
-    }
+  const userId = token.split("_")[1]
+  const user = mockUsers.find((u) => u.id === userId)
+
+  return {
+    valid: !!user,
+    user,
   }
 }

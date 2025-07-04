@@ -23,6 +23,16 @@ export function AuthSidebar({ isOpen, onToggle }: AuthSidebarProps) {
 
   const navigation = getNavigationByRole(user.rol)
 
+  const getUserInitials = (nombreCompleto: string) => {
+    if (!nombreCompleto || typeof nombreCompleto !== "string") return "U"
+    return nombreCompleto
+      .split(" ")
+      .map((name) => name[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2)
+  }
+
   return (
     <div
       className={cn(
@@ -44,14 +54,7 @@ export function AuthSidebar({ isOpen, onToggle }: AuthSidebarProps) {
       <div className="p-4">
         <div className={cn("flex items-center", isOpen ? "space-x-3" : "justify-center")}>
           <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center">
-            <span className="text-orange-600 font-medium text-sm">
-              {user.nombreCompleto
-                .split(" ")
-                .map((n) => n[0])
-                .join("")
-                .toUpperCase()
-                .slice(0, 2)}
-            </span>
+            <span className="text-orange-600 font-medium text-sm">{getUserInitials(user.nombreCompleto)}</span>
           </div>
           {isOpen && (
             <div className="flex-1 min-w-0">

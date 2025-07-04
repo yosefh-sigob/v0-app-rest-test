@@ -10,7 +10,7 @@ const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "AppRest - Sistema de Gestión de Restaurante",
-  description: "Sistema completo para la gestión de restaurantes",
+  description: "Sistema completo de gestión para restaurantes con POS, inventario, reservaciones y más",
     generator: 'v0.dev'
 }
 
@@ -20,11 +20,13 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="es">
+    <html lang="es" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-          <AuthProvider>{children}</AuthProvider>
-          <Toaster />
+          <AuthProvider>
+            {children}
+            <Toaster />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
