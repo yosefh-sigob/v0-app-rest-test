@@ -38,7 +38,6 @@ import {
   Trash2,
   Eye,
   Heart,
-  HeartOff,
   Package,
   Utensils,
   Wine,
@@ -227,7 +226,9 @@ export function ProductosView({
 
   const handleFormSuccess = async () => {
     await refreshData()
-    toast.success("¡Producto guardado! Puedes seguir agregando más productos o cerrar el modal.")
+    setShowForm(false)
+    setSelectedProducto(null)
+    toast.success(selectedProducto ? "¡Producto actualizado exitosamente!" : "¡Producto creado exitosamente!")
   }
 
   const handleCloseForm = () => {
@@ -259,74 +260,101 @@ export function ProductosView({
 
   const getChannelBadges = (producto: Producto) => {
     const channels = []
-    if (producto.Comedor) channels.push({ icon: <Home className="h-3 w-3" />, label: "Comedor" })
-    if (producto.ADomicilio) channels.push({ icon: <Truck className="h-3 w-3" />, label: "Domicilio" })
-    if (producto.Mostrador) channels.push({ icon: <ShoppingCart className="h-3 w-3" />, label: "Mostrador" })
-    if (producto.Enlinea) channels.push({ icon: <Smartphone className="h-3 w-3" />, label: "En línea" })
-    if (producto.EnMenuQR) channels.push({ icon: <QrCode className="h-3 w-3" />, label: "QR" })
+    if (producto.Comedor)
+      channels.push({ icon: <Home className="h-3 w-3" />, label: "Comedor", color: "bg-green-100 text-green-800" })
+    if (producto.ADomicilio)
+      channels.push({ icon: <Truck className="h-3 w-3" />, label: "Domicilio", color: "bg-blue-100 text-blue-800" })
+    if (producto.Mostrador)
+      channels.push({
+        icon: <ShoppingCart className="h-3 w-3" />,
+        label: "Mostrador",
+        color: "bg-purple-100 text-purple-800",
+      })
+    if (producto.Enlinea)
+      channels.push({
+        icon: <Smartphone className="h-3 w-3" />,
+        label: "En línea",
+        color: "bg-orange-100 text-orange-800",
+      })
+    if (producto.EnMenuQR)
+      channels.push({ icon: <QrCode className="h-3 w-3" />, label: "QR", color: "bg-gray-100 text-gray-800" })
     return channels
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       {/* Selector de Licencia */}
       <LicenseSelector currentLicense={currentLicense} onLicenseChange={setLicense} />
 
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">Productos</h1>
-          <p className="text-muted-foreground">Gestiona tu catálogo de productos y platillos</p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={refreshData} disabled={loading}>
-            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
-            Actualizar
-          </Button>
-          <LicenseGuard feature="gestionProductos">
-            <Button
-              onClick={() => {
-                setSelectedProducto(null)
-                setShowForm(true)
-              }}
-              className="bg-orange-600 hover:bg-orange-700"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Nuevo Producto
+      {/* Header mejorado */}
+      <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg p-6">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Gestión de Productos</h1>
+            <p className="text-gray-600 mt-2">Administra tu catálogo de productos, platillos y bebidas</p>
+            <div className="flex items-center gap-4 mt-3">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Package className="h-4 w-4" />
+                <span>{data.total} productos totales</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Star className="h-4 w-4 text-yellow-500" />
+                <span>{data.productos.filter((p) => p.Favorito).length} favoritos</span>
+              </div>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <Button variant="outline" onClick={refreshData} disabled={loading} className="bg-white">
+              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+              Actualizar
             </Button>
-          </LicenseGuard>
+            <LicenseGuard feature="gestionProductos">
+              <Button
+                onClick={() => {
+                  setSelectedProducto(null)
+                  setShowForm(true)
+                }}
+                className="bg-orange-600 hover:bg-orange-700 text-white shadow-lg"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Nuevo Producto
+              </Button>
+            </LicenseGuard>
+          </div>
         </div>
       </div>
 
-      {/* Filtros */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            Filtros
+      {/* Filtros mejorados */}
+      <Card className="shadow-sm">
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Filter className="h-5 w-5 text-orange-600" />
+              Filtros de Búsqueda
+            </CardTitle>
             {hasActiveFilters && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={clearFilters}
-                className="ml-auto text-orange-600 hover:text-orange-700"
+                className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
               >
                 <X className="h-4 w-4 mr-1" />
-                Limpiar
+                Limpiar Filtros
               </Button>
             )}
-          </CardTitle>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Búsqueda */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
-                placeholder="Buscar productos..."
+                placeholder="Buscar por nombre o código..."
                 value={filters.search}
                 onChange={(e) => handleSearch(e.target.value)}
-                className="pl-10"
+                className="pl-10 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
               />
             </div>
 
@@ -335,14 +363,29 @@ export function ProductosView({
               value={filters.tipo || "all"}
               onValueChange={(value) => handleFilterChange("tipo", value === "all" ? undefined : value)}
             >
-              <SelectTrigger>
+              <SelectTrigger className="focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
                 <SelectValue placeholder="Tipo de producto" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos los tipos</SelectItem>
-                <SelectItem value="Platillo">Platillo</SelectItem>
-                <SelectItem value="Producto">Producto</SelectItem>
-                <SelectItem value="Botella">Botella</SelectItem>
+                <SelectItem value="Platillo">
+                  <div className="flex items-center gap-2">
+                    <Utensils className="h-4 w-4" />
+                    Platillo
+                  </div>
+                </SelectItem>
+                <SelectItem value="Producto">
+                  <div className="flex items-center gap-2">
+                    <Package className="h-4 w-4" />
+                    Producto
+                  </div>
+                </SelectItem>
+                <SelectItem value="Botella">
+                  <div className="flex items-center gap-2">
+                    <Wine className="h-4 w-4" />
+                    Botella
+                  </div>
+                </SelectItem>
               </SelectContent>
             </Select>
 
@@ -351,7 +394,7 @@ export function ProductosView({
               value={filters.grupoId?.toString() || "all"}
               onValueChange={(value) => handleFilterChange("grupoId", value === "all" ? undefined : Number(value))}
             >
-              <SelectTrigger>
+              <SelectTrigger className="focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
                 <SelectValue placeholder="Categoría" />
               </SelectTrigger>
               <SelectContent>
@@ -391,50 +434,68 @@ export function ProductosView({
                 }
               }}
             >
-              <SelectTrigger>
+              <SelectTrigger className="focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
                 <SelectValue placeholder="Estado" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="activos">Activos</SelectItem>
-                <SelectItem value="favoritos">Favoritos</SelectItem>
-                <SelectItem value="suspendidos">Suspendidos</SelectItem>
+                <SelectItem value="all">Todos los estados</SelectItem>
+                <SelectItem value="activos">✅ Activos</SelectItem>
+                <SelectItem value="favoritos">⭐ Favoritos</SelectItem>
+                <SelectItem value="suspendidos">⏸️ Suspendidos</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </CardContent>
       </Card>
 
-      {/* Controles de vista */}
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">
-            {data.total} producto{data.total !== 1 ? "s" : ""} encontrado{data.total !== 1 ? "s" : ""}
-          </span>
-          {hasActiveFilters && (
-            <Badge variant="secondary" className="text-xs">
-              Filtrado
-            </Badge>
+      {/* Controles de vista mejorados */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-lg border">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-gray-700">
+              {data.total} producto{data.total !== 1 ? "s" : ""} encontrado{data.total !== 1 ? "s" : ""}
+            </span>
+            {hasActiveFilters && (
+              <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-800">
+                Filtrado
+              </Badge>
+            )}
+          </div>
+          {data.productos.length > 0 && (
+            <div className="text-xs text-gray-500">
+              Página {data.page} de {data.totalPages}
+            </div>
           )}
         </div>
         <div className="flex items-center gap-2">
-          <Button variant={viewMode === "grid" ? "default" : "outline"} size="sm" onClick={() => setViewMode("grid")}>
+          <span className="text-sm text-gray-600 mr-2">Vista:</span>
+          <Button
+            variant={viewMode === "grid" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setViewMode("grid")}
+            className={viewMode === "grid" ? "bg-orange-600 hover:bg-orange-700" : ""}
+          >
             <Grid3X3 className="h-4 w-4" />
           </Button>
-          <Button variant={viewMode === "list" ? "default" : "outline"} size="sm" onClick={() => setViewMode("list")}>
+          <Button
+            variant={viewMode === "list" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setViewMode("list")}
+            className={viewMode === "list" ? "bg-orange-600 hover:bg-orange-700" : ""}
+          >
             <List className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
-      {/* Lista de productos */}
+      {/* Lista de productos mejorada */}
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {Array.from({ length: 8 }).map((_, i) => (
             <Card key={i} className="animate-pulse">
               <CardContent className="p-4">
                 <div className="space-y-3">
-                  <div className="h-32 bg-gray-200 rounded-md" />
+                  <div className="h-40 bg-gray-200 rounded-md" />
                   <div className="space-y-2">
                     <div className="h-5 bg-gray-200 rounded w-3/4" />
                     <div className="h-4 bg-gray-200 rounded w-full" />
@@ -446,12 +507,18 @@ export function ProductosView({
           ))}
         </div>
       ) : data.productos.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <Package className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No se encontraron productos</h3>
-            <p className="text-muted-foreground text-center mb-4">
-              {hasActiveFilters ? "Intenta ajustar los filtros de búsqueda" : "Comienza agregando tu primer producto"}
+        <Card className="border-dashed border-2 border-gray-300">
+          <CardContent className="flex flex-col items-center justify-center py-16">
+            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+              <Package className="h-12 w-12 text-gray-400" />
+            </div>
+            <h3 className="text-xl font-semibold mb-2 text-gray-900">
+              {hasActiveFilters ? "No se encontraron productos" : "¡Comienza tu catálogo!"}
+            </h3>
+            <p className="text-gray-600 text-center mb-6 max-w-md">
+              {hasActiveFilters
+                ? "Intenta ajustar los filtros de búsqueda para encontrar los productos que buscas"
+                : "Agrega tu primer producto para comenzar a gestionar tu catálogo de platillos y bebidas"}
             </p>
             {!hasActiveFilters && (
               <LicenseGuard feature="gestionProductos">
@@ -460,9 +527,10 @@ export function ProductosView({
                     setSelectedProducto(null)
                     setShowForm(true)
                   }}
-                  className="bg-orange-600 hover:bg-orange-700"
+                  className="bg-orange-600 hover:bg-orange-700 text-white shadow-lg"
+                  size="lg"
                 >
-                  <Plus className="h-4 w-4 mr-2" />
+                  <Plus className="h-5 w-5 mr-2" />
                   Crear Primer Producto
                 </Button>
               </LicenseGuard>
@@ -474,102 +542,120 @@ export function ProductosView({
           {data.productos.map((producto) => (
             <Card
               key={producto.ProductoULID}
-              className={`group hover:shadow-md transition-shadow ${
-                producto.Suspendido ? "opacity-60 border-dashed" : ""
-              }`}
+              className={`group hover:shadow-lg transition-all duration-200 cursor-pointer border-l-4 ${
+                producto.Favorito ? "border-l-yellow-400" : "border-l-transparent"
+              } ${producto.Suspendido ? "opacity-60 border-dashed bg-gray-50" : "hover:border-l-orange-400"}`}
+              onClick={() => handleView(producto)}
             >
-              <CardContent className="p-4">
-                <div className="space-y-3">
+              <CardContent className="p-0">
+                <div className="space-y-0">
                   {/* Imagen */}
-                  <div className="relative">
+                  <div className="relative overflow-hidden rounded-t-lg">
                     <img
                       src={getImageSrc(producto.Imagen) || "/placeholder.svg"}
                       alt={producto.Nombredelproducto}
-                      className="w-full h-30 object-cover rounded-md"
+                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-200"
                     />
-                    {producto.Favorito && (
-                      <div className="absolute top-2 left-2">
-                        <Badge className="bg-yellow-500 hover:bg-yellow-600">
-                          <Star className="h-3 w-3 mr-1" />
+                    <div className="absolute top-2 left-2 flex gap-1">
+                      {producto.Favorito && (
+                        <Badge className="bg-yellow-500 hover:bg-yellow-600 text-white">
+                          <Star className="h-3 w-3 mr-1 fill-current" />
                           Favorito
                         </Badge>
-                      </div>
-                    )}
-                    {producto.Suspendido && (
-                      <div className="absolute top-2 right-2">
-                        <Badge variant="destructive">Suspendido</Badge>
-                      </div>
-                    )}
+                      )}
+                      {producto.Suspendido && <Badge variant="destructive">Suspendido</Badge>}
+                    </div>
+                    <div className="absolute top-2 right-2">
+                      <Badge variant="outline" className="bg-white/90 backdrop-blur-sm">
+                        {TIPO_ICONS[producto.TipoProducto]}
+                        <span className="ml-1">{producto.TipoProducto}</span>
+                      </Badge>
+                    </div>
                   </div>
 
                   {/* Información */}
-                  <div className="space-y-2">
-                    <h3 className="font-semibold text-sm leading-tight">{producto.Nombredelproducto}</h3>
-                    <p className="text-xs text-muted-foreground line-clamp-2">
-                      {producto.Descripcion || "Sin descripción"}
-                    </p>
-
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-xs">
-                        {TIPO_ICONS[producto.TipoProducto]}
-                        {producto.TipoProducto}
-                      </Badge>
-                      <Badge variant="outline" className="text-xs">
-                        {producto.ClaveProducto}
-                      </Badge>
+                  <div className="p-4 space-y-3">
+                    <div>
+                      <h3 className="font-semibold text-lg leading-tight text-gray-900 group-hover:text-orange-600 transition-colors">
+                        {producto.Nombredelproducto}
+                      </h3>
+                      <p className="text-sm text-gray-600 mt-1">
+                        Código: <span className="font-mono font-medium">{producto.ClaveProducto}</span>
+                      </p>
                     </div>
+
+                    <p className="text-sm text-gray-600 line-clamp-2 min-h-[2.5rem]">
+                      {producto.Descripcion || "Sin descripción disponible"}
+                    </p>
 
                     {/* Canales de venta */}
                     <div className="flex flex-wrap gap-1">
                       {getChannelBadges(producto)
                         .slice(0, 3)
                         .map((channel, index) => (
-                          <Badge key={index} variant="secondary" className="text-xs">
+                          <Badge key={index} variant="secondary" className={`text-xs ${channel.color}`}>
                             {channel.icon}
-                            {channel.label}
+                            <span className="ml-1">{channel.label}</span>
                           </Badge>
                         ))}
                       {getChannelBadges(producto).length > 3 && (
                         <Badge variant="secondary" className="text-xs">
-                          +{getChannelBadges(producto).length - 3}
+                          +{getChannelBadges(producto).length - 3} más
                         </Badge>
                       )}
                     </div>
 
-                    {/* Botones de acción - SIMPLIFICADOS */}
-                    <div className="flex gap-1 pt-2">
+                    {/* Botones de acción */}
+                    <div className="flex gap-2 pt-2 border-t" onClick={(e) => e.stopPropagation()}>
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => handleView(producto)}
-                        className="flex-1 h-8 text-xs"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleView(producto)
+                        }}
+                        className="flex-1 h-9"
                       >
-                        <Eye className="h-3 w-3 mr-1" />
+                        <Eye className="h-4 w-4 mr-1" />
                         Ver
                       </Button>
                       <Button
                         size="sm"
                         variant="ghost"
-                        onClick={() => handleToggleFavorite(producto)}
-                        className="h-8 w-8 p-0"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleToggleFavorite(producto)
+                        }}
+                        className="h-9 w-9 p-0"
                       >
                         {producto.Favorito ? (
-                          <HeartOff className="h-3 w-3 text-red-500" />
+                          <Heart className="h-4 w-4 text-red-500 fill-current" />
                         ) : (
-                          <Heart className="h-3 w-3" />
+                          <Heart className="h-4 w-4 text-gray-400 hover:text-red-500" />
                         )}
                       </Button>
                       <LicenseGuard feature="gestionProductos" fallback={null}>
-                        <Button size="sm" variant="ghost" onClick={() => handleEdit(producto)} className="h-8 w-8 p-0">
-                          <Edit className="h-3 w-3" />
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleEdit(producto)
+                          }}
+                          className="h-9 w-9 p-0"
+                        >
+                          <Edit className="h-4 w-4" />
                         </Button>
                         <Button
                           size="sm"
                           variant="ghost"
-                          onClick={() => handleDelete(producto)}
-                          className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleDelete(producto)
+                          }}
+                          className="h-9 w-9 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
                         >
-                          <Trash2 className="h-3 w-3" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </LicenseGuard>
                     </div>
@@ -580,79 +666,116 @@ export function ProductosView({
           ))}
         </div>
       ) : (
-        <Card>
+        <Card className="shadow-sm">
           <CardContent className="p-0">
             <div className="divide-y">
               {data.productos.map((producto) => (
                 <div
                   key={producto.ProductoULID}
-                  className={`p-4 hover:bg-muted/50 transition-colors ${producto.Suspendido ? "opacity-60" : ""}`}
+                  className={`p-6 hover:bg-gray-50 transition-colors cursor-pointer ${
+                    producto.Suspendido ? "opacity-60 bg-gray-25" : ""
+                  }`}
+                  onClick={() => handleView(producto)}
                 >
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-6">
                     {/* Imagen pequeña */}
-                    <img
-                      src={getImageSrc(producto.Imagen) || "/placeholder.svg"}
-                      alt={producto.Nombredelproducto}
-                      className="w-16 h-16 object-cover rounded-md flex-shrink-0"
-                    />
+                    <div className="relative flex-shrink-0">
+                      <img
+                        src={getImageSrc(producto.Imagen) || "/placeholder.svg"}
+                        alt={producto.Nombredelproducto}
+                        className="w-20 h-20 object-cover rounded-lg border"
+                      />
+                      {producto.Favorito && (
+                        <div className="absolute -top-1 -right-1">
+                          <Star className="h-5 w-5 text-yellow-500 fill-current" />
+                        </div>
+                      )}
+                    </div>
 
                     {/* Información */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-semibold">{producto.Nombredelproducto}</h3>
-                            {producto.Favorito && <Star className="h-4 w-4 text-yellow-500 fill-current" />}
+                        <div className="space-y-2 flex-1">
+                          <div className="flex items-center gap-3">
+                            <h3 className="font-semibold text-lg text-gray-900 hover:text-orange-600 transition-colors">
+                              {producto.Nombredelproducto}
+                            </h3>
                             {producto.Suspendido && (
                               <Badge variant="destructive" className="text-xs">
                                 Suspendido
                               </Badge>
                             )}
                           </div>
-                          <p className="text-sm text-muted-foreground">{producto.Descripcion || "Sin descripción"}</p>
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="text-xs">
+                          <p className="text-sm text-gray-600">
+                            {producto.Descripcion || "Sin descripción disponible"}
+                          </p>
+                          <div className="flex items-center gap-4">
+                            <Badge variant="outline" className="text-sm">
                               {TIPO_ICONS[producto.TipoProducto]}
-                              {producto.TipoProducto}
+                              <span className="ml-1">{producto.TipoProducto}</span>
                             </Badge>
-                            <Badge variant="outline" className="text-xs">
-                              {producto.ClaveProducto}
-                            </Badge>
+                            <span className="text-sm text-gray-500">
+                              Código: <span className="font-mono font-medium">{producto.ClaveProducto}</span>
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap gap-1">
+                            {getChannelBadges(producto).map((channel, index) => (
+                              <Badge key={index} variant="secondary" className={`text-xs ${channel.color}`}>
+                                {channel.icon}
+                                <span className="ml-1">{channel.label}</span>
+                              </Badge>
+                            ))}
                           </div>
                         </div>
 
-                        {/* Botones de acción - SIMPLIFICADOS */}
-                        <div className="flex gap-1">
-                          <Button size="sm" variant="outline" onClick={() => handleView(producto)}>
+                        {/* Botones de acción */}
+                        <div className="flex gap-2 ml-4" onClick={(e) => e.stopPropagation()}>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleView(producto)
+                            }}
+                          >
                             <Eye className="h-4 w-4 mr-1" />
                             Ver
                           </Button>
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => handleToggleFavorite(producto)}
-                            className="w-9 h-9 p-0"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleToggleFavorite(producto)
+                            }}
+                            className="w-10 h-10 p-0"
                           >
                             {producto.Favorito ? (
-                              <HeartOff className="h-4 w-4 text-red-500" />
+                              <Heart className="h-4 w-4 text-red-500 fill-current" />
                             ) : (
-                              <Heart className="h-4 w-4" />
+                              <Heart className="h-4 w-4 text-gray-400 hover:text-red-500" />
                             )}
                           </Button>
                           <LicenseGuard feature="gestionProductos" fallback={null}>
                             <Button
                               size="sm"
                               variant="ghost"
-                              onClick={() => handleEdit(producto)}
-                              className="w-9 h-9 p-0"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleEdit(producto)
+                              }}
+                              className="w-10 h-10 p-0"
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
                             <Button
                               size="sm"
                               variant="ghost"
-                              onClick={() => handleDelete(producto)}
-                              className="w-9 h-9 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleDelete(producto)
+                              }}
+                              className="w-10 h-10 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -668,7 +791,7 @@ export function ProductosView({
         </Card>
       )}
 
-      {/* Paginación */}
+      {/* Paginación mejorada */}
       {data.totalPages > 1 && (
         <div className="flex justify-center">
           <Pagination>
@@ -676,7 +799,7 @@ export function ProductosView({
               <PaginationItem>
                 <PaginationPrevious
                   onClick={() => handlePageChange(Math.max(1, data.page - 1))}
-                  className={data.page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  className={`${data.page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer hover:bg-orange-50"}`}
                 />
               </PaginationItem>
 
@@ -687,7 +810,7 @@ export function ProductosView({
                     <PaginationLink
                       onClick={() => handlePageChange(pageNum)}
                       isActive={data.page === pageNum}
-                      className="cursor-pointer"
+                      className={`cursor-pointer ${data.page === pageNum ? "bg-orange-600 text-white hover:bg-orange-700" : "hover:bg-orange-50"}`}
                     >
                       {pageNum}
                     </PaginationLink>
@@ -698,7 +821,7 @@ export function ProductosView({
               <PaginationItem>
                 <PaginationNext
                   onClick={() => handlePageChange(Math.min(data.totalPages, data.page + 1))}
-                  className={data.page === data.totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  className={`${data.page === data.totalPages ? "pointer-events-none opacity-50" : "cursor-pointer hover:bg-orange-50"}`}
                 />
               </PaginationItem>
             </PaginationContent>
@@ -708,23 +831,33 @@ export function ProductosView({
 
       {/* Modal de formulario - ANCHO 80% */}
       <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className="w-[80vw] max-w-[80vw] max-h-[90vh] overflow-y-auto p-0">
-          <DialogHeader className="px-6 py-4 border-b">
-            <DialogTitle className="flex items-center gap-2 text-xl">
+        <DialogContent className="w-[80vw] max-w-[80vw] max-h-[90vh] overflow-hidden p-0 gap-0">
+          <DialogHeader className="px-6 py-4 border-b bg-gradient-to-r from-orange-50 to-orange-100">
+            <DialogTitle className="flex items-center gap-3 text-xl text-gray-900">
               {selectedProducto ? (
                 <>
-                  <Edit className="h-5 w-5" />
-                  Editar Producto: {selectedProducto.Nombredelproducto}
+                  <div className="p-2 bg-orange-600 rounded-lg">
+                    <Edit className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <div>Editar Producto</div>
+                    <div className="text-sm font-normal text-gray-600 mt-1">{selectedProducto.Nombredelproducto}</div>
+                  </div>
                 </>
               ) : (
                 <>
-                  <Plus className="h-5 w-5" />
-                  Nuevo Producto
+                  <div className="p-2 bg-orange-600 rounded-lg">
+                    <Plus className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <div>Nuevo Producto</div>
+                    <div className="text-sm font-normal text-gray-600 mt-1">Agrega un nuevo producto a tu catálogo</div>
+                  </div>
                 </>
               )}
             </DialogTitle>
           </DialogHeader>
-          <div className="px-6 py-4">
+          <div className="flex-1 overflow-y-auto">
             <ProductoForm
               producto={selectedProducto}
               gruposProductos={gruposProductos}
@@ -734,28 +867,27 @@ export function ProductosView({
               onSuccess={handleFormSuccess}
               onCancel={handleCloseForm}
             />
-            {!selectedProducto && (
-              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm text-blue-800">
-                  💡 <strong>Tip:</strong> Puedes seguir agregando productos sin cerrar este modal. Haz clic en
-                  &quot;Actualizar&quot; para ver los cambios en la lista.
-                </p>
-              </div>
-            )}
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Modal de detalles */}
+      {/* Modal de detalles - ANCHO 80% */}
       <Dialog open={showDetail} onOpenChange={setShowDetail}>
-        <DialogContent className="w-[80vw] max-w-[80vw] max-h-[90vh] overflow-y-auto p-0">
-          <DialogHeader className="px-6 py-4 border-b">
-            <DialogTitle className="flex items-center gap-2 text-xl">
-              <Eye className="h-5 w-5" />
-              Detalles del Producto
+        <DialogContent className="w-[80vw] max-w-[80vw] max-h-[90vh] overflow-hidden p-0 gap-0">
+          <DialogHeader className="px-6 py-4 border-b bg-gradient-to-r from-blue-50 to-blue-100">
+            <DialogTitle className="flex items-center gap-3 text-xl text-gray-900">
+              <div className="p-2 bg-blue-600 rounded-lg">
+                <Eye className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <div>Detalles del Producto</div>
+                {selectedProducto && (
+                  <div className="text-sm font-normal text-gray-600 mt-1">{selectedProducto.Nombredelproducto}</div>
+                )}
+              </div>
             </DialogTitle>
           </DialogHeader>
-          <div className="px-6 py-4">
+          <div className="flex-1 overflow-y-auto">
             {selectedProducto && (
               <ProductoDetail
                 producto={selectedProducto}
@@ -776,18 +908,26 @@ export function ProductosView({
 
       {/* Dialog de confirmación de eliminación */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta acción marcará el producto &quot;{productoToDelete?.Nombredelproducto}&quot; como suspendido. Podrás
-              reactivarlo más tarde si es necesario.
+            <AlertDialogTitle className="flex items-center gap-2">
+              <div className="p-2 bg-red-100 rounded-lg">
+                <Trash2 className="h-5 w-5 text-red-600" />
+              </div>
+              ¿Suspender producto?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-base">
+              El producto <strong>"{productoToDelete?.Nombredelproducto}"</strong> será marcado como suspendido y no
+              estará disponible para la venta.
+              <br />
+              <br />
+              Podrás reactivarlo más tarde desde la configuración del producto.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
-              Sí, eliminar
+              Sí, suspender
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
