@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
@@ -8,48 +8,50 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
-import { Save, X, ImageIcon } from "lucide-react"
-import {
-  createProductoSchema,
-  updateProductoSchema,
-  type Producto,
-  TIPOS_PRODUCTO,
-  CANALES_VENTA,
-} from "@/schemas/productos.schemas"
-import { createProducto, updateProducto, validateClaveProducto } from "@/actions/productos.actions"
-import { MOCK_GRUPOS_PRODUCTOS, MOCK_UNIDADES, MOCK_AREAS_PRODUCCION, MOCK_ALMACENES } from "@/lib/mock/productos.mock"
-import { toast } from "@/hooks/use-toast"
+import { ProductoFormSchema, type ProductoFormData, TIPOS_PRODUCTO, CANALES_VENTA } from "@/schemas/productos.schemas"
+import { crearProductoAction, actualizarProductoAction, validarClaveProductoAction } from "@/actions/productos.actions"
+import type { Producto } from "@/lib/services/productos.service"
+import { toast } from "sonner"
+import { Loader2, Save, X, AlertCircle, Check } from "lucide-react"
 
 interface ProductoFormProps {
-  producto?: Producto
-  onSuccess: (producto: Producto) => void
+  producto?: Producto | null
+  datosRelacionados: {
+    grupos: any[]
+    subgrupos: any[]
+    unidades: any[]
+    areasProduccion: any[]
+  }
+  onSuccess: () => void
   onCancel: () => void
 }
 
-export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProps) {
-  const [isLoading, setIsLoading] = useState(false)
-  const [imagePreview, setImagePreview] = useState<string | null>(producto?.Imagen || null)
-  const [isValidatingClave, setIsValidatingClave] = useState(false)
-  const isEditing = !!producto
+export function ProductoForm({ producto, datosRelacionados, onSuccess, onCancel }: ProductoFormProps) {
+  const [loading, setLoading] = useState(false)
+  const [validandoClave, setValidandoClave] = useState(false)
+  const [claveValida, setClaveValida] = useState<boolean | null>(null)
+  const [tabActiva, setTabActiva] = useState("basicos")
 
-  const form = useForm({
-    resolver: zodResolver(isEditing ? updateProductoSchema : createProductoSchema),
+  const esEdicion = !!producto
+
+  const form = useForm<ProductoFormData>({
+    resolver: zodResolver(ProductoFormSchema),
     defaultValues: {
       ClaveProducto: producto?.ClaveProducto || "",
-      TipoProducto: producto?.TipoProducto || "Producto",
+      TipoProducto: producto?.TipoProducto || "Platillo",
       Nombredelproducto: producto?.Nombredelproducto || "",
       Descripcion: producto?.Descripcion || "",
-      Imagen: producto?.Imagen || "",
       Favorito: producto?.Favorito || false,
       ExentoImpuesto: producto?.ExentoImpuesto || false,
       PrecioAbierto: producto?.PrecioAbierto || false,
       ControlStock: producto?.ControlStock || false,
-      PrecioxUtilidad: producto?.PrecioxUtilidad || false,
-      Facturable: producto?.Facturable ?? true,
+      PrecioxUtilidadad: producto?.PrecioxUtilidadad || false,
+      Facturable: producto?.Facturable || true,
       Suspendido: producto?.Suspendido || false,
       Comedor: producto?.Comedor || false,
       ADomicilio: producto?.ADomicilio || false,
@@ -57,527 +59,537 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
       Enlinea: producto?.Enlinea || false,
       EnAPP: producto?.EnAPP || false,
       EnMenuQR: producto?.EnMenuQR || false,
-      GrupoProductoID: producto?.GrupoProductoID || "0",
-      UnidadID: producto?.UnidadID || "0",
-      AreaProduccionID: producto?.AreaProduccionID || "0",
-      AlmacenID: producto?.AlmacenID || "0",
-      ClaveTributaria: producto?.ClaveTributaria || "",
+      GrupoProductoULID: producto?.GrupoProductoULID || "defaultGroup",
+      SubgrupoProductoULID: producto?.SubgrupoProductoULID || "defaultSubgroup",
+      UnidadesULID: producto?.UnidadesULID || "defaultUnit",
+      AreaProduccionULID: producto?.AreaProduccionULID || "defaultArea",
+      AlmacenULID: producto?.AlmacenULID || "defaultAlmacen",
+      ClasificacionQRULID: producto?.ClasificacionQRULID || "defaultQR",
+      ClaveTributaria: producto?.ClaveTributaria || "defaultTributaria",
+      DatosDinamicos: producto?.DatosDinamicos || {},
     },
   })
 
   // Validar clave de producto en tiempo real
-  const handleClaveChange = async (clave: string) => {
-    if (!clave || clave.length < 3) return
+  const validarClave = async (clave: string) => {
+    if (!clave || clave.length < 1) {
+      setClaveValida(null)
+      return
+    }
 
-    setIsValidatingClave(true)
+    setValidandoClave(true)
     try {
-      const result = await validateClaveProducto(clave, producto?.ProductoULID)
-      if (!result.isValid) {
-        form.setError("ClaveProducto", {
-          type: "manual",
-          message: "Esta clave ya existe",
-        })
+      const result = await validarClaveProductoAction(clave, producto?.ProductoULID)
+      if (result.success) {
+        setClaveValida(!result.data) // Si no existe, es válida
       } else {
-        form.clearErrors("ClaveProducto")
+        setClaveValida(null)
       }
     } catch (error) {
-      console.error("Error validando clave:", error)
+      setClaveValida(null)
     } finally {
-      setIsValidatingClave(false)
+      setValidandoClave(false)
     }
   }
 
-  const handleImageChange = (url: string) => {
-    setImagePreview(url)
-    form.setValue("Imagen", url)
-  }
+  // Efecto para validar clave cuando cambia
+  useEffect(() => {
+    const clave = form.watch("ClaveProducto")
+    if (clave && clave !== producto?.ClaveProducto) {
+      const timeoutId = setTimeout(() => validarClave(clave), 500)
+      return () => clearTimeout(timeoutId)
+    } else {
+      setClaveValida(null)
+    }
+  }, [form.watch("ClaveProducto"), producto?.ClaveProducto])
 
-  const onSubmit = async (data: any) => {
-    setIsLoading(true)
+  const onSubmit = async (data: ProductoFormData) => {
+    // Validar que al menos un canal esté activo
+    const canalesActivos = [
+      data.Comedor,
+      data.ADomicilio,
+      data.Mostrador,
+      data.Enlinea,
+      data.EnAPP,
+      data.EnMenuQR,
+    ].some((canal) => canal === true)
+
+    if (!canalesActivos) {
+      toast.error("Debe seleccionar al menos un canal de venta")
+      setTabActiva("canales")
+      return
+    }
+
+    // Validar clave única para nuevos productos
+    if (!esEdicion && claveValida === false) {
+      toast.error("La clave del producto ya existe")
+      setTabActiva("basicos")
+      return
+    }
+
+    setLoading(true)
     try {
-      let result
-      if (isEditing) {
-        result = await updateProducto(producto.ProductoULID, data)
-      } else {
-        result = await createProducto(data)
-      }
+      const result = esEdicion
+        ? await actualizarProductoAction(producto!.ProductoULID, data)
+        : await crearProductoAction(data)
 
-      if (result.success && result.data) {
-        onSuccess(result.data)
-        toast({
-          title: "Éxito",
-          description: result.message,
-        })
+      if (result.success) {
+        toast.success(result.message || `Producto ${esEdicion ? "actualizado" : "creado"} exitosamente`)
+        onSuccess()
       } else {
-        toast({
-          title: "Error",
-          description: result.message || "Error al guardar el producto",
-          variant: "destructive",
-        })
+        toast.error(result.error || `Error al ${esEdicion ? "actualizar" : "crear"} producto`)
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Error inesperado al guardar el producto",
-        variant: "destructive",
-      })
+      toast.error(`Error al ${esEdicion ? "actualizar" : "crear"} producto`)
     } finally {
-      setIsLoading(false)
+      setLoading(false)
     }
   }
 
-  // Contar canales activos
-  const canalesActivos = CANALES_VENTA.filter((canal) => form.watch(canal.key as any)).length
+  const obtenerSubgruposFiltrados = () => {
+    const grupoSeleccionado = form.watch("GrupoProductoULID")
+    if (!grupoSeleccionado) return []
+
+    return datosRelacionados.subgrupos.filter((subgrupo) => subgrupo.ClaveGrupo === grupoSeleccionado)
+  }
+
+  const contarCanalesActivos = () => {
+    const valores = form.watch()
+    return [
+      valores.Comedor,
+      valores.ADomicilio,
+      valores.Mostrador,
+      valores.Enlinea,
+      valores.EnAPP,
+      valores.EnMenuQR,
+    ].filter(Boolean).length
+  }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {/* Información básica */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">📝 Información Básica</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="ClaveProducto"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Clave del Producto *</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input
-                          placeholder="Ej: HAM001"
-                          {...field}
-                          onChange={(e) => {
-                            const value = e.target.value.toUpperCase()
-                            field.onChange(value)
-                            handleClaveChange(value)
-                          }}
-                          className="uppercase"
-                        />
-                        {isValidatingClave && (
-                          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                            <div className="animate-spin h-4 w-4 border-2 border-gray-300 border-t-blue-600 rounded-full"></div>
-                          </div>
-                        )}
-                      </div>
-                    </FormControl>
-                    <FormDescription>Solo letras mayúsculas y números (máx. 10 caracteres)</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+        <Tabs value={tabActiva} onValueChange={setTabActiva} className="w-full">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="basicos">Datos Básicos</TabsTrigger>
+            <TabsTrigger value="canales">Canales ({contarCanalesActivos()})</TabsTrigger>
+            <TabsTrigger value="configuracion">Configuración</TabsTrigger>
+            <TabsTrigger value="relaciones">Relaciones</TabsTrigger>
+          </TabsList>
 
-              <FormField
-                control={form.control}
-                name="TipoProducto"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Tipo de Producto *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecciona el tipo" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {TIPOS_PRODUCTO.map((tipo) => (
-                          <SelectItem key={tipo.value} value={tipo.value}>
-                            <div className="flex flex-col">
-                              <span>{tipo.label}</span>
-                              <span className="text-xs text-gray-500">{tipo.description}</span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="Nombredelproducto"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nombre del Producto *</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Ej: Hamburguesa Clásica" {...field} />
-                  </FormControl>
-                  <FormDescription>Nombre descriptivo del producto (máx. 100 caracteres)</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="Descripcion"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Descripción</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Describe el producto, ingredientes, características..."
-                      rows={3}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>Descripción detallada del producto (máx. 500 caracteres)</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="ClaveTributaria"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Clave Tributaria (SAT)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Clave del SAT para facturación" {...field} />
-                  </FormControl>
-                  <FormDescription>Clave del catálogo del SAT para emisión de CFDi</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </CardContent>
-        </Card>
-
-        {/* Imagen */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ImageIcon className="h-5 w-5" />
-              Imagen del Producto
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <FormField
-              control={form.control}
-              name="Imagen"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>URL de Imagen</FormLabel>
-                  <FormControl>
-                    <div className="space-y-4">
-                      <Input
-                        placeholder="https://ejemplo.com/imagen.jpg"
-                        {...field}
-                        onChange={(e) => {
-                          field.onChange(e.target.value)
-                          handleImageChange(e.target.value)
-                        }}
-                      />
-
-                      {imagePreview && (
-                        <div className="relative w-full max-w-sm">
-                          <img
-                            src={imagePreview || "/placeholder.svg"}
-                            alt="Preview"
-                            className="w-full h-32 object-cover rounded-lg border"
-                            onError={() => {
-                              setImagePreview(null)
-                              form.setValue("Imagen", "")
-                            }}
-                          />
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="sm"
-                            className="absolute top-2 right-2"
-                            onClick={() => {
-                              setImagePreview(null)
-                              form.setValue("Imagen", "")
-                            }}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
+          {/* Tab: Datos Básicos */}
+          <TabsContent value="basicos" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Información Básica</CardTitle>
+                <CardDescription>Datos principales del producto</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="ClaveProducto"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Clave del Producto *</FormLabel>
+                        <div className="relative">
+                          <FormControl>
+                            <Input
+                              {...field}
+                              placeholder="Ej: TACO001"
+                              className="uppercase"
+                              onChange={(e) => {
+                                field.onChange(e.target.value.toUpperCase())
+                              }}
+                            />
+                          </FormControl>
+                          {validandoClave && (
+                            <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 animate-spin text-gray-400" />
+                          )}
+                          {!validandoClave && claveValida === true && (
+                            <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-green-500" />
+                          )}
+                          {!validandoClave && claveValida === false && (
+                            <AlertCircle className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-red-500" />
+                          )}
                         </div>
-                      )}
-                    </div>
-                  </FormControl>
-                  <FormDescription>URL de la imagen del producto (opcional)</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </CardContent>
-        </Card>
+                        <FormDescription>Solo letras mayúsculas y números (máx. 10 caracteres)</FormDescription>
+                        {claveValida === false && <p className="text-sm text-red-600">Esta clave ya existe</p>}
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-        {/* Configuración */}
-        <Card>
-          <CardHeader>
-            <CardTitle>⚙️ Configuración del Producto</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Referencias */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="GrupoProductoID"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Grupo de Producto</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecciona un grupo" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="0">Sin grupo</SelectItem>
-                        {MOCK_GRUPOS_PRODUCTOS.map((grupo) => (
-                          <SelectItem key={grupo.id} value={grupo.id.toString()}>
-                            {grupo.nombre}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  <FormField
+                    control={form.control}
+                    name="TipoProducto"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Tipo de Producto *</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Seleccionar tipo" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {TIPOS_PRODUCTO.map((tipo) => (
+                              <SelectItem key={tipo.value} value={tipo.value}>
+                                {tipo.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
-              <FormField
-                control={form.control}
-                name="UnidadID"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Unidad de Medida</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecciona una unidad" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="0">Sin unidad</SelectItem>
-                        {MOCK_UNIDADES.map((unidad) => (
-                          <SelectItem key={unidad.id} value={unidad.id.toString()}>
-                            {unidad.nombre} ({unidad.abreviacion})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="AreaProduccionID"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Área de Producción</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecciona un área" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="0">Sin área</SelectItem>
-                        {MOCK_AREAS_PRODUCCION.map((area) => (
-                          <SelectItem key={area.id} value={area.id.toString()}>
-                            {area.nombre}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="AlmacenID"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Almacén</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecciona un almacén" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="0">Sin almacén</SelectItem>
-                        {MOCK_ALMACENES.map((almacen) => (
-                          <SelectItem key={almacen.id} value={almacen.id.toString()}>
-                            {almacen.nombre}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <Separator />
-
-            {/* Configuraciones booleanas */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <FormField
-                control={form.control}
-                name="Favorito"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                    <div className="space-y-0.5">
-                      <FormLabel className="text-base">⭐ Favorito</FormLabel>
-                      <FormDescription className="text-sm">Marcar como producto destacado</FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="ControlStock"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                    <div className="space-y-0.5">
-                      <FormLabel className="text-base">📦 Control de Stock</FormLabel>
-                      <FormDescription className="text-sm">Llevar control de inventario</FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="Facturable"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                    <div className="space-y-0.5">
-                      <FormLabel className="text-base">🧾 Facturable</FormLabel>
-                      <FormDescription className="text-sm">Se puede incluir en facturas</FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="ExentoImpuesto"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                    <div className="space-y-0.5">
-                      <FormLabel className="text-base">🏷️ Exento de Impuesto</FormLabel>
-                      <FormDescription className="text-sm">No aplica IVA u otros impuestos</FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="PrecioAbierto"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                    <div className="space-y-0.5">
-                      <FormLabel className="text-base">💰 Precio Abierto</FormLabel>
-                      <FormDescription className="text-sm">El mesero puede capturar el precio</FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="PrecioxUtilidad"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                    <div className="space-y-0.5">
-                      <FormLabel className="text-base">📈 Precio por Utilidad</FormLabel>
-                      <FormDescription className="text-sm">Calcular precio basado en costo + utilidad</FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Canales de venta */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>🛒 Canales de Venta</span>
-              <Badge variant={canalesActivos > 0 ? "default" : "destructive"}>{canalesActivos} activos</Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {CANALES_VENTA.map((canal) => (
                 <FormField
-                  key={canal.key}
                   control={form.control}
-                  name={canal.key as any}
+                  name="Nombredelproducto"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-base">{canal.label}</FormLabel>
-                        <FormDescription className="text-sm">{canal.description}</FormDescription>
-                      </div>
+                    <FormItem>
+                      <FormLabel>Nombre del Producto *</FormLabel>
                       <FormControl>
-                        <Switch checked={field.value} onCheckedChange={field.onChange} />
+                        <Input {...field} placeholder="Ej: Taco de Pastor" />
                       </FormControl>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
-              ))}
-            </div>
 
-            {canalesActivos === 0 && (
-              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-sm text-red-600">⚠️ Debe seleccionar al menos un canal de venta</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                <FormField
+                  control={form.control}
+                  name="Descripcion"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Descripción</FormLabel>
+                      <FormControl>
+                        <Textarea {...field} placeholder="Descripción detallada del producto..." rows={3} />
+                      </FormControl>
+                      <FormDescription>Descripción que aparecerá en el menú (máx. 500 caracteres)</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="Favorito"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-base">Producto Favorito</FormLabel>
+                          <FormDescription>Marcar como producto destacado</FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch checked={field.value} onCheckedChange={field.onChange} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="Suspendido"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-base">Producto Suspendido</FormLabel>
+                          <FormDescription>Suspender del menú temporalmente</FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch checked={field.value} onCheckedChange={field.onChange} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Tab: Canales de Venta */}
+          <TabsContent value="canales" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Canales de Venta</CardTitle>
+                <CardDescription>
+                  Selecciona en qué canales estará disponible este producto
+                  {contarCanalesActivos() === 0 && (
+                    <Badge variant="destructive" className="ml-2">
+                      Debe seleccionar al menos uno
+                    </Badge>
+                  )}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {CANALES_VENTA.map((canal) => (
+                    <FormField
+                      key={canal.key}
+                      control={form.control}
+                      name={canal.key as keyof ProductoFormData}
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-base">{canal.label}</FormLabel>
+                            <FormDescription className="text-sm">{canal.description}</FormDescription>
+                          </div>
+                          <FormControl>
+                            <Switch checked={field.value as boolean} onCheckedChange={field.onChange} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Tab: Configuración */}
+          <TabsContent value="configuracion" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Configuración del Producto</CardTitle>
+                <CardDescription>Opciones avanzadas de configuración</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="ExentoImpuesto"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-base">Exento de Impuesto</FormLabel>
+                          <FormDescription>No aplicar impuestos a este producto</FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch checked={field.value} onCheckedChange={field.onChange} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="PrecioAbierto"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-base">Precio Abierto</FormLabel>
+                          <FormDescription>Permitir capturar precio al mesero</FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch checked={field.value} onCheckedChange={field.onChange} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="ControlStock"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-base">Control de Stock</FormLabel>
+                          <FormDescription>Llevar control de inventario</FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch checked={field.value} onCheckedChange={field.onChange} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="PrecioxUtilidadad"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-base">Precio por Utilidad</FormLabel>
+                          <FormDescription>Calcular precio basado en % de utilidad</FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch checked={field.value} onCheckedChange={field.onChange} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="Facturable"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-base">Facturable</FormLabel>
+                          <FormDescription>Se puede incluir en facturas</FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch checked={field.value} onCheckedChange={field.onChange} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <Separator />
+
+                <FormField
+                  control={form.control}
+                  name="ClaveTributaria"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Clave Tributaria (SAT)</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Ej: 50211503" />
+                      </FormControl>
+                      <FormDescription>Clave del catálogo SAT para emisión de CFDi</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Tab: Relaciones */}
+          <TabsContent value="relaciones" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Relaciones del Producto</CardTitle>
+                <CardDescription>Asociar con grupos, unidades y áreas de producción</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="GrupoProductoULID"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Grupo de Producto</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Seleccionar grupo" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="defaultGroup">Sin grupo</SelectItem>
+                            {datosRelacionados.grupos.map((grupo) => (
+                              <SelectItem key={grupo.GrupoProductoULID} value={grupo.GrupoProductoULID}>
+                                {grupo.Descripcion}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="SubgrupoProductoULID"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Subgrupo de Producto</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Seleccionar subgrupo" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="defaultSubgroup">Sin subgrupo</SelectItem>
+                            {obtenerSubgruposFiltrados().map((subgrupo) => (
+                              <SelectItem key={subgrupo.SubgrupoProductoULID} value={subgrupo.SubgrupoProductoULID}>
+                                {subgrupo.Descripcion}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>
+                          {!form.watch("GrupoProductoULID") && "Selecciona primero un grupo"}
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="UnidadesULID"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Unidad de Medida</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Seleccionar unidad" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="defaultUnit">Sin unidad</SelectItem>
+                            {datosRelacionados.unidades.map((unidad) => (
+                              <SelectItem key={unidad.UnidadULID} value={unidad.UnidadULID}>
+                                {unidad.Descripcion} ({unidad.Abreviacion})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="AreaProduccionULID"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Área de Producción</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Seleccionar área" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="defaultArea">Sin área</SelectItem>
+                            {datosRelacionados.areasProduccion.map((area) => (
+                              <SelectItem key={area.AreaProduccionULID} value={area.AreaProduccionULID}>
+                                {area.Descripcion}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
 
         {/* Botones de acción */}
-        <div className="sticky bottom-0 bg-white border-t p-4 flex gap-3 justify-end">
-          <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+        <div className="flex items-center justify-end space-x-2 pt-4 border-t">
+          <Button type="button" variant="outline" onClick={onCancel}>
             <X className="h-4 w-4 mr-2" />
             Cancelar
           </Button>
-          <Button
-            type="submit"
-            disabled={isLoading || canalesActivos === 0}
-            className="bg-orange-600 hover:bg-orange-700"
-          >
-            <Save className="h-4 w-4 mr-2" />
-            {isLoading ? "Guardando..." : isEditing ? "Actualizar Producto" : "Crear Producto"}
+          <Button type="submit" disabled={loading || (claveValida === false && !esEdicion)}>
+            {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+            {loading ? "Guardando..." : esEdicion ? "Actualizar" : "Crear Producto"}
           </Button>
         </div>
       </form>

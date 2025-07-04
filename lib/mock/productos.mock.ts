@@ -1,119 +1,115 @@
-import type { Producto } from "@/schemas/productos.schemas"
-import { generateULID } from "@/utils/ulid"
+import { generateULID } from "@/lib/utils/ulid"
 
-// Datos mock para grupos de productos
-export const MOCK_GRUPOS_PRODUCTOS = [
-  { id: 1, nombre: "Tacos", descripcion: "Tacos tradicionales mexicanos" },
-  { id: 2, nombre: "Hamburguesas", descripcion: "Hamburguesas gourmet" },
-  { id: 3, nombre: "Pizzas", descripcion: "Pizzas artesanales" },
-  { id: 4, nombre: "Ensaladas", descripcion: "Ensaladas frescas" },
-  { id: 5, nombre: "Bebidas", descripcion: "Bebidas frías y calientes" },
-  { id: 6, nombre: "Postres", descripcion: "Postres caseros" },
-  { id: 7, nombre: "Desayunos", descripcion: "Desayunos completos" },
-  { id: 8, nombre: "Sopas", descripcion: "Sopas calientes" },
-  { id: 9, nombre: "Antojitos", descripcion: "Antojitos mexicanos" },
-  { id: 10, nombre: "Mariscos", descripcion: "Mariscos frescos" },
-]
+export interface Producto {
+  ProductoULID: string
+  GrupoProductoULID?: string
+  SubgrupoProductoULID?: string
+  ClaveProducto: string
+  TipoProducto: "Platillo" | "Producto" | "Botella"
+  Nombredelproducto: string
+  Favorito: boolean
+  Descripcion: string
+  ExentoImpuesto: boolean
+  PrecioAbierto: boolean
+  UnidadesULID?: string
+  AreaProduccionULID?: string
+  AlmacenULID?: string
+  ControlStock: boolean
+  PrecioxUtilidadad: boolean
+  Facturable: boolean
+  ClaveTributaria?: string
+  Suspendido: boolean
+  Comedor: boolean
+  ADomicilio: boolean
+  Mostrador: boolean
+  Enlinea: boolean
+  EnAPP: boolean
+  EnMenuQR: boolean
+  ClasificacionQRULID?: string
+  DatosDinamicos?: Record<string, any>
+  Fecha_UltimoCambio: string
+  Fecha_Sync: string
+  UsuarioULID: string
+  EmpresaULID: string
+}
 
-// Datos mock para unidades
-export const MOCK_UNIDADES = [
-  { id: 1, nombre: "Pieza", abreviacion: "pza" },
-  { id: 2, nombre: "Litro", abreviacion: "lt" },
-  { id: 3, nombre: "Kilogramo", abreviacion: "kg" },
-  { id: 4, nombre: "Gramo", abreviacion: "gr" },
-  { id: 5, nombre: "Porción", abreviacion: "porción" },
-  { id: 6, nombre: "Botella", abreviacion: "bot" },
-  { id: 7, nombre: "Vaso", abreviacion: "vaso" },
-]
+export interface GrupoProducto {
+  GrupoProductoULID: string
+  ClaveGrupo: string
+  Descripcion: string
+  Orden: number
+  Clasificacion: string
+  MenuQR: boolean
+  CatalogoOnline: boolean
+  APPComensal: boolean
+  Inactiva: boolean
+  Paletacolor: string
+  Imagen?: string
+  Sucursales: boolean
+  AplicarComentarios: boolean
+  CamposDinamicos?: Record<string, any>
+  Fecha_UltimoCambio: string
+  Fecha_Sync: string
+  UsuarioULID: string
+  EmpresaULID: string
+}
 
-// Datos mock para áreas de producción
-export const MOCK_AREAS_PRODUCCION = [
-  { id: 1, nombre: "Cocina Principal" },
-  { id: 2, nombre: "Parrilla" },
-  { id: 3, nombre: "Horno de Pizza" },
-  { id: 4, nombre: "Ensaladas" },
-  { id: 5, nombre: "Barra de Bebidas" },
-  { id: 6, nombre: "Repostería" },
-  { id: 7, nombre: "Freidora" },
-]
+export interface SubgrupoProducto {
+  SubgrupoProductoULID: string
+  ClaveGrupo: string
+  ClaveSubGrupo: string
+  Descripcion: string
+  AplicarComentarios: boolean
+  Suspendido: boolean
+  Fecha_UltimoCambio: string
+  Fecha_Sync: string
+  UsuarioULID: string
+  EmpresaULID: string
+}
 
-// Datos mock para almacenes
-export const MOCK_ALMACENES = [
-  { id: 1, nombre: "Almacén General" },
-  { id: 2, nombre: "Refrigerador" },
-  { id: 3, nombre: "Congelador" },
-  { id: 4, nombre: "Bodega Seca" },
-  { id: 5, nombre: "Barra" },
-]
+export interface Unidad {
+  UnidadULID: string
+  ClaveUnidad: string
+  Descripcion: string
+  Abreviacion: string
+  Fecha_UltimoCambio: string
+  Fecha_Sync: string
+  UsuarioULID: string
+  EmpresaULID: string
+}
 
-// Variable mutable para productos - simula una base de datos local
-const PRODUCTOS_DATA: Producto[] = [
-  // Tacos
+export interface AreaProduccion {
+  AreaProduccionULID: string
+  ClaveArea: string
+  Descripcion: string
+  Impresora?: string
+  Activa: boolean
+  Fecha_UltimoCambio: string
+  Fecha_Sync: string
+  UsuarioULID: string
+  EmpresaULID: string
+}
+
+// Mock data inicial
+const mockProductos: Producto[] = [
   {
-    ProductoULID: "01HKQR8X9M2N3P4Q5R6S7T8U9V",
-    ClaveProducto: "TAC001",
-    TipoProducto: "Platillo",
-    Nombredelproducto: "Taco de Carnitas",
-    Descripcion: "Taco de carnitas con cebolla, cilantro y salsa verde",
-    Imagen: "/placeholder.svg?height=200&width=300&text=Taco+Carnitas",
-    Favorito: true,
-    ExentoImpuesto: false,
-    PrecioAbierto: false,
-    ControlStock: false,
-    PrecioxUtilidad: false,
-    Facturable: true,
-    Suspendido: false,
-    Comedor: true,
-    ADomicilio: true,
-    Mostrador: true,
-    Enlinea: true,
-    EnAPP: true,
-    EnMenuQR: true,
-    GrupoProductoID: "1",
-    UnidadID: "1",
-    AreaProduccionID: "1",
-    AlmacenID: "1",
-    Fecha_UltimoCambio: new Date("2024-01-15").toISOString(),
-  },
-  {
-    ProductoULID: "01HKQR8X9M2N3P4Q5R6S7T8U9W",
-    ClaveProducto: "TAC002",
+    ProductoULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3B",
+    GrupoProductoULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3C",
+    SubgrupoProductoULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3D",
+    ClaveProducto: "TACO001",
     TipoProducto: "Platillo",
     Nombredelproducto: "Taco de Pastor",
-    Descripcion: "Taco de pastor con piña, cebolla y cilantro",
-    Imagen: "/placeholder.svg?height=200&width=300&text=Taco+Pastor",
-    Favorito: false,
-    ExentoImpuesto: false,
-    PrecioAbierto: false,
-    ControlStock: false,
-    PrecioxUtilidad: false,
-    Facturable: true,
-    Suspendido: false,
-    Comedor: true,
-    ADomicilio: true,
-    Mostrador: true,
-    Enlinea: true,
-    EnAPP: true,
-    EnMenuQR: true,
-    GrupoProductoID: "1",
-    UnidadID: "1",
-    AreaProduccionID: "2",
-    AlmacenID: "1",
-    Fecha_UltimoCambio: new Date("2024-01-15").toISOString(),
-  },
-  {
-    ProductoULID: "01HKQR8X9M2N3P4Q5R6S7T8U9X",
-    ClaveProducto: "TAC003",
-    TipoProducto: "Platillo",
-    Nombredelproducto: "Taco de Asada",
-    Descripcion: "Taco de carne asada con guacamole y pico de gallo",
-    Imagen: "/placeholder.svg?height=200&width=300&text=Taco+Asada",
     Favorito: true,
+    Descripcion: "Delicioso taco de pastor con piña y cebolla",
     ExentoImpuesto: false,
     PrecioAbierto: false,
-    ControlStock: false,
-    PrecioxUtilidad: false,
+    UnidadesULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3E",
+    AreaProduccionULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3F",
+    AlmacenULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3G",
+    ControlStock: true,
+    PrecioxUtilidadad: false,
     Facturable: true,
+    ClaveTributaria: "50211503",
     Suspendido: false,
     Comedor: true,
     ADomicilio: true,
@@ -121,654 +117,381 @@ const PRODUCTOS_DATA: Producto[] = [
     Enlinea: true,
     EnAPP: true,
     EnMenuQR: true,
-    GrupoProductoID: "1",
-    UnidadID: "1",
-    AreaProduccionID: "2",
-    AlmacenID: "1",
-    Fecha_UltimoCambio: new Date("2024-01-15").toISOString(),
-  },
-  // Hamburguesas
-  {
-    ProductoULID: "01HKQR8X9M2N3P4Q5R6S7T8U9Y",
-    ClaveProducto: "HAM001",
-    TipoProducto: "Platillo",
-    Nombredelproducto: "Hamburguesa Clásica",
-    Descripcion: "Hamburguesa de carne de res con lechuga, tomate, cebolla y papas fritas",
-    Imagen: "/placeholder.svg?height=200&width=300&text=Hamburguesa+Clasica",
-    Favorito: true,
-    ExentoImpuesto: false,
-    PrecioAbierto: false,
-    ControlStock: false,
-    PrecioxUtilidad: false,
-    Facturable: true,
-    Suspendido: false,
-    Comedor: true,
-    ADomicilio: true,
-    Mostrador: false,
-    Enlinea: true,
-    EnAPP: true,
-    EnMenuQR: true,
-    GrupoProductoID: "2",
-    UnidadID: "1",
-    AreaProduccionID: "1",
-    AlmacenID: "1",
-    Fecha_UltimoCambio: new Date("2024-01-15").toISOString(),
+    ClasificacionQRULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3H",
+    DatosDinamicos: { precio: 25.0, costo: 15.0 },
+    Fecha_UltimoCambio: new Date().toISOString(),
+    Fecha_Sync: new Date().toISOString(),
+    UsuarioULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3I",
+    EmpresaULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3J",
   },
   {
-    ProductoULID: "01HKQR8X9M2N3P4Q5R6S7T8U9Z",
-    ClaveProducto: "HAM002",
+    ProductoULID: "01HKQM5X8P9R2T4V6W8Y0Z1A4B",
+    GrupoProductoULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3C",
+    SubgrupoProductoULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3D",
+    ClaveProducto: "TACO002",
     TipoProducto: "Platillo",
-    Nombredelproducto: "Hamburguesa BBQ",
-    Descripcion: "Hamburguesa con salsa BBQ, tocino, cebolla caramelizada y queso cheddar",
-    Imagen: "/placeholder.svg?height=200&width=300&text=Hamburguesa+BBQ",
+    Nombredelproducto: "Taco de Carnitas",
     Favorito: false,
+    Descripcion: "Taco de carnitas estilo Michoacán",
     ExentoImpuesto: false,
     PrecioAbierto: false,
-    ControlStock: false,
-    PrecioxUtilidad: false,
-    Facturable: true,
-    Suspendido: false,
-    Comedor: true,
-    ADomicilio: true,
-    Mostrador: false,
-    Enlinea: true,
-    EnAPP: true,
-    EnMenuQR: true,
-    GrupoProductoID: "2",
-    UnidadID: "1",
-    AreaProduccionID: "1",
-    AlmacenID: "1",
-    Fecha_UltimoCambio: new Date("2024-01-15").toISOString(),
-  },
-  // Pizzas
-  {
-    ProductoULID: "01HKQR8X9M2N3P4Q5R6S7T8U90",
-    ClaveProducto: "PIZ001",
-    TipoProducto: "Platillo",
-    Nombredelproducto: "Pizza Margherita",
-    Descripcion: "Pizza con salsa de tomate, mozzarella fresca y albahaca",
-    Imagen: "/placeholder.svg?height=200&width=300&text=Pizza+Margherita",
-    Favorito: true,
-    ExentoImpuesto: false,
-    PrecioAbierto: false,
-    ControlStock: false,
-    PrecioxUtilidad: false,
-    Facturable: true,
-    Suspendido: false,
-    Comedor: true,
-    ADomicilio: true,
-    Mostrador: false,
-    Enlinea: true,
-    EnAPP: true,
-    EnMenuQR: true,
-    GrupoProductoID: "3",
-    UnidadID: "1",
-    AreaProduccionID: "3",
-    AlmacenID: "1",
-    Fecha_UltimoCambio: new Date("2024-01-15").toISOString(),
-  },
-  {
-    ProductoULID: "01HKQR8X9M2N3P4Q5R6S7T8U91",
-    ClaveProducto: "PIZ002",
-    TipoProducto: "Platillo",
-    Nombredelproducto: "Pizza Pepperoni",
-    Descripcion: "Pizza con pepperoni, mozzarella y salsa de tomate",
-    Imagen: "/placeholder.svg?height=200&width=300&text=Pizza+Pepperoni",
-    Favorito: false,
-    ExentoImpuesto: false,
-    PrecioAbierto: false,
-    ControlStock: false,
-    PrecioxUtilidad: false,
-    Facturable: true,
-    Suspendido: false,
-    Comedor: true,
-    ADomicilio: true,
-    Mostrador: false,
-    Enlinea: true,
-    EnAPP: true,
-    EnMenuQR: true,
-    GrupoProductoID: "3",
-    UnidadID: "1",
-    AreaProduccionID: "3",
-    AlmacenID: "1",
-    Fecha_UltimoCambio: new Date("2024-01-15").toISOString(),
-  },
-  // Ensaladas
-  {
-    ProductoULID: "01HKQR8X9M2N3P4Q5R6S7T8U92",
-    ClaveProducto: "ENS001",
-    TipoProducto: "Platillo",
-    Nombredelproducto: "Ensalada César",
-    Descripcion: "Ensalada con lechuga romana, crutones, parmesano y aderezo césar",
-    Imagen: "/placeholder.svg?height=200&width=300&text=Ensalada+Cesar",
-    Favorito: false,
-    ExentoImpuesto: false,
-    PrecioAbierto: false,
+    UnidadesULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3E",
+    AreaProduccionULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3F",
+    AlmacenULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3G",
     ControlStock: true,
-    PrecioxUtilidad: false,
+    PrecioxUtilidadad: false,
     Facturable: true,
+    ClaveTributaria: "50211503",
     Suspendido: false,
     Comedor: true,
     ADomicilio: true,
-    Mostrador: true,
-    Enlinea: true,
-    EnAPP: true,
-    EnMenuQR: true,
-    GrupoProductoID: "4",
-    UnidadID: "5",
-    AreaProduccionID: "4",
-    AlmacenID: "2",
-    Fecha_UltimoCambio: new Date("2024-01-15").toISOString(),
-  },
-  // Bebidas
-  {
-    ProductoULID: "01HKQR8X9M2N3P4Q5R6S7T8U93",
-    ClaveProducto: "BEB001",
-    TipoProducto: "Producto",
-    Nombredelproducto: "Coca Cola",
-    Descripcion: "Refresco de cola 355ml",
-    Imagen: "/placeholder.svg?height=200&width=300&text=Coca+Cola",
-    Favorito: false,
-    ExentoImpuesto: false,
-    PrecioAbierto: false,
-    ControlStock: true,
-    PrecioxUtilidad: false,
-    Facturable: true,
-    Suspendido: false,
-    Comedor: true,
-    ADomicilio: true,
-    Mostrador: true,
-    Enlinea: true,
-    EnAPP: true,
-    EnMenuQR: true,
-    GrupoProductoID: "5",
-    UnidadID: "6",
-    AreaProduccionID: "5",
-    AlmacenID: "4",
-    Fecha_UltimoCambio: new Date("2024-01-15").toISOString(),
-  },
-  {
-    ProductoULID: "01HKQR8X9M2N3P4Q5R6S7T8U94",
-    ClaveProducto: "BEB002",
-    TipoProducto: "Producto",
-    Nombredelproducto: "Agua Natural",
-    Descripcion: "Agua natural 500ml",
-    Imagen: "/placeholder.svg?height=200&width=300&text=Agua+Natural",
-    Favorito: false,
-    ExentoImpuesto: false,
-    PrecioAbierto: false,
-    ControlStock: true,
-    PrecioxUtilidad: false,
-    Facturable: true,
-    Suspendido: false,
-    Comedor: true,
-    ADomicilio: true,
-    Mostrador: true,
-    Enlinea: true,
-    EnAPP: true,
-    EnMenuQR: true,
-    GrupoProductoID: "5",
-    UnidadID: "6",
-    AreaProduccionID: "5",
-    AlmacenID: "4",
-    Fecha_UltimoCambio: new Date("2024-01-15").toISOString(),
-  },
-  {
-    ProductoULID: "01HKQR8X9M2N3P4Q5R6S7T8U95",
-    ClaveProducto: "BEB003",
-    TipoProducto: "Botella",
-    Nombredelproducto: "Cerveza Corona",
-    Descripcion: "Cerveza Corona 355ml",
-    Imagen: "/placeholder.svg?height=200&width=300&text=Cerveza+Corona",
-    Favorito: true,
-    ExentoImpuesto: false,
-    PrecioAbierto: false,
-    ControlStock: true,
-    PrecioxUtilidad: false,
-    Facturable: true,
-    Suspendido: false,
-    Comedor: true,
-    ADomicilio: false,
     Mostrador: true,
     Enlinea: false,
     EnAPP: false,
     EnMenuQR: true,
-    GrupoProductoID: "5",
-    UnidadID: "6",
-    AreaProduccionID: "5",
-    AlmacenID: "5",
-    Fecha_UltimoCambio: new Date("2024-01-15").toISOString(),
-  },
-  // Postres
-  {
-    ProductoULID: "01HKQR8X9M2N3P4Q5R6S7T8U96",
-    ClaveProducto: "POS001",
-    TipoProducto: "Platillo",
-    Nombredelproducto: "Flan Napolitano",
-    Descripcion: "Flan casero con caramelo y crema batida",
-    Imagen: "/placeholder.svg?height=200&width=300&text=Flan+Napolitano",
-    Favorito: false,
-    ExentoImpuesto: false,
-    PrecioAbierto: false,
-    ControlStock: false,
-    PrecioxUtilidad: false,
-    Facturable: true,
-    Suspendido: false,
-    Comedor: true,
-    ADomicilio: true,
-    Mostrador: true,
-    Enlinea: true,
-    EnAPP: true,
-    EnMenuQR: true,
-    GrupoProductoID: "6",
-    UnidadID: "5",
-    AreaProduccionID: "6",
-    AlmacenID: "2",
-    Fecha_UltimoCambio: new Date("2024-01-15").toISOString(),
+    ClasificacionQRULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3H",
+    DatosDinamicos: { precio: 23.0, costo: 13.5 },
+    Fecha_UltimoCambio: new Date().toISOString(),
+    Fecha_Sync: new Date().toISOString(),
+    UsuarioULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3I",
+    EmpresaULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3J",
   },
   {
-    ProductoULID: "01HKQR8X9M2N3P4Q5R6S7T8U97",
-    ClaveProducto: "POS002",
-    TipoProducto: "Platillo",
-    Nombredelproducto: "Pastel de Chocolate",
-    Descripcion: "Rebanada de pastel de chocolate con betún",
-    Imagen: "/placeholder.svg?height=200&width=300&text=Pastel+Chocolate",
+    ProductoULID: "01HKQM5X8P9R2T4V6W8Y0Z1A5B",
+    GrupoProductoULID: "01HKQM5X8P9R2T4V6W8Y0Z1A5C",
+    SubgrupoProductoULID: "01HKQM5X8P9R2T4V6W8Y0Z1A5D",
+    ClaveProducto: "BEB001",
+    TipoProducto: "Botella",
+    Nombredelproducto: "Coca Cola 600ml",
     Favorito: true,
+    Descripcion: "Refresco Coca Cola 600ml",
     ExentoImpuesto: false,
     PrecioAbierto: false,
-    ControlStock: false,
-    PrecioxUtilidad: false,
-    Facturable: true,
-    Suspendido: false,
-    Comedor: true,
-    ADomicilio: true,
-    Mostrador: true,
-    Enlinea: true,
-    EnAPP: true,
-    EnMenuQR: true,
-    GrupoProductoID: "6",
-    UnidadID: "5",
-    AreaProduccionID: "6",
-    AlmacenID: "2",
-    Fecha_UltimoCambio: new Date("2024-01-15").toISOString(),
-  },
-  // Desayunos
-  {
-    ProductoULID: "01HKQR8X9M2N3P4Q5R6S7T8U98",
-    ClaveProducto: "DES001",
-    TipoProducto: "Platillo",
-    Nombredelproducto: "Huevos Rancheros",
-    Descripcion: "Huevos estrellados con salsa ranchera, frijoles y tortillas",
-    Imagen: "/placeholder.svg?height=200&width=300&text=Huevos+Rancheros",
-    Favorito: false,
-    ExentoImpuesto: false,
-    PrecioAbierto: false,
-    ControlStock: false,
-    PrecioxUtilidad: false,
-    Facturable: true,
-    Suspendido: false,
-    Comedor: true,
-    ADomicilio: true,
-    Mostrador: false,
-    Enlinea: true,
-    EnAPP: true,
-    EnMenuQR: true,
-    GrupoProductoID: "7",
-    UnidadID: "5",
-    AreaProduccionID: "1",
-    AlmacenID: "1",
-    Fecha_UltimoCambio: new Date("2024-01-15").toISOString(),
-  },
-  {
-    ProductoULID: "01HKQR8X9M2N3P4Q5R6S7T8U99",
-    ClaveProducto: "DES002",
-    TipoProducto: "Platillo",
-    Nombredelproducto: "Hotcakes",
-    Descripcion: "Stack de 3 hotcakes con miel de maple y mantequilla",
-    Imagen: "/placeholder.svg?height=200&width=300&text=Hotcakes",
-    Favorito: true,
-    ExentoImpuesto: false,
-    PrecioAbierto: false,
-    ControlStock: false,
-    PrecioxUtilidad: false,
-    Facturable: true,
-    Suspendido: false,
-    Comedor: true,
-    ADomicilio: true,
-    Mostrador: false,
-    Enlinea: true,
-    EnAPP: true,
-    EnMenuQR: true,
-    GrupoProductoID: "7",
-    UnidadID: "5",
-    AreaProduccionID: "1",
-    AlmacenID: "1",
-    Fecha_UltimoCambio: new Date("2024-01-15").toISOString(),
-  },
-  // Sopas
-  {
-    ProductoULID: "01HKQR8X9M2N3P4Q5R6S7T8U9A",
-    ClaveProducto: "SOP001",
-    TipoProducto: "Platillo",
-    Nombredelproducto: "Sopa de Tortilla",
-    Descripcion: "Sopa de tortilla con aguacate, queso fresco y crema",
-    Imagen: "/placeholder.svg?height=200&width=300&text=Sopa+Tortilla",
-    Favorito: false,
-    ExentoImpuesto: false,
-    PrecioAbierto: false,
-    ControlStock: false,
-    PrecioxUtilidad: false,
-    Facturable: true,
-    Suspendido: false,
-    Comedor: true,
-    ADomicilio: true,
-    Mostrador: false,
-    Enlinea: true,
-    EnAPP: true,
-    EnMenuQR: true,
-    GrupoProductoID: "8",
-    UnidadID: "5",
-    AreaProduccionID: "1",
-    AlmacenID: "1",
-    Fecha_UltimoCambio: new Date("2024-01-15").toISOString(),
-  },
-  // Antojitos
-  {
-    ProductoULID: "01HKQR8X9M2N3P4Q5R6S7T8U9B",
-    ClaveProducto: "ANT001",
-    TipoProducto: "Platillo",
-    Nombredelproducto: "Quesadillas",
-    Descripcion: "Quesadillas de queso con guacamole y salsa",
-    Imagen: "/placeholder.svg?height=200&width=300&text=Quesadillas",
-    Favorito: false,
-    ExentoImpuesto: false,
-    PrecioAbierto: false,
-    ControlStock: false,
-    PrecioxUtilidad: false,
-    Facturable: true,
-    Suspendido: false,
-    Comedor: true,
-    ADomicilio: true,
-    Mostrador: true,
-    Enlinea: true,
-    EnAPP: true,
-    EnMenuQR: true,
-    GrupoProductoID: "9",
-    UnidadID: "5",
-    AreaProduccionID: "1",
-    AlmacenID: "1",
-    Fecha_UltimoCambio: new Date("2024-01-15").toISOString(),
-  },
-  {
-    ProductoULID: "01HKQR8X9M2N3P4Q5R6S7T8U9C",
-    ClaveProducto: "ANT002",
-    TipoProducto: "Platillo",
-    Nombredelproducto: "Nachos",
-    Descripcion: "Nachos con queso derretido, jalapeños y guacamole",
-    Imagen: "/placeholder.svg?height=200&width=300&text=Nachos",
-    Favorito: true,
-    ExentoImpuesto: false,
-    PrecioAbierto: false,
-    ControlStock: false,
-    PrecioxUtilidad: false,
-    Facturable: true,
-    Suspendido: false,
-    Comedor: true,
-    ADomicilio: true,
-    Mostrador: true,
-    Enlinea: true,
-    EnAPP: true,
-    EnMenuQR: true,
-    GrupoProductoID: "9",
-    UnidadID: "5",
-    AreaProduccionID: "1",
-    AlmacenID: "1",
-    Fecha_UltimoCambio: new Date("2024-01-15").toISOString(),
-  },
-  // Mariscos
-  {
-    ProductoULID: "01HKQR8X9M2N3P4Q5R6S7T8U9D",
-    ClaveProducto: "MAR001",
-    TipoProducto: "Platillo",
-    Nombredelproducto: "Camarones al Ajillo",
-    Descripcion: "Camarones salteados en ajo con arroz y ensalada",
-    Imagen: "/placeholder.svg?height=200&width=300&text=Camarones+Ajillo",
-    Favorito: true,
-    ExentoImpuesto: false,
-    PrecioAbierto: false,
+    UnidadesULID: "01HKQM5X8P9R2T4V6W8Y0Z1A5E",
+    AreaProduccionULID: "01HKQM5X8P9R2T4V6W8Y0Z1A5F",
+    AlmacenULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3G",
     ControlStock: true,
-    PrecioxUtilidad: false,
+    PrecioxUtilidadad: true,
     Facturable: true,
+    ClaveTributaria: "50202306",
     Suspendido: false,
     Comedor: true,
     ADomicilio: true,
-    Mostrador: false,
+    Mostrador: true,
     Enlinea: true,
     EnAPP: true,
-    EnMenuQR: true,
-    GrupoProductoID: "10",
-    UnidadID: "5",
-    AreaProduccionID: "1",
-    AlmacenID: "3",
-    Fecha_UltimoCambio: new Date("2024-01-15").toISOString(),
+    EnMenuQR: false,
+    ClasificacionQRULID: "01HKQM5X8P9R2T4V6W8Y0Z1A5H",
+    DatosDinamicos: { precio: 18.0, costo: 12.0 },
+    Fecha_UltimoCambio: new Date().toISOString(),
+    Fecha_Sync: new Date().toISOString(),
+    UsuarioULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3I",
+    EmpresaULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3J",
   },
   {
-    ProductoULID: "01HKQR8X9M2N3P4Q5R6S7T8U9E",
-    ClaveProducto: "MAR002",
+    ProductoULID: "01HKQM5X8P9R2T4V6W8Y0Z1A6B",
+    GrupoProductoULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3C",
+    SubgrupoProductoULID: "01HKQM5X8P9R2T4V6W8Y0Z1A6D",
+    ClaveProducto: "QUES001",
     TipoProducto: "Platillo",
-    Nombredelproducto: "Filete de Pescado",
-    Descripcion: "Filete de pescado a la plancha con vegetales",
-    Imagen: "/placeholder.svg?height=200&width=300&text=Filete+Pescado",
+    Nombredelproducto: "Quesadilla Mixta",
     Favorito: false,
+    Descripcion: "Quesadilla con queso y carne mixta",
     ExentoImpuesto: false,
     PrecioAbierto: false,
-    ControlStock: true,
-    PrecioxUtilidad: false,
-    Facturable: true,
-    Suspendido: false,
-    Comedor: true,
-    ADomicilio: true,
-    Mostrador: false,
-    Enlinea: true,
-    EnAPP: true,
-    EnMenuQR: true,
-    GrupoProductoID: "10",
-    UnidadID: "5",
-    AreaProduccionID: "1",
-    AlmacenID: "3",
-    Fecha_UltimoCambio: new Date("2024-01-15").toISOString(),
-  },
-  // Producto suspendido para pruebas
-  {
-    ProductoULID: "01HKQR8X9M2N3P4Q5R6S7T8U9F",
-    ClaveProducto: "SUS001",
-    TipoProducto: "Producto",
-    Nombredelproducto: "Producto Suspendido",
-    Descripcion: "Este producto está suspendido temporalmente",
-    Imagen: "/placeholder.svg?height=200&width=300&text=Suspendido",
-    Favorito: false,
-    ExentoImpuesto: false,
-    PrecioAbierto: false,
+    UnidadesULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3E",
+    AreaProduccionULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3F",
+    AlmacenULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3G",
     ControlStock: false,
-    PrecioxUtilidad: false,
-    Facturable: false,
+    PrecioxUtilidadad: false,
+    Facturable: true,
+    ClaveTributaria: "50211503",
     Suspendido: true,
-    Comedor: false,
+    Comedor: true,
     ADomicilio: false,
-    Mostrador: false,
+    Mostrador: true,
     Enlinea: false,
     EnAPP: false,
     EnMenuQR: false,
-    GrupoProductoID: "5",
-    UnidadID: "1",
-    AreaProduccionID: "1",
-    AlmacenID: "1",
-    Fecha_UltimoCambio: new Date("2024-01-15").toISOString(),
+    ClasificacionQRULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3H",
+    DatosDinamicos: { precio: 35.0, costo: 20.0 },
+    Fecha_UltimoCambio: new Date().toISOString(),
+    Fecha_Sync: new Date().toISOString(),
+    UsuarioULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3I",
+    EmpresaULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3J",
   },
 ]
 
-// Función para obtener todos los productos
-export function getAllProductos(): Producto[] {
-  return [...PRODUCTOS_DATA]
+const mockGruposProductos: GrupoProducto[] = [
+  {
+    GrupoProductoULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3C",
+    ClaveGrupo: "TACOS",
+    Descripcion: "Tacos y Antojitos",
+    Orden: 1,
+    Clasificacion: "Comida Mexicana",
+    MenuQR: true,
+    CatalogoOnline: true,
+    APPComensal: true,
+    Inactiva: false,
+    Paletacolor: "#FF6B35",
+    Imagen: "/images/grupos/tacos.jpg",
+    Sucursales: true,
+    AplicarComentarios: true,
+    CamposDinamicos: {},
+    Fecha_UltimoCambio: new Date().toISOString(),
+    Fecha_Sync: new Date().toISOString(),
+    UsuarioULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3I",
+    EmpresaULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3J",
+  },
+  {
+    GrupoProductoULID: "01HKQM5X8P9R2T4V6W8Y0Z1A5C",
+    ClaveGrupo: "BEBIDAS",
+    Descripcion: "Bebidas y Refrescos",
+    Orden: 2,
+    Clasificacion: "Bebidas",
+    MenuQR: false,
+    CatalogoOnline: true,
+    APPComensal: true,
+    Inactiva: false,
+    Paletacolor: "#4ECDC4",
+    Imagen: "/images/grupos/bebidas.jpg",
+    Sucursales: true,
+    AplicarComentarios: false,
+    CamposDinamicos: {},
+    Fecha_UltimoCambio: new Date().toISOString(),
+    Fecha_Sync: new Date().toISOString(),
+    UsuarioULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3I",
+    EmpresaULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3J",
+  },
+]
+
+const mockSubgruposProductos: SubgrupoProducto[] = [
+  {
+    SubgrupoProductoULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3D",
+    ClaveGrupo: "01HKQM5X8P9R2T4V6W8Y0Z1A3C",
+    ClaveSubGrupo: "TACOS-CARNE",
+    Descripcion: "Tacos de Carne",
+    AplicarComentarios: true,
+    Suspendido: false,
+    Fecha_UltimoCambio: new Date().toISOString(),
+    Fecha_Sync: new Date().toISOString(),
+    UsuarioULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3I",
+    EmpresaULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3J",
+  },
+  {
+    SubgrupoProductoULID: "01HKQM5X8P9R2T4V6W8Y0Z1A6D",
+    ClaveGrupo: "01HKQM5X8P9R2T4V6W8Y0Z1A3C",
+    ClaveSubGrupo: "QUESADILLAS",
+    Descripcion: "Quesadillas",
+    AplicarComentarios: true,
+    Suspendido: false,
+    Fecha_UltimoCambio: new Date().toISOString(),
+    Fecha_Sync: new Date().toISOString(),
+    UsuarioULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3I",
+    EmpresaULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3J",
+  },
+]
+
+const mockUnidades: Unidad[] = [
+  {
+    UnidadULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3E",
+    ClaveUnidad: "PZA",
+    Descripcion: "Pieza",
+    Abreviacion: "pza",
+    Fecha_UltimoCambio: new Date().toISOString(),
+    Fecha_Sync: new Date().toISOString(),
+    UsuarioULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3I",
+    EmpresaULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3J",
+  },
+  {
+    UnidadULID: "01HKQM5X8P9R2T4V6W8Y0Z1A5E",
+    ClaveUnidad: "BOT",
+    Descripcion: "Botella",
+    Abreviacion: "bot",
+    Fecha_UltimoCambio: new Date().toISOString(),
+    Fecha_Sync: new Date().toISOString(),
+    UsuarioULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3I",
+    EmpresaULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3J",
+  },
+]
+
+const mockAreasProduccion: AreaProduccion[] = [
+  {
+    AreaProduccionULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3F",
+    ClaveArea: "COCINA",
+    Descripcion: "Cocina Principal",
+    Impresora: "EPSON-TM-T20",
+    Activa: true,
+    Fecha_UltimoCambio: new Date().toISOString(),
+    Fecha_Sync: new Date().toISOString(),
+    UsuarioULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3I",
+    EmpresaULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3J",
+  },
+  {
+    AreaProduccionULID: "01HKQM5X8P9R2T4V6W8Y0Z1A5F",
+    ClaveArea: "BARRA",
+    Descripcion: "Barra de Bebidas",
+    Impresora: "EPSON-TM-T88",
+    Activa: true,
+    Fecha_UltimoCambio: new Date().toISOString(),
+    Fecha_Sync: new Date().toISOString(),
+    UsuarioULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3I",
+    EmpresaULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3J",
+  },
+]
+
+// Funciones CRUD para Productos
+export const getProductos = async (): Promise<Producto[]> => {
+  // Simular delay de API
+  await new Promise((resolve) => setTimeout(resolve, 100))
+  return [...mockProductos]
 }
 
-// Función para obtener un producto por ID
-export function getProductoById(id: string): Producto | null {
-  return PRODUCTOS_DATA.find((producto) => producto.ProductoULID === id) || null
+export const getProductoById = async (id: string): Promise<Producto | null> => {
+  await new Promise((resolve) => setTimeout(resolve, 50))
+  return mockProductos.find((p) => p.ProductoULID === id) || null
 }
 
-// Función para verificar si existe una clave de producto
-export function existsClaveProducto(clave: string, excludeId?: string): boolean {
-  return PRODUCTOS_DATA.some(
-    (producto) => producto.ClaveProducto.toLowerCase() === clave.toLowerCase() && producto.ProductoULID !== excludeId,
-  )
-}
+export const createProducto = async (
+  producto: Omit<Producto, "ProductoULID" | "Fecha_UltimoCambio" | "Fecha_Sync">,
+): Promise<Producto> => {
+  await new Promise((resolve) => setTimeout(resolve, 200))
 
-// Función para obtener grupo por ID
-export function getGrupoById(id: string) {
-  return MOCK_GRUPOS_PRODUCTOS.find((grupo) => grupo.id === Number.parseInt(id))
-}
+  // Verificar que la clave no exista
+  const existeClave = mockProductos.some((p) => p.ClaveProducto === producto.ClaveProducto)
+  if (existeClave) {
+    throw new Error(`Ya existe un producto con la clave: ${producto.ClaveProducto}`)
+  }
 
-// Función para obtener unidad por ID
-export function getUnidadById(id: string) {
-  return MOCK_UNIDADES.find((unidad) => unidad.id === Number.parseInt(id))
-}
-
-// Función para obtener área de producción por ID
-export function getAreaProduccionById(id: string) {
-  return MOCK_AREAS_PRODUCCION.find((area) => area.id === Number.parseInt(id))
-}
-
-// Función para obtener almacén por ID
-export function getAlmacenById(id: string) {
-  return MOCK_ALMACENES.find((almacen) => almacen.id === Number.parseInt(id))
-}
-
-// Función para agregar un producto
-export function addProducto(producto: Omit<Producto, "ProductoULID" | "Fecha_UltimoCambio">): Producto {
-  const newProducto: Producto = {
+  const nuevoProducto: Producto = {
     ...producto,
     ProductoULID: generateULID(),
     Fecha_UltimoCambio: new Date().toISOString(),
+    Fecha_Sync: new Date().toISOString(),
   }
 
-  PRODUCTOS_DATA.unshift(newProducto) // Agregar al inicio
-  return newProducto
+  mockProductos.push(nuevoProducto)
+  return nuevoProducto
 }
 
-// Función para actualizar un producto
-export function updateProducto(id: string, updates: Partial<Producto>): Producto | null {
-  const index = PRODUCTOS_DATA.findIndex((producto) => producto.ProductoULID === id)
-  if (index !== -1) {
-    PRODUCTOS_DATA[index] = {
-      ...PRODUCTOS_DATA[index],
-      ...updates,
-      ProductoULID: id, // Asegurar que el ID no cambie
-      Fecha_UltimoCambio: new Date().toISOString(),
+export const updateProducto = async (
+  id: string,
+  producto: Partial<Omit<Producto, "ProductoULID">>,
+): Promise<Producto> => {
+  await new Promise((resolve) => setTimeout(resolve, 200))
+
+  const index = mockProductos.findIndex((p) => p.ProductoULID === id)
+  if (index === -1) {
+    throw new Error("Producto no encontrado")
+  }
+
+  // Verificar que la clave no exista en otro producto
+  if (producto.ClaveProducto) {
+    const existeClave = mockProductos.some((p) => p.ClaveProducto === producto.ClaveProducto && p.ProductoULID !== id)
+    if (existeClave) {
+      throw new Error(`Ya existe un producto con la clave: ${producto.ClaveProducto}`)
     }
-    return PRODUCTOS_DATA[index]
   }
-  return null
+
+  const productoActualizado: Producto = {
+    ...mockProductos[index],
+    ...producto,
+    Fecha_UltimoCambio: new Date().toISOString(),
+  }
+
+  mockProductos[index] = productoActualizado
+  return productoActualizado
 }
 
-// Función para eliminar un producto (eliminación física)
-export function deleteProducto(id: string): boolean {
-  const index = PRODUCTOS_DATA.findIndex((producto) => producto.ProductoULID === id)
-  if (index !== -1) {
-    PRODUCTOS_DATA.splice(index, 1)
-    return true
+export const deleteProducto = async (id: string): Promise<boolean> => {
+  await new Promise((resolve) => setTimeout(resolve, 150))
+
+  const index = mockProductos.findIndex((p) => p.ProductoULID === id)
+  if (index === -1) {
+    throw new Error("Producto no encontrado")
   }
-  return false
+
+  mockProductos.splice(index, 1)
+  return true
 }
 
-// Función para suspender/reactivar un producto
-export function toggleSuspendProducto(id: string): Producto | null {
-  const index = PRODUCTOS_DATA.findIndex((producto) => producto.ProductoULID === id)
-  if (index !== -1) {
-    PRODUCTOS_DATA[index] = {
-      ...PRODUCTOS_DATA[index],
-      Suspendido: !PRODUCTOS_DATA[index].Suspendido,
-      Fecha_UltimoCambio: new Date().toISOString(),
-    }
-    return PRODUCTOS_DATA[index]
+export const toggleFavorito = async (id: string): Promise<Producto> => {
+  await new Promise((resolve) => setTimeout(resolve, 100))
+
+  const index = mockProductos.findIndex((p) => p.ProductoULID === id)
+  if (index === -1) {
+    throw new Error("Producto no encontrado")
   }
-  return null
+
+  mockProductos[index].Favorito = !mockProductos[index].Favorito
+  mockProductos[index].Fecha_UltimoCambio = new Date().toISOString()
+
+  return mockProductos[index]
 }
 
-// Función para alternar favorito
-export function toggleFavoriteProducto(id: string): Producto | null {
-  const index = PRODUCTOS_DATA.findIndex((producto) => producto.ProductoULID === id)
-  if (index !== -1) {
-    PRODUCTOS_DATA[index] = {
-      ...PRODUCTOS_DATA[index],
-      Favorito: !PRODUCTOS_DATA[index].Favorito,
-      Fecha_UltimoCambio: new Date().toISOString(),
-    }
-    return PRODUCTOS_DATA[index]
+export const toggleSuspendido = async (id: string): Promise<Producto> => {
+  await new Promise((resolve) => setTimeout(resolve, 100))
+
+  const index = mockProductos.findIndex((p) => p.ProductoULID === id)
+  if (index === -1) {
+    throw new Error("Producto no encontrado")
   }
-  return null
+
+  mockProductos[index].Suspendido = !mockProductos[index].Suspendido
+  mockProductos[index].Fecha_UltimoCambio = new Date().toISOString()
+
+  return mockProductos[index]
 }
 
-// Función para filtrar productos
-export function filterProductos(filters: {
-  search?: string
-  tipo?: string
-  favorito?: boolean
-  suspendido?: boolean
-  grupoId?: string
-}): Producto[] {
-  let filtered = [...PRODUCTOS_DATA]
-
-  // Filtro por búsqueda de texto
-  if (filters.search && filters.search.trim() !== "") {
-    const searchTerm = filters.search.toLowerCase().trim()
-    filtered = filtered.filter(
-      (producto) =>
-        producto.Nombredelproducto.toLowerCase().includes(searchTerm) ||
-        producto.ClaveProducto.toLowerCase().includes(searchTerm) ||
-        (producto.Descripcion && producto.Descripcion.toLowerCase().includes(searchTerm)),
-    )
-  }
-
-  // Filtro por tipo de producto
-  if (filters.tipo && filters.tipo !== "all") {
-    filtered = filtered.filter((producto) => producto.TipoProducto === filters.tipo)
-  }
-
-  // Filtro por favorito
-  if (filters.favorito !== undefined) {
-    filtered = filtered.filter((producto) => producto.Favorito === filters.favorito)
-  }
-
-  // Filtro por suspendido
-  if (filters.suspendido !== undefined) {
-    filtered = filtered.filter((producto) => producto.Suspendido === filters.suspendido)
-  }
-
-  // Filtro por grupo
-  if (filters.grupoId) {
-    filtered = filtered.filter((producto) => producto.GrupoProductoID === filters.grupoId)
-  }
-
-  return filtered
+// Funciones para datos relacionados
+export const getGruposProductos = async (): Promise<GrupoProducto[]> => {
+  await new Promise((resolve) => setTimeout(resolve, 50))
+  return [...mockGruposProductos]
 }
 
-// Función para obtener estadísticas de productos
-export function getProductosStats() {
-  const productos = getAllProductos()
+export const getSubgruposProductos = async (): Promise<SubgrupoProducto[]> => {
+  await new Promise((resolve) => setTimeout(resolve, 50))
+  return [...mockSubgruposProductos]
+}
+
+export const getUnidades = async (): Promise<Unidad[]> => {
+  await new Promise((resolve) => setTimeout(resolve, 50))
+  return [...mockUnidades]
+}
+
+export const getAreasProduccion = async (): Promise<AreaProduccion[]> => {
+  await new Promise((resolve) => setTimeout(resolve, 50))
+  return [...mockAreasProduccion]
+}
+
+// Función para verificar si una clave existe
+export const existeClaveProducto = async (clave: string, excludeId?: string): Promise<boolean> => {
+  await new Promise((resolve) => setTimeout(resolve, 50))
+  return mockProductos.some((p) => p.ClaveProducto === clave && p.ProductoULID !== excludeId)
+}
+
+// Función para obtener estadísticas
+export const getEstadisticasProductos = async () => {
+  await new Promise((resolve) => setTimeout(resolve, 50))
+
+  const total = mockProductos.length
+  const activos = mockProductos.filter((p) => !p.Suspendido).length
+  const favoritos = mockProductos.filter((p) => p.Favorito).length
+  const suspendidos = mockProductos.filter((p) => p.Suspendido).length
+
+  const porTipo = mockProductos.reduce(
+    (acc, producto) => {
+      acc[producto.TipoProducto] = (acc[producto.TipoProducto] || 0) + 1
+      return acc
+    },
+    {} as Record<string, number>,
+  )
+
   return {
-    total: productos.length,
-    platillos: productos.filter((p) => p.TipoProducto === "Platillo").length,
-    productos: productos.filter((p) => p.TipoProducto === "Producto").length,
-    botellas: productos.filter((p) => p.TipoProducto === "Botella").length,
-    favoritos: productos.filter((p) => p.Favorito).length,
-    suspendidos: productos.filter((p) => p.Suspendido).length,
-    activos: productos.filter((p) => !p.Suspendido).length,
+    total,
+    activos,
+    favoritos,
+    suspendidos,
+    porTipo,
   }
-}
-
-// Función para resetear datos (útil para testing)
-export function resetProductosData(): void {
-  // Esta función podría recargar los datos iniciales si fuera necesario
-  console.log("Datos de productos reseteados")
 }

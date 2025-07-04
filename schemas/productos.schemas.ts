@@ -1,36 +1,40 @@
 import { z } from "zod"
 
-// Esquema base para producto
-export const productoBaseSchema = z.object({
+export const ProductoFormSchema = z.object({
   ClaveProducto: z
     .string()
     .min(1, "La clave del producto es requerida")
     .max(10, "La clave no puede tener más de 10 caracteres")
-    .regex(/^[A-Z0-9]+$/, "La clave solo puede contener letras mayúsculas y números"),
+    .regex(/^[A-Z0-9]+$/, "La clave solo puede contener letras mayúsculas y números")
+    .transform((val) => val.toUpperCase()),
 
   TipoProducto: z.enum(["Platillo", "Producto", "Botella"], {
-    required_error: "El tipo de producto es requerido",
+    required_error: "Debe seleccionar un tipo de producto",
   }),
 
   Nombredelproducto: z
     .string()
     .min(1, "El nombre del producto es requerido")
-    .max(100, "El nombre no puede tener más de 100 caracteres"),
+    .max(50, "El nombre no puede tener más de 50 caracteres")
+    .trim(),
 
-  Descripcion: z.string().max(500, "La descripción no puede tener más de 500 caracteres").optional(),
+  Descripcion: z.string().max(500, "La descripción no puede tener más de 500 caracteres").optional().default(""),
 
-  Imagen: z.string().url("Debe ser una URL válida").optional().or(z.literal("")),
-
-  // Configuraciones booleanas
   Favorito: z.boolean().default(false),
+
   ExentoImpuesto: z.boolean().default(false),
+
   PrecioAbierto: z.boolean().default(false),
+
   ControlStock: z.boolean().default(false),
-  PrecioxUtilidad: z.boolean().default(false),
+
+  PrecioxUtilidadad: z.boolean().default(false),
+
   Facturable: z.boolean().default(true),
+
   Suspendido: z.boolean().default(false),
 
-  // Canales de venta
+  // Canales de venta - al menos uno debe estar activo
   Comedor: z.boolean().default(false),
   ADomicilio: z.boolean().default(false),
   Mostrador: z.boolean().default(false),
@@ -38,134 +42,177 @@ export const productoBaseSchema = z.object({
   EnAPP: z.boolean().default(false),
   EnMenuQR: z.boolean().default(false),
 
-  // Referencias opcionales
-  GrupoProductoID: z.string().optional(),
-  UnidadID: z.string().optional(),
-  AreaProduccionID: z.string().optional(),
-  AlmacenID: z.string().optional(),
-  ClasificacionQRID: z.string().optional(),
-  ClaveTributaria: z.string().optional(),
+  // Campos opcionales con ULIDs
+  GrupoProductoULID: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => (val === "" ? undefined : val)),
+
+  SubgrupoProductoULID: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => (val === "" ? undefined : val)),
+
+  UnidadesULID: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => (val === "" ? undefined : val)),
+
+  AreaProduccionULID: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => (val === "" ? undefined : val)),
+
+  AlmacenULID: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => (val === "" ? undefined : val)),
+
+  ClasificacionQRULID: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => (val === "" ? undefined : val)),
+
+  ClaveTributaria: z
+    .string()
+    .max(20, "La clave tributaria no puede tener más de 20 caracteres")
+    .optional()
+    .nullable()
+    .transform((val) => (val === "" ? undefined : val)),
+
+  // Datos dinámicos como JSON
+  DatosDinamicos: z.record(z.any()).optional().default({}),
 })
 
-// Esquema completo del producto (incluye campos del sistema)
-export const productoSchema = productoBaseSchema.extend({
-  ProductoULID: z.string(),
-  Fecha_UltimoCambio: z.string(),
-  Fecha_Sync: z.string().optional(),
-  UsuarioULID: z.string().optional(),
-  EmpresaULID: z.string().optional(),
+export const ProductoFilterSchema = z.object({
+  busqueda: z.string().optional(),
+  tipo: z.enum(["todos", "Platillo", "Producto", "Botella"]).default("todos"),
+  favoritos: z.boolean().optional(),
+  suspendidos: z.boolean().optional(),
+  grupo: z.string().optional(),
+  subgrupo: z.string().optional(),
+  ordenarPor: z
+    .enum(["Nombredelproducto", "ClaveProducto", "TipoProducto", "Fecha_UltimoCambio"])
+    .default("Nombredelproducto"),
+  direccion: z.enum(["asc", "desc"]).default("asc"),
 })
 
-// Esquema para crear producto
-export const createProductoSchema = productoBaseSchema.refine(
-  (data) => {
-    // Al menos un canal de venta debe estar activo
-    return data.Comedor || data.ADomicilio || data.Mostrador || data.Enlinea || data.EnAPP || data.EnMenuQR
-  },
-  {
-    message: "Debe seleccionar al menos un canal de venta",
-    path: ["Comedor"], // Mostrar error en el primer campo de canales
-  },
-)
-
-// Esquema para actualizar producto
-export const updateProductoSchema = productoBaseSchema.partial().refine(
-  (data) => {
-    // Si se proporcionan canales de venta, al menos uno debe estar activo
-    const hasChannelData = [
-      data.Comedor,
-      data.ADomicilio,
-      data.Mostrador,
-      data.Enlinea,
-      data.EnAPP,
-      data.EnMenuQR,
-    ].some((channel) => channel !== undefined)
-
-    if (hasChannelData) {
-      return data.Comedor || data.ADomicilio || data.Mostrador || data.Enlinea || data.EnAPP || data.EnMenuQR
-    }
-
-    return true
-  },
-  {
-    message: "Debe seleccionar al menos un canal de venta",
-    path: ["Comedor"],
-  },
-)
-
-// Esquema para búsqueda/filtros
-export const searchProductosInputSchema = z.object({
-  page: z.number().min(1).default(1),
-  limit: z.number().min(1).max(100).default(10),
-  search: z.string().optional(),
-  tipo: z.enum(["Platillo", "Producto", "Botella"]).optional(),
-  favorito: z.boolean().optional(),
-  suspendido: z.boolean().optional(),
-  grupoId: z.string().optional(),
-  sortBy: z.enum(["nombre", "clave", "tipo", "fecha"]).default("nombre"),
-  sortOrder: z.enum(["asc", "desc"]).default("asc"),
+export const ProductoSearchSchema = z.object({
+  query: z.string().min(1, "Ingrese un término de búsqueda").max(100),
+  campos: z
+    .array(z.enum(["Nombredelproducto", "ClaveProducto", "Descripcion"]))
+    .default(["Nombredelproducto", "ClaveProducto"]),
 })
 
-// Tipos TypeScript
-export type Producto = z.infer<typeof productoSchema>
-export type CreateProductoInput = z.infer<typeof createProductoSchema>
-export type UpdateProductoInput = z.infer<typeof updateProductoSchema>
-export type SearchProductosInput = z.infer<typeof searchProductosInputSchema>
+export const ClaveProductoSchema = z.object({
+  clave: z
+    .string()
+    .min(1, "La clave es requerida")
+    .max(10, "La clave no puede tener más de 10 caracteres")
+    .regex(/^[A-Z0-9]+$/, "La clave solo puede contener letras mayúsculas y números")
+    .transform((val) => val.toUpperCase()),
+  excludeId: z.string().optional(),
+})
 
-// Esquemas para validación de campos individuales
-export const claveProductoSchema = z
-  .string()
-  .min(1, "La clave es requerida")
-  .max(10, "Máximo 10 caracteres")
-  .regex(/^[A-Z0-9]+$/, "Solo letras mayúsculas y números")
+// Esquemas para datos relacionados
+export const GrupoProductoSchema = z.object({
+  GrupoProductoULID: z.string(),
+  ClaveGrupo: z.string(),
+  Descripcion: z.string(),
+  Orden: z.number(),
+  Clasificacion: z.string(),
+  MenuQR: z.boolean(),
+  CatalogoOnline: z.boolean(),
+  APPComensal: z.boolean(),
+  Inactiva: z.boolean(),
+  Paletacolor: z.string(),
+  Imagen: z.string().optional(),
+  Sucursales: z.boolean(),
+  AplicarComentarios: z.boolean(),
+})
 
-export const nombreProductoSchema = z.string().min(1, "El nombre es requerido").max(100, "Máximo 100 caracteres")
+export const SubgrupoProductoSchema = z.object({
+  SubgrupoProductoULID: z.string(),
+  ClaveGrupo: z.string(),
+  ClaveSubGrupo: z.string(),
+  Descripcion: z.string(),
+  AplicarComentarios: z.boolean(),
+  Suspendido: z.boolean(),
+})
 
-// Constantes para tipos de producto
+export const UnidadSchema = z.object({
+  UnidadULID: z.string(),
+  ClaveUnidad: z.string(),
+  Descripcion: z.string(),
+  Abreviacion: z.string(),
+})
+
+export const AreaProduccionSchema = z.object({
+  AreaProduccionULID: z.string(),
+  ClaveArea: z.string(),
+  Descripcion: z.string(),
+  Impresora: z.string().optional(),
+  Activa: z.boolean(),
+})
+
+// Tipos TypeScript derivados de los esquemas
+export type ProductoFormData = z.infer<typeof ProductoFormSchema>
+export type ProductoFilterData = z.infer<typeof ProductoFilterSchema>
+export type ProductoSearchData = z.infer<typeof ProductoSearchSchema>
+export type ClaveProductoData = z.infer<typeof ClaveProductoSchema>
+export type GrupoProductoData = z.infer<typeof GrupoProductoSchema>
+export type SubgrupoProductoData = z.infer<typeof SubgrupoProductoSchema>
+export type UnidadData = z.infer<typeof UnidadSchema>
+export type AreaProduccionData = z.infer<typeof AreaProduccionSchema>
+
+// Validaciones personalizadas
+export const validarCanalesVenta = (data: ProductoFormData): boolean => {
+  return [data.Comedor, data.ADomicilio, data.Mostrador, data.Enlinea, data.EnAPP, data.EnMenuQR].some(
+    (canal) => canal === true,
+  )
+}
+
+export const validarClaveUnica = async (
+  clave: string,
+  excludeId?: string,
+  validatorFn?: (clave: string, excludeId?: string) => Promise<boolean>,
+): Promise<boolean> => {
+  if (!validatorFn) return true
+
+  try {
+    const existe = await validatorFn(clave, excludeId)
+    return !existe
+  } catch (error) {
+    console.error("Error validando clave:", error)
+    return false
+  }
+}
+
+// Constantes para opciones
 export const TIPOS_PRODUCTO = [
-  { value: "Platillo", label: "🍽️ Platillo", description: "Comida preparada con receta" },
-  { value: "Producto", label: "📦 Producto", description: "Artículo que se vende tal como se compra" },
-  { value: "Botella", label: "🍷 Botella", description: "Bebidas alcohólicas y no alcohólicas" },
+  { value: "Platillo", label: "Platillo" },
+  { value: "Producto", label: "Producto" },
+  { value: "Botella", label: "Botella" },
 ] as const
 
-// Constantes para canales de venta
 export const CANALES_VENTA = [
-  { key: "Comedor", label: "🏠 Comedor", description: "Servicio en mesas del restaurante" },
-  { key: "ADomicilio", label: "🚚 A Domicilio", description: "Entrega a domicilio" },
-  { key: "Mostrador", label: "🏪 Mostrador", description: "Venta directa en mostrador" },
-  { key: "Enlinea", label: "💻 En Línea", description: "Pedidos por internet" },
-  { key: "EnAPP", label: "📱 En APP", description: "Pedidos por aplicación móvil" },
-  { key: "EnMenuQR", label: "📱 Menú QR", description: "Pedidos por código QR" },
+  { key: "Comedor", label: "Comedor", description: "Venta en el comedor del restaurante" },
+  { key: "ADomicilio", label: "A Domicilio", description: "Servicio de entrega a domicilio" },
+  { key: "Mostrador", label: "Mostrador", description: "Venta directa en mostrador" },
+  { key: "Enlinea", label: "En Línea", description: "Venta a través de plataforma web" },
+  { key: "EnAPP", label: "En APP", description: "Venta a través de aplicación móvil" },
+  { key: "EnMenuQR", label: "Menú QR", description: "Disponible en menú con código QR" },
 ] as const
 
-// Función helper para validar producto
-export function validateProducto(data: unknown): { success: boolean; data?: Producto; errors?: string[] } {
-  try {
-    const validatedData = productoSchema.parse(data)
-    return { success: true, data: validatedData }
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      const errors = error.errors.map((err) => `${err.path.join(".")}: ${err.message}`)
-      return { success: false, errors }
-    }
-    return { success: false, errors: ["Error de validación desconocido"] }
-  }
-}
-
-// Función helper para validar datos de creación
-export function validateCreateProducto(data: unknown): {
-  success: boolean
-  data?: CreateProductoInput
-  errors?: string[]
-} {
-  try {
-    const validatedData = createProductoSchema.parse(data)
-    return { success: true, data: validatedData }
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      const errors = error.errors.map((err) => `${err.path.join(".")}: ${err.message}`)
-      return { success: false, errors }
-    }
-    return { success: false, errors: ["Error de validación desconocido"] }
-  }
-}
+export const CAMPOS_ORDENAMIENTO = [
+  { value: "Nombredelproducto", label: "Nombre" },
+  { value: "ClaveProducto", label: "Clave" },
+  { value: "TipoProducto", label: "Tipo" },
+  { value: "Fecha_UltimoCambio", label: "Última modificación" },
+] as const

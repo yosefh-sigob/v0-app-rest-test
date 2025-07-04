@@ -1,149 +1,223 @@
-import type { Producto } from "@/schemas/productos.schemas"
-import type { SearchProductosInput } from "@/schemas/productos.schemas"
 import {
-  getAllProductos,
+  getProductos,
   getProductoById,
-  addProducto,
+  createProducto,
   updateProducto,
   deleteProducto,
-  toggleFavoriteProducto,
-  toggleSuspendProducto,
-  filterProductos,
-  existsClaveProducto,
-  getProductosStats,
+  toggleFavorito,
+  toggleSuspendido,
+  getGruposProductos,
+  getSubgruposProductos,
+  getUnidades,
+  getAreasProduccion,
+  existeClaveProducto,
+  getEstadisticasProductos,
+  type Producto,
+  type GrupoProducto,
+  type SubgrupoProducto,
+  type Unidad,
+  type AreaProduccion,
 } from "@/lib/mock/productos.mock"
 
 export class ProductosService {
-  static async getById(id: string): Promise<Producto | null> {
-    // Simular delay de red
-    await new Promise((resolve) => setTimeout(resolve, 300))
-    return getProductoById(id)
+  // Productos
+  static async obtenerProductos(): Promise<Producto[]> {
+    try {
+      return await getProductos()
+    } catch (error) {
+      console.error("Error al obtener productos:", error)
+      throw new Error("Error al cargar los productos")
+    }
   }
 
-  static async search(filters: SearchProductosInput) {
-    // Simular delay de red
-    await new Promise((resolve) => setTimeout(resolve, 500))
+  static async obtenerProductoPorId(id: string): Promise<Producto | null> {
+    try {
+      return await getProductoById(id)
+    } catch (error) {
+      console.error("Error al obtener producto:", error)
+      throw new Error("Error al cargar el producto")
+    }
+  }
 
-    // Aplicar filtros
-    const filteredProducts = filterProductos({
-      search: filters.search,
-      tipo: filters.tipo,
-      favorito: filters.favorito,
-      suspendido: filters.suspendido,
-      grupoId: filters.grupoId,
+  static async crearProducto(
+    producto: Omit<Producto, "ProductoULID" | "Fecha_UltimoCambio" | "Fecha_Sync">,
+  ): Promise<Producto> {
+    try {
+      return await createProducto(producto)
+    } catch (error) {
+      console.error("Error al crear producto:", error)
+      throw error
+    }
+  }
+
+  static async actualizarProducto(id: string, producto: Partial<Omit<Producto, "ProductoULID">>): Promise<Producto> {
+    try {
+      return await updateProducto(id, producto)
+    } catch (error) {
+      console.error("Error al actualizar producto:", error)
+      throw error
+    }
+  }
+
+  static async eliminarProducto(id: string): Promise<boolean> {
+    try {
+      return await deleteProducto(id)
+    } catch (error) {
+      console.error("Error al eliminar producto:", error)
+      throw new Error("Error al eliminar el producto")
+    }
+  }
+
+  static async alternarFavorito(id: string): Promise<Producto> {
+    try {
+      return await toggleFavorito(id)
+    } catch (error) {
+      console.error("Error al alternar favorito:", error)
+      throw new Error("Error al actualizar favorito")
+    }
+  }
+
+  static async alternarSuspendido(id: string): Promise<Producto> {
+    try {
+      return await toggleSuspendido(id)
+    } catch (error) {
+      console.error("Error al alternar suspendido:", error)
+      throw new Error("Error al actualizar estado")
+    }
+  }
+
+  // Datos relacionados
+  static async obtenerGruposProductos(): Promise<GrupoProducto[]> {
+    try {
+      return await getGruposProductos()
+    } catch (error) {
+      console.error("Error al obtener grupos:", error)
+      throw new Error("Error al cargar los grupos de productos")
+    }
+  }
+
+  static async obtenerSubgruposProductos(): Promise<SubgrupoProducto[]> {
+    try {
+      return await getSubgruposProductos()
+    } catch (error) {
+      console.error("Error al obtener subgrupos:", error)
+      throw new Error("Error al cargar los subgrupos de productos")
+    }
+  }
+
+  static async obtenerUnidades(): Promise<Unidad[]> {
+    try {
+      return await getUnidades()
+    } catch (error) {
+      console.error("Error al obtener unidades:", error)
+      throw new Error("Error al cargar las unidades")
+    }
+  }
+
+  static async obtenerAreasProduccion(): Promise<AreaProduccion[]> {
+    try {
+      return await getAreasProduccion()
+    } catch (error) {
+      console.error("Error al obtener áreas de producción:", error)
+      throw new Error("Error al cargar las áreas de producción")
+    }
+  }
+
+  // Validaciones
+  static async validarClaveProducto(clave: string, excludeId?: string): Promise<boolean> {
+    try {
+      return await existeClaveProducto(clave, excludeId)
+    } catch (error) {
+      console.error("Error al validar clave:", error)
+      return false
+    }
+  }
+
+  // Estadísticas
+  static async obtenerEstadisticas() {
+    try {
+      return await getEstadisticasProductos()
+    } catch (error) {
+      console.error("Error al obtener estadísticas:", error)
+      throw new Error("Error al cargar las estadísticas")
+    }
+  }
+
+  // Filtros y búsquedas
+  static filtrarProductos(
+    productos: Producto[],
+    filtros: {
+      busqueda?: string
+      tipo?: string
+      favoritos?: boolean
+      suspendidos?: boolean
+      grupo?: string
+      subgrupo?: string
+    },
+  ): Producto[] {
+    let productosFiltrados = [...productos]
+
+    // Filtro por búsqueda
+    if (filtros.busqueda) {
+      const busqueda = filtros.busqueda.toLowerCase()
+      productosFiltrados = productosFiltrados.filter(
+        (producto) =>
+          producto.Nombredelproducto.toLowerCase().includes(busqueda) ||
+          producto.ClaveProducto.toLowerCase().includes(busqueda) ||
+          producto.Descripcion.toLowerCase().includes(busqueda),
+      )
+    }
+
+    // Filtro por tipo
+    if (filtros.tipo && filtros.tipo !== "todos") {
+      productosFiltrados = productosFiltrados.filter((producto) => producto.TipoProducto === filtros.tipo)
+    }
+
+    // Filtro por favoritos
+    if (filtros.favoritos !== undefined) {
+      productosFiltrados = productosFiltrados.filter((producto) => producto.Favorito === filtros.favoritos)
+    }
+
+    // Filtro por suspendidos
+    if (filtros.suspendidos !== undefined) {
+      productosFiltrados = productosFiltrados.filter((producto) => producto.Suspendido === filtros.suspendidos)
+    }
+
+    // Filtro por grupo
+    if (filtros.grupo && filtros.grupo !== "todos") {
+      productosFiltrados = productosFiltrados.filter((producto) => producto.GrupoProductoULID === filtros.grupo)
+    }
+
+    // Filtro por subgrupo
+    if (filtros.subgrupo && filtros.subgrupo !== "todos") {
+      productosFiltrados = productosFiltrados.filter((producto) => producto.SubgrupoProductoULID === filtros.subgrupo)
+    }
+
+    return productosFiltrados
+  }
+
+  // Ordenamiento
+  static ordenarProductos(productos: Producto[], campo: keyof Producto, direccion: "asc" | "desc" = "asc"): Producto[] {
+    return [...productos].sort((a, b) => {
+      const valorA = a[campo]
+      const valorB = b[campo]
+
+      if (valorA === valorB) return 0
+
+      let resultado = 0
+      if (typeof valorA === "string" && typeof valorB === "string") {
+        resultado = valorA.localeCompare(valorB)
+      } else if (typeof valorA === "number" && typeof valorB === "number") {
+        resultado = valorA - valorB
+      } else if (typeof valorA === "boolean" && typeof valorB === "boolean") {
+        resultado = valorA === valorB ? 0 : valorA ? 1 : -1
+      } else {
+        resultado = String(valorA).localeCompare(String(valorB))
+      }
+
+      return direccion === "desc" ? -resultado : resultado
     })
-
-    // Calcular paginación
-    const total = filteredProducts.length
-    const totalPages = Math.ceil(total / filters.limit)
-    const startIndex = (filters.page - 1) * filters.limit
-    const endIndex = startIndex + filters.limit
-    const productos = filteredProducts.slice(startIndex, endIndex)
-
-    return {
-      productos,
-      total,
-      page: filters.page,
-      totalPages,
-      limit: filters.limit,
-    }
-  }
-
-  static async getAll(): Promise<Producto[]> {
-    // Simular delay de red
-    await new Promise((resolve) => setTimeout(resolve, 200))
-    return getAllProductos()
-  }
-
-  static async create(data: Partial<Producto>): Promise<Producto> {
-    // Simular delay de red
-    await new Promise((resolve) => setTimeout(resolve, 800))
-
-    // Validar que la clave no exista
-    if (data.ClaveProducto && existsClaveProducto(data.ClaveProducto)) {
-      throw new Error("Ya existe un producto con esta clave")
-    }
-
-    // Crear el producto
-    const newProducto = addProducto(data as Omit<Producto, "ProductoULID" | "Fecha_UltimoCambio">)
-    return newProducto
-  }
-
-  static async update(id: string, data: Partial<Producto>): Promise<Producto> {
-    // Simular delay de red
-    await new Promise((resolve) => setTimeout(resolve, 600))
-
-    // Validar que el producto existe
-    const existingProducto = getProductoById(id)
-    if (!existingProducto) {
-      throw new Error("Producto no encontrado")
-    }
-
-    // Validar que la clave no exista en otro producto
-    if (data.ClaveProducto && existsClaveProducto(data.ClaveProducto, id)) {
-      throw new Error("Ya existe un producto con esta clave")
-    }
-
-    // Actualizar el producto
-    const updatedProducto = updateProducto(id, data)
-    if (!updatedProducto) {
-      throw new Error("Error al actualizar el producto")
-    }
-
-    return updatedProducto
-  }
-
-  static async delete(id: string): Promise<boolean> {
-    // Simular delay de red
-    await new Promise((resolve) => setTimeout(resolve, 400))
-
-    // Verificar que el producto existe
-    const existingProducto = getProductoById(id)
-    if (!existingProducto) {
-      throw new Error("Producto no encontrado")
-    }
-
-    // Eliminar el producto
-    return deleteProducto(id)
-  }
-
-  static async toggleFavorite(id: string): Promise<Producto | null> {
-    // Simular delay de red
-    await new Promise((resolve) => setTimeout(resolve, 300))
-
-    // Verificar que el producto existe
-    const existingProducto = getProductoById(id)
-    if (!existingProducto) {
-      throw new Error("Producto no encontrado")
-    }
-
-    // Alternar favorito
-    return toggleFavoriteProducto(id)
-  }
-
-  static async toggleSuspend(id: string): Promise<Producto | null> {
-    // Simular delay de red
-    await new Promise((resolve) => setTimeout(resolve, 300))
-
-    // Verificar que el producto existe
-    const existingProducto = getProductoById(id)
-    if (!existingProducto) {
-      throw new Error("Producto no encontrado")
-    }
-
-    // Alternar suspendido
-    return toggleSuspendProducto(id)
-  }
-
-  static async getStats() {
-    // Simular delay de red
-    await new Promise((resolve) => setTimeout(resolve, 200))
-    return getProductosStats()
-  }
-
-  static async validateClaveProducto(clave: string, excludeId?: string): Promise<boolean> {
-    // Simular delay de red
-    await new Promise((resolve) => setTimeout(resolve, 100))
-    return !existsClaveProducto(clave, excludeId)
   }
 }
+
+export type { Producto, GrupoProducto, SubgrupoProducto, Unidad, AreaProduccion }

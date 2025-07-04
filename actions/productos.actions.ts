@@ -1,333 +1,319 @@
 "use server"
 
+import { ProductosService, type Producto } from "@/lib/services/productos.service"
+import { ProductoFormSchema, type ProductoFormData } from "@/schemas/productos.schemas"
 import { revalidatePath } from "next/cache"
-import { ProductosService } from "@/lib/services/productos.service"
-import {
-  createProductoSchema,
-  updateProductoSchema,
-  searchProductosInputSchema,
-  type CreateProductoInput,
-  type UpdateProductoInput,
-  type SearchProductosInput,
-} from "@/schemas/productos.schemas"
 
-export async function getProductos(filters: SearchProductosInput = { page: 1, limit: 10 }) {
-  try {
-    const validatedFilters = searchProductosInputSchema.parse(filters)
-    const result = await ProductosService.search(validatedFilters)
-
-    return {
-      success: true,
-      data: result,
-      message: "Productos obtenidos correctamente",
-    }
-  } catch (error) {
-    console.error("Error al obtener productos:", error)
-    return {
-      success: false,
-      message: error instanceof Error ? error.message : "Error al obtener productos",
-      data: null,
-    }
-  }
+export interface ActionResult<T = any> {
+  success: boolean
+  data?: T
+  error?: string
+  message?: string
 }
 
-export async function getAllProductos() {
+export async function obtenerProductosAction(): Promise<ActionResult<Producto[]>> {
   try {
-    const productos = await ProductosService.getAll()
+    const productos = await ProductosService.obtenerProductos()
     return {
       success: true,
       data: productos,
-      message: "Productos obtenidos correctamente",
     }
   } catch (error) {
-    console.error("Error al obtener todos los productos:", error)
+    console.error("Error en obtenerProductosAction:", error)
     return {
       success: false,
-      message: error instanceof Error ? error.message : "Error al obtener productos",
-      data: [],
+      error: error instanceof Error ? error.message : "Error desconocido al obtener productos",
     }
   }
 }
 
-export async function getProductoById(id: string) {
+export async function obtenerProductoPorIdAction(id: string): Promise<ActionResult<Producto | null>> {
   try {
-    if (!id || id.trim() === "") {
+    if (!id) {
       return {
         success: false,
-        message: "ID de producto requerido",
-        data: null,
+        error: "ID de producto requerido",
       }
     }
 
-    const producto = await ProductosService.getById(id)
-
-    if (!producto) {
-      return {
-        success: false,
-        message: "Producto no encontrado",
-        data: null,
-      }
-    }
-
+    const producto = await ProductosService.obtenerProductoPorId(id)
     return {
       success: true,
       data: producto,
-      message: "Producto obtenido correctamente",
     }
   } catch (error) {
-    console.error("Error al obtener producto:", error)
+    console.error("Error en obtenerProductoPorIdAction:", error)
     return {
       success: false,
-      message: error instanceof Error ? error.message : "Error al obtener producto",
-      data: null,
+      error: error instanceof Error ? error.message : "Error desconocido al obtener producto",
     }
   }
 }
 
-export async function createProducto(data: CreateProductoInput) {
+export async function crearProductoAction(formData: ProductoFormData): Promise<ActionResult<Producto>> {
   try {
-    // Validar datos de entrada
-    const validatedData = createProductoSchema.parse(data)
+    // Validar datos con Zod
+    const validatedData = ProductoFormSchema.parse(formData)
+
+    // Verificar que al menos un canal esté activo
+    const canalesActivos = [
+      validatedData.Comedor,
+      validatedData.ADomicilio,
+      validatedData.Mostrador,
+      validatedData.Enlinea,
+      validatedData.EnAPP,
+      validatedData.EnMenuQR,
+    ].some((canal) => canal === true)
+
+    if (!canalesActivos) {
+      return {
+        success: false,
+        error: "Debe seleccionar al menos un canal de venta",
+      }
+    }
 
     // Crear el producto
-    const producto = await ProductosService.create(validatedData)
+    const nuevoProducto = await ProductosService.crearProducto({
+      ...validatedData,
+      UsuarioULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3I", // Mock user ID
+      EmpresaULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3J", // Mock empresa ID
+    })
 
-    // Revalidar la página de productos
     revalidatePath("/productos")
 
     return {
       success: true,
-      data: producto,
+      data: nuevoProducto,
       message: "Producto creado exitosamente",
     }
   } catch (error) {
-    console.error("Error al crear producto:", error)
+    console.error("Error en crearProductoAction:", error)
 
-    let message = "Error al crear producto"
     if (error instanceof Error) {
-      message = error.message
+      return {
+        success: false,
+        error: error.message,
+      }
     }
 
     return {
       success: false,
-      message,
-      data: null,
+      error: "Error desconocido al crear producto",
     }
   }
 }
 
-export async function updateProducto(id: string, data: UpdateProductoInput) {
+export async function actualizarProductoAction(
+  id: string,
+  formData: ProductoFormData,
+): Promise<ActionResult<Producto>> {
   try {
-    if (!id || id.trim() === "") {
+    if (!id) {
       return {
         success: false,
-        message: "ID de producto requerido",
-        data: null,
+        error: "ID de producto requerido",
       }
     }
 
-    // Validar datos de entrada
-    const validatedData = updateProductoSchema.parse(data)
+    // Validar datos con Zod
+    const validatedData = ProductoFormSchema.parse(formData)
+
+    // Verificar que al menos un canal esté activo
+    const canalesActivos = [
+      validatedData.Comedor,
+      validatedData.ADomicilio,
+      validatedData.Mostrador,
+      validatedData.Enlinea,
+      validatedData.EnAPP,
+      validatedData.EnMenuQR,
+    ].some((canal) => canal === true)
+
+    if (!canalesActivos) {
+      return {
+        success: false,
+        error: "Debe seleccionar al menos un canal de venta",
+      }
+    }
 
     // Actualizar el producto
-    const producto = await ProductosService.update(id, validatedData)
+    const productoActualizado = await ProductosService.actualizarProducto(id, validatedData)
 
-    // Revalidar la página de productos
     revalidatePath("/productos")
 
     return {
       success: true,
-      data: producto,
+      data: productoActualizado,
       message: "Producto actualizado exitosamente",
     }
   } catch (error) {
-    console.error("Error al actualizar producto:", error)
+    console.error("Error en actualizarProductoAction:", error)
 
-    let message = "Error al actualizar producto"
     if (error instanceof Error) {
-      message = error.message
+      return {
+        success: false,
+        error: error.message,
+      }
     }
 
     return {
       success: false,
-      message,
-      data: null,
+      error: "Error desconocido al actualizar producto",
     }
   }
 }
 
-export async function deleteProducto(id: string) {
+export async function eliminarProductoAction(id: string): Promise<ActionResult<boolean>> {
   try {
-    if (!id || id.trim() === "") {
+    if (!id) {
       return {
         success: false,
-        message: "ID de producto requerido",
+        error: "ID de producto requerido",
       }
     }
 
-    // Eliminar el producto
-    const success = await ProductosService.delete(id)
+    const resultado = await ProductosService.eliminarProducto(id)
 
-    if (!success) {
-      return {
-        success: false,
-        message: "No se pudo eliminar el producto",
-      }
-    }
-
-    // Revalidar la página de productos
     revalidatePath("/productos")
 
     return {
       success: true,
+      data: resultado,
       message: "Producto eliminado exitosamente",
     }
   } catch (error) {
-    console.error("Error al eliminar producto:", error)
-
-    let message = "Error al eliminar producto"
-    if (error instanceof Error) {
-      message = error.message
-    }
-
+    console.error("Error en eliminarProductoAction:", error)
     return {
       success: false,
-      message,
+      error: error instanceof Error ? error.message : "Error desconocido al eliminar producto",
     }
   }
 }
 
-export async function toggleFavoriteProducto(id: string) {
+export async function alternarFavoritoAction(id: string): Promise<ActionResult<Producto>> {
   try {
-    if (!id || id.trim() === "") {
+    if (!id) {
       return {
         success: false,
-        message: "ID de producto requerido",
-        data: null,
+        error: "ID de producto requerido",
       }
     }
 
-    // Alternar favorito
-    const producto = await ProductosService.toggleFavorite(id)
+    const producto = await ProductosService.alternarFavorito(id)
 
-    if (!producto) {
-      return {
-        success: false,
-        message: "No se pudo actualizar el producto",
-        data: null,
-      }
-    }
-
-    // Revalidar la página de productos
     revalidatePath("/productos")
 
     return {
       success: true,
       data: producto,
-      message: `Producto ${producto.Favorito ? "agregado a" : "removido de"} favoritos`,
+      message: producto.Favorito ? "Producto marcado como favorito" : "Producto desmarcado como favorito",
     }
   } catch (error) {
-    console.error("Error al actualizar favorito:", error)
-
-    let message = "Error al actualizar favorito"
-    if (error instanceof Error) {
-      message = error.message
-    }
-
+    console.error("Error en alternarFavoritoAction:", error)
     return {
       success: false,
-      message,
-      data: null,
+      error: error instanceof Error ? error.message : "Error desconocido al actualizar favorito",
     }
   }
 }
 
-export async function toggleSuspendProducto(id: string) {
+export async function alternarSuspendidoAction(id: string): Promise<ActionResult<Producto>> {
   try {
-    if (!id || id.trim() === "") {
+    if (!id) {
       return {
         success: false,
-        message: "ID de producto requerido",
-        data: null,
+        error: "ID de producto requerido",
       }
     }
 
-    // Alternar suspendido
-    const producto = await ProductosService.toggleSuspend(id)
+    const producto = await ProductosService.alternarSuspendido(id)
 
-    if (!producto) {
-      return {
-        success: false,
-        message: "No se pudo actualizar el producto",
-        data: null,
-      }
-    }
-
-    // Revalidar la página de productos
     revalidatePath("/productos")
 
     return {
       success: true,
       data: producto,
-      message: `Producto ${producto.Suspendido ? "suspendido" : "reactivado"} exitosamente`,
+      message: producto.Suspendido ? "Producto suspendido" : "Producto activado",
     }
   } catch (error) {
-    console.error("Error al cambiar estado del producto:", error)
-
-    let message = "Error al cambiar estado del producto"
-    if (error instanceof Error) {
-      message = error.message
-    }
-
+    console.error("Error en alternarSuspendidoAction:", error)
     return {
       success: false,
-      message,
-      data: null,
+      error: error instanceof Error ? error.message : "Error desconocido al actualizar estado",
     }
   }
 }
 
-export async function getProductosStats() {
+export async function obtenerDatosRelacionadosAction(): Promise<
+  ActionResult<{
+    grupos: any[]
+    subgrupos: any[]
+    unidades: any[]
+    areasProduccion: any[]
+  }>
+> {
   try {
-    const stats = await ProductosService.getStats()
+    const [grupos, subgrupos, unidades, areasProduccion] = await Promise.all([
+      ProductosService.obtenerGruposProductos(),
+      ProductosService.obtenerSubgruposProductos(),
+      ProductosService.obtenerUnidades(),
+      ProductosService.obtenerAreasProduccion(),
+    ])
+
     return {
       success: true,
-      data: stats,
-      message: "Estadísticas obtenidas correctamente",
+      data: {
+        grupos,
+        subgrupos,
+        unidades,
+        areasProduccion,
+      },
     }
   } catch (error) {
-    console.error("Error al obtener estadísticas:", error)
+    console.error("Error en obtenerDatosRelacionadosAction:", error)
     return {
       success: false,
-      message: error instanceof Error ? error.message : "Error al obtener estadísticas",
-      data: null,
+      error: error instanceof Error ? error.message : "Error desconocido al obtener datos relacionados",
     }
   }
 }
 
-export async function validateClaveProducto(clave: string, excludeId?: string) {
+export async function validarClaveProductoAction(clave: string, excludeId?: string): Promise<ActionResult<boolean>> {
   try {
-    if (!clave || clave.trim() === "") {
+    if (!clave) {
       return {
         success: false,
-        message: "Clave de producto requerida",
-        isValid: false,
+        error: "Clave de producto requerida",
       }
     }
 
-    const isValid = await ProductosService.validateClaveProducto(clave.trim(), excludeId)
+    const existe = await ProductosService.validarClaveProducto(clave, excludeId)
 
     return {
       success: true,
-      isValid,
-      message: isValid ? "Clave disponible" : "Clave ya existe",
+      data: existe,
     }
   } catch (error) {
-    console.error("Error al validar clave:", error)
+    console.error("Error en validarClaveProductoAction:", error)
     return {
       success: false,
-      message: error instanceof Error ? error.message : "Error al validar clave",
-      isValid: false,
+      error: error instanceof Error ? error.message : "Error desconocido al validar clave",
+    }
+  }
+}
+
+export async function obtenerEstadisticasAction(): Promise<ActionResult<any>> {
+  try {
+    const estadisticas = await ProductosService.obtenerEstadisticas()
+
+    return {
+      success: true,
+      data: estadisticas,
+    }
+  } catch (error) {
+    console.error("Error en obtenerEstadisticasAction:", error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Error desconocido al obtener estadísticas",
     }
   }
 }
