@@ -38,11 +38,11 @@ import { getImageSrc } from "@/lib/utils/image"
 import type { Producto } from "@/interfaces/database"
 
 interface ProductosViewProps {
-  productos: Producto[]
-  gruposProductos: Array<{ id: number; nombre: string }>
-  unidades: Array<{ id: number; nombre: string; abreviacion: string }>
-  areasProduccion: Array<{ id: number; nombre: string }>
-  almacenes: Array<{ id: number; nombre: string }>
+  productos?: Producto[]
+  gruposProductos?: Array<{ id: number; nombre: string }>
+  unidades?: Array<{ id: number; nombre: string; abreviacion: string }>
+  areasProduccion?: Array<{ id: number; nombre: string }>
+  almacenes?: Array<{ id: number; nombre: string }>
 }
 
 const TIPO_ICONS = {
@@ -56,11 +56,11 @@ type SortField = "nombre" | "codigo" | "tipo" | "fecha"
 type SortOrder = "asc" | "desc"
 
 export function ProductosView({
-  productos,
-  gruposProductos,
-  unidades,
-  areasProduccion,
-  almacenes,
+  productos = [],
+  gruposProductos = [],
+  unidades = [],
+  areasProduccion = [],
+  almacenes = [],
 }: ProductosViewProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedTipo, setSelectedTipo] = useState<string>("all")
@@ -74,12 +74,21 @@ export function ProductosView({
   const [sortField, setSortField] = useState<SortField>("nombre")
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc")
 
+  // Validar que productos sea un array
+  const safeProductos = Array.isArray(productos) ? productos : []
+
   // Filtros y búsqueda
   const filteredProductos = useMemo(() => {
-    const filtered = productos.filter((producto) => {
+    if (!Array.isArray(safeProductos) || safeProductos.length === 0) {
+      return []
+    }
+
+    const filtered = safeProductos.filter((producto) => {
+      if (!producto) return false
+
       const matchesSearch =
-        producto.Nombredelproducto.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        producto.ClaveProducto.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (producto.Nombredelproducto || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (producto.ClaveProducto || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
         (producto.Descripcion && producto.Descripcion.toLowerCase().includes(searchTerm.toLowerCase()))
 
       const matchesTipo = selectedTipo === "all" || producto.TipoProducto === selectedTipo
@@ -95,29 +104,31 @@ export function ProductosView({
 
     // Ordenamiento
     filtered.sort((a, b) => {
+      if (!a || !b) return 0
+
       let aValue: string | number
       let bValue: string | number
 
       switch (sortField) {
         case "nombre":
-          aValue = a.Nombredelproducto.toLowerCase()
-          bValue = b.Nombredelproducto.toLowerCase()
+          aValue = (a.Nombredelproducto || "").toLowerCase()
+          bValue = (b.Nombredelproducto || "").toLowerCase()
           break
         case "codigo":
-          aValue = a.ClaveProducto.toLowerCase()
-          bValue = b.ClaveProducto.toLowerCase()
+          aValue = (a.ClaveProducto || "").toLowerCase()
+          bValue = (b.ClaveProducto || "").toLowerCase()
           break
         case "tipo":
-          aValue = a.TipoProducto.toLowerCase()
-          bValue = b.TipoProducto.toLowerCase()
+          aValue = (a.TipoProducto || "").toLowerCase()
+          bValue = (b.TipoProducto || "").toLowerCase()
           break
         case "fecha":
-          aValue = new Date(a.FechaActualizacion).getTime()
-          bValue = new Date(b.FechaActualizacion).getTime()
+          aValue = new Date(a.FechaActualizacion || 0).getTime()
+          bValue = new Date(b.FechaActualizacion || 0).getTime()
           break
         default:
-          aValue = a.Nombredelproducto.toLowerCase()
-          bValue = b.Nombredelproducto.toLowerCase()
+          aValue = (a.Nombredelproducto || "").toLowerCase()
+          bValue = (b.Nombredelproducto || "").toLowerCase()
       }
 
       if (sortOrder === "asc") {
@@ -128,7 +139,7 @@ export function ProductosView({
     })
 
     return filtered
-  }, [productos, searchTerm, selectedTipo, selectedGrupo, selectedEstado, sortField, sortOrder])
+  }, [safeProductos, searchTerm, selectedTipo, selectedGrupo, selectedEstado, sortField, sortOrder])
 
   const handleCreateProducto = () => {
     setEditingProducto(null)
@@ -202,10 +213,10 @@ export function ProductosView({
   }
 
   const stats = {
-    total: productos.length,
-    activos: productos.filter((p) => !p.Suspendido).length,
-    favoritos: productos.filter((p) => p.Favorito).length,
-    suspendidos: productos.filter((p) => p.Suspendido).length,
+    total: safeProductos.length,
+    activos: safeProductos.filter((p) => p && !p.Suspendido).length,
+    favoritos: safeProductos.filter((p) => p && p.Favorito).length,
+    suspendidos: safeProductos.filter((p) => p && p.Suspendido).length,
   }
 
   return (
@@ -263,7 +274,7 @@ export function ProductosView({
               </Button>
               <Button onClick={handleCreateProducto} className="bg-orange-600 hover:bg-orange-700">
                 <Plus className="h-4 w-4 mr-2" />
-                Nuevo Produto
+                Nuevo Producto
               </Button>
             </div>
           </div>
@@ -274,7 +285,7 @@ export function ProductosView({
             <div className="lg:col-span-2 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
-                placeholder="Buscar produtos..."
+                placeholder="Buscar productos..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 h-11"
@@ -316,11 +327,12 @@ export function ProductosView({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todas las categorías</SelectItem>
-                {gruposProductos.map((grupo) => (
-                  <SelectItem key={grupo.id} value={grupo.id.toString()}>
-                    {grupo.nombre}
-                  </SelectItem>
-                ))}
+                {Array.isArray(gruposProductos) &&
+                  gruposProductos.map((grupo) => (
+                    <SelectItem key={grupo.id} value={grupo.id.toString()}>
+                      {grupo.nombre}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
 
@@ -377,7 +389,7 @@ export function ProductosView({
           {/* Resultados */}
           <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
             <span>
-              Mostrando {filteredProductos.length} de {productos.length} produtos
+              Mostrando {filteredProductos.length} de {safeProductos.length} productos
             </span>
             {(searchTerm || selectedTipo !== "all" || selectedGrupo !== "all" || selectedEstado !== "all") && (
               <Button
@@ -397,21 +409,21 @@ export function ProductosView({
         </CardContent>
       </Card>
 
-      {/* Lista de produtos */}
+      {/* Lista de productos */}
       {filteredProductos.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <AlertCircle className="h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No se encontraron produtos</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No se encontraron productos</h3>
             <p className="text-gray-600 text-center mb-4">
               {searchTerm || selectedTipo !== "all" || selectedGrupo !== "all" || selectedEstado !== "all"
                 ? "Intenta ajustar los filtros de búsqueda"
-                : "Comienza creando tu primer produto"}
+                : "Comienza creando tu primer producto"}
             </p>
             {!searchTerm && selectedTipo === "all" && selectedGrupo === "all" && selectedEstado === "all" && (
               <Button onClick={handleCreateProducto} className="bg-orange-600 hover:bg-orange-700">
                 <Plus className="h-4 w-4 mr-2" />
-                Crear Primeiro Produto
+                Crear Primer Producto
               </Button>
             )}
           </CardContent>
@@ -610,15 +622,15 @@ export function ProductosView({
         </Card>
       )}
 
-      {/* Modal de formulario */}
+      {/* Modal de formulario - 80% del ancho de pantalla */}
       <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className="overflow-hidden">
-          <DialogHeader className="bg-gradient-to-r from-orange-500 to-red-500 text-white p-6 -m-6 mb-0">
+        <DialogContent className="w-[80vw] max-w-[80vw] max-h-[90vh] overflow-hidden p-0">
+          <DialogHeader className="bg-gradient-to-r from-orange-500 to-red-500 text-white p-6">
             <DialogTitle className="text-2xl font-bold">
-              {editingProducto ? "Editar Produto" : "Crear Nuevo Produto"}
+              {editingProducto ? "Editar Producto" : "Crear Nuevo Producto"}
             </DialogTitle>
           </DialogHeader>
-          <div className="max-h-[calc(90vh-120px)] overflow-y-auto">
+          <div className="flex-1 overflow-y-auto p-6">
             <ProductoForm
               producto={editingProducto}
               gruposProductos={gruposProductos}
@@ -632,13 +644,13 @@ export function ProductosView({
         </DialogContent>
       </Dialog>
 
-      {/* Modal de detalles */}
+      {/* Modal de detalles - 80% del ancho de pantalla */}
       <Dialog open={showDetail} onOpenChange={setShowDetail}>
-        <DialogContent className="overflow-hidden">
-          <DialogHeader className="bg-gradient-to-r from-blue-500 to-purple-500 text-white p-6 -m-6 mb-0">
-            <DialogTitle className="text-2xl font-bold">Detalles del Produto</DialogTitle>
+        <DialogContent className="w-[80vw] max-w-[80vw] max-h-[90vh] overflow-hidden p-0">
+          <DialogHeader className="bg-gradient-to-r from-blue-500 to-purple-500 text-white p-6">
+            <DialogTitle className="text-2xl font-bold">Detalles del Producto</DialogTitle>
           </DialogHeader>
-          <div className="max-h-[calc(90vh-120px)] overflow-y-auto">
+          <div className="flex-1 overflow-y-auto p-6">
             {selectedProducto && (
               <ProductoDetail
                 producto={selectedProducto}
