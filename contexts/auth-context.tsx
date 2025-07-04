@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
 import type { User, AuthContextType, LoginCredentials } from "@/interfaces/auth"
 import { authenticateUser } from "@/actions/auth.actions"
+import { toast } from "sonner"
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
@@ -60,12 +61,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
         localStorage.setItem("auth_token", result.token)
         localStorage.setItem("auth_user", JSON.stringify(result.user))
 
+        toast.success(`¡Bienvenido ${result.user.nombreCompleto}!`)
         return true
+      } else {
+        toast.error(result.error || "Credenciales inválidas")
+        return false
       }
-
-      return false
     } catch (error) {
       console.error("Login error:", error)
+      toast.error("Error de conexión")
       return false
     } finally {
       setIsLoading(false)
@@ -78,6 +82,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setIsAuthenticated(false)
     localStorage.removeItem("auth_token")
     localStorage.removeItem("auth_user")
+    toast.success("Sesión cerrada correctamente")
   }
 
   const value: AuthContextType = {

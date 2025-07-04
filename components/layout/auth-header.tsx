@@ -30,8 +30,9 @@ export function AuthHeader({ onToggleSidebar }: AuthHeaderProps) {
     logout()
   }
 
-  const getUserInitials = (fullName: string) => {
-    return fullName
+  const getUserInitials = (nombreCompleto: string) => {
+    if (!nombreCompleto) return "U"
+    return nombreCompleto
       .split(" ")
       .map((name) => name[0])
       .join("")
@@ -76,13 +77,13 @@ export function AuthHeader({ onToggleSidebar }: AuthHeaderProps) {
                 <div className="flex items-center space-x-3">
                   <Avatar className="h-8 w-8">
                     <AvatarFallback className="bg-orange-100 text-orange-600 text-sm font-medium">
-                      {getUserInitials(user.fullName)}
+                      {getUserInitials(user.nombreCompleto)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="hidden md:block text-left">
-                    <p className="text-sm font-medium">{user.fullName}</p>
-                    <Badge variant="secondary" className={`text-xs ${getRoleBadgeColor(user.role)}`}>
-                      {user.role}
+                    <p className="text-sm font-medium">{user.nombreCompleto}</p>
+                    <Badge variant="secondary" className={`text-xs ${getRoleBadgeColor(user.rol)}`}>
+                      {user.rol}
                     </Badge>
                   </div>
                 </div>
@@ -92,11 +93,16 @@ export function AuthHeader({ onToggleSidebar }: AuthHeaderProps) {
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-2">
-                  <p className="text-sm font-medium">{user.fullName}</p>
-                  <p className="text-xs text-muted-foreground">{user.email}</p>
-                  <Badge variant="secondary" className={`text-xs w-fit ${getRoleBadgeColor(user.role)}`}>
-                    {user.role}
-                  </Badge>
+                  <p className="text-sm font-medium">{user.nombreCompleto}</p>
+                  <p className="text-xs text-muted-foreground">{user.correo}</p>
+                  <div className="flex gap-2">
+                    <Badge variant="secondary" className={`text-xs w-fit ${getRoleBadgeColor(user.rol)}`}>
+                      {user.rol}
+                    </Badge>
+                    <Badge variant="outline" className="text-xs w-fit">
+                      {user.nivelLicencia}
+                    </Badge>
+                  </div>
                 </div>
               </DropdownMenuLabel>
 
@@ -107,10 +113,12 @@ export function AuthHeader({ onToggleSidebar }: AuthHeaderProps) {
                 <span>Perfil</span>
               </DropdownMenuItem>
 
-              <DropdownMenuItem>
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Configuración</span>
-              </DropdownMenuItem>
+              {user.esAdministrador && (
+                <DropdownMenuItem>
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Configuración</span>
+                </DropdownMenuItem>
+              )}
 
               <DropdownMenuSeparator />
 

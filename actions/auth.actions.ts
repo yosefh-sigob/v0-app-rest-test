@@ -1,126 +1,156 @@
 "use server"
 
-import { type LoginCredentials, type User, UserRole } from "@/interfaces/auth"
+import type { LoginCredentials, AuthResponse, User } from "@/interfaces/auth"
+import { RolUsuario, NivelLicencia } from "@/interfaces/auth"
 import { loginSchema } from "@/schemas/auth.schemas"
 
-// Usuarios demo para testing
+// Usuarios demo para el sistema
 const DEMO_USERS: User[] = [
   {
-    id: "1",
-    username: "admin",
-    email: "admin@restaurant.com",
-    fullName: "Administrador Sistema",
-    role: UserRole.ADMINISTRADOR,
-    pin: "1234",
-    isActive: true,
-    empresaId: "empresa-1",
+    id: "admin-001",
+    usuario: "admin",
+    nombreCompleto: "Juan Carlos Administrador",
+    correo: "admin@apprest.com",
+    rol: RolUsuario.ADMINISTRADOR,
+    esAdministrador: true,
+    nivelLicencia: NivelLicencia.FRANQUICIA,
+    empresaId: "empresa-001",
+    nombreEmpresa: "Restaurante Demo",
+    activo: true,
   },
   {
-    id: "2",
-    username: "mesero",
-    email: "mesero@restaurant.com",
-    fullName: "Juan Pérez",
-    role: UserRole.MESERO,
-    pin: "5678",
-    isActive: true,
-    empresaId: "empresa-1",
+    id: "mesero-001",
+    usuario: "mesero",
+    nombreCompleto: "María Elena Mesero",
+    correo: "mesero@apprest.com",
+    rol: RolUsuario.MESERO,
+    esAdministrador: false,
+    nivelLicencia: NivelLicencia.PRO,
+    empresaId: "empresa-001",
+    nombreEmpresa: "Restaurante Demo",
+    activo: true,
   },
   {
-    id: "3",
-    username: "cajero",
-    email: "cajero@restaurant.com",
-    fullName: "María García",
-    role: UserRole.CAJERO,
-    pin: "9012",
-    isActive: true,
-    empresaId: "empresa-1",
+    id: "cajero-001",
+    usuario: "cajero",
+    nombreCompleto: "Pedro Luis Cajero",
+    correo: "cajero@apprest.com",
+    rol: RolUsuario.CAJERO,
+    esAdministrador: false,
+    nivelLicencia: NivelLicencia.PRO,
+    empresaId: "empresa-001",
+    nombreEmpresa: "Restaurante Demo",
+    activo: true,
   },
   {
-    id: "4",
-    username: "cocinero",
-    email: "cocinero@restaurant.com",
-    fullName: "Carlos López",
-    role: UserRole.COCINERO,
-    pin: "3456",
-    isActive: true,
-    empresaId: "empresa-1",
+    id: "cocinero-001",
+    usuario: "cocinero",
+    nombreCompleto: "Ana Sofia Cocinero",
+    correo: "cocinero@apprest.com",
+    rol: RolUsuario.COCINERO,
+    esAdministrador: false,
+    nivelLicencia: NivelLicencia.LITE,
+    empresaId: "empresa-001",
+    nombreEmpresa: "Restaurante Demo",
+    activo: true,
   },
   {
-    id: "5",
-    username: "gerente",
-    email: "gerente@restaurant.com",
-    fullName: "Ana Martínez",
-    role: UserRole.GERENTE,
-    pin: "7890",
-    isActive: true,
-    empresaId: "empresa-1",
+    id: "gerente-001",
+    usuario: "gerente",
+    nombreCompleto: "Roberto Carlos Gerente",
+    correo: "gerente@apprest.com",
+    rol: RolUsuario.GERENTE,
+    esAdministrador: false,
+    nivelLicencia: NivelLicencia.PRO,
+    empresaId: "empresa-001",
+    nombreEmpresa: "Restaurante Demo",
+    activo: true,
   },
 ]
 
-const DEMO_PASSWORDS: Record<string, string> = {
-  admin: "admin123",
-  mesero: "mesero123",
-  cajero: "cajero123",
-  cocinero: "cocina123",
-  gerente: "gerente123",
+// Credenciales demo (en producción esto vendría de la base de datos)
+const DEMO_CREDENTIALS = {
+  admin: { contraseña: "admin123", pin: "1234" },
+  mesero: { contraseña: "mesero123", pin: "5678" },
+  cajero: { contraseña: "cajero123", pin: "9012" },
+  cocinero: { contraseña: "cocina123", pin: "3456" },
+  gerente: { contraseña: "gerente123", pin: "7890" },
 }
 
-export async function authenticateUser(credentials: LoginCredentials) {
+export async function authenticateUser(credentials: LoginCredentials): Promise<AuthResponse> {
   try {
     // Validar datos de entrada
     const validatedData = loginSchema.parse(credentials)
 
+    // Simular delay de red
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+
     // Buscar usuario
-    const user = DEMO_USERS.find((u) => u.username === validatedData.username)
+    const user = DEMO_USERS.find((u) => u.usuario === validatedData.usuario)
 
     if (!user) {
-      return { success: false, error: "Usuario no encontrado" }
+      return {
+        success: false,
+        error: "Usuario no encontrado",
+      }
     }
 
-    if (!user.isActive) {
-      return { success: false, error: "Usuario inactivo" }
+    // Verificar credenciales
+    const userCredentials = DEMO_CREDENTIALS[user.usuario as keyof typeof DEMO_CREDENTIALS]
+
+    if (
+      !userCredentials ||
+      userCredentials.contraseña !== validatedData.contraseña ||
+      userCredentials.pin !== validatedData.pin
+    ) {
+      return {
+        success: false,
+        error: "Credenciales inválidas",
+      }
     }
 
-    // Verificar contraseña
-    const expectedPassword = DEMO_PASSWORDS[user.username]
-    if (expectedPassword !== validatedData.password) {
-      return { success: false, error: "Contraseña incorrecta" }
+    // Verificar si el usuario está activo
+    if (!user.activo) {
+      return {
+        success: false,
+        error: "Usuario inactivo",
+      }
     }
 
-    // Verificar PIN
-    if (user.pin !== validatedData.pin) {
-      return { success: false, error: "PIN incorrecto" }
-    }
-
-    // Generar token simple (en producción usar JWT)
+    // Generar token (en producción sería un JWT real)
     const token = `token_${user.id}_${Date.now()}`
 
-    // Actualizar último login
-    const authenticatedUser: User = {
-      ...user,
-      lastLogin: new Date(),
+    return {
+      success: true,
+      user,
+      token,
+    }
+  } catch (error) {
+    console.error("Authentication error:", error)
+    return {
+      success: false,
+      error: "Error interno del servidor",
+    }
+  }
+}
+
+export async function verifyToken(token: string): Promise<AuthResponse> {
+  try {
+    // En producción, aquí verificarías el JWT
+    if (!token || !token.startsWith("token_")) {
+      return {
+        success: false,
+        error: "Token inválido",
+      }
     }
 
     return {
       success: true,
-      user: authenticatedUser,
-      token,
-      message: "Autenticación exitosa",
     }
   } catch (error) {
-    console.error("Authentication error:", error)
-    return { success: false, error: "Error en la autenticación" }
-  }
-}
-
-export async function validateToken(token: string) {
-  try {
-    // Validación simple del token (en producción usar JWT)
-    if (token.startsWith("token_")) {
-      return { valid: true }
+    return {
+      success: false,
+      error: "Error verificando token",
     }
-    return { valid: false }
-  } catch (error) {
-    return { valid: false }
   }
 }

@@ -1,13 +1,14 @@
 "use client"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Separator } from "@/components/ui/separator"
 import { useAuth } from "@/contexts/auth-context"
-import { getRoleNavigation, getRoleBadgeColor } from "./role-navigation"
-import { ChevronLeft } from "lucide-react"
+import { getNavigationByRole, getRoleBadgeColor } from "./role-navigation"
+import { ChevronLeft, ChevronRight } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface AuthSidebarProps {
   isOpen: boolean
@@ -20,86 +21,95 @@ export function AuthSidebar({ isOpen, onToggle }: AuthSidebarProps) {
 
   if (!user) return null
 
-  const navigation = getRoleNavigation(user.role)
+  const navigation = getNavigationByRole(user.rol)
 
   return (
-    <>
-      {/* Mobile Overlay */}
-      {isOpen && <div className="fixed inset-0 z-40 bg-black/50 md:hidden" onClick={onToggle} />}
-
-      {/* Sidebar */}
-      <aside
-        className={cn(
-          "fixed left-0 top-16 z-50 h-[calc(100vh-4rem)] w-64 transform border-r bg-background transition-transform duration-200 ease-in-out md:relative md:top-0 md:h-screen md:translate-x-0",
-          isOpen ? "translate-x-0" : "-translate-x-full",
-        )}
+    <div
+      className={cn(
+        "relative flex flex-col bg-white border-r border-gray-200 transition-all duration-300",
+        isOpen ? "w-64" : "w-16",
+      )}
+    >
+      {/* Toggle Button */}
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={onToggle}
+        className="absolute -right-3 top-6 z-10 h-6 w-6 rounded-full border bg-white shadow-md hover:bg-gray-50"
       >
-        <div className="flex h-full flex-col">
-          {/* User Info */}
-          <div className="p-4 border-b">
-            <div className="flex items-center justify-between">
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{user.fullName}</p>
-                <Badge variant="secondary" className={`text-xs mt-1 ${getRoleBadgeColor(user.role)}`}>
-                  {user.role}
-                </Badge>
-              </div>
-              <Button variant="ghost" size="sm" onClick={onToggle} className="md:hidden">
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-            </div>
+        {isOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+      </Button>
+
+      {/* User Info */}
+      <div className="p-4">
+        <div className={cn("flex items-center", isOpen ? "space-x-3" : "justify-center")}>
+          <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center">
+            <span className="text-orange-600 font-medium text-sm">
+              {user.nombreCompleto
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .toUpperCase()
+                .slice(0, 2)}
+            </span>
           </div>
+          {isOpen && (
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate">{user.nombreCompleto}</p>
+              <Badge variant="secondary" className={`text-xs ${getRoleBadgeColor(user.rol)}`}>
+                {user.rol}
+              </Badge>
+            </div>
+          )}
+        </div>
+      </div>
 
-          {/* Navigation */}
-          <ScrollArea className="flex-1 px-3 py-4">
-            <nav className="space-y-2">
-              {navigation.map((item) => {
-                const isActive = pathname === item.href
-                const Icon = item.icon
+      <Separator />
 
-                return (
-                  <Link key={item.href} href={item.href}>
-                    <Button
-                      variant={isActive ? "secondary" : "ghost"}
-                      className={cn(
-                        "w-full justify-start h-auto p-3",
-                        isActive && "bg-orange-100 text-orange-900 hover:bg-orange-200",
-                      )}
-                      onClick={() => {
-                        // Close sidebar on mobile after navigation
-                        if (window.innerWidth < 768) {
-                          onToggle()
-                        }
-                      }}
-                    >
-                      <Icon className="mr-3 h-5 w-5 flex-shrink-0" />
-                      <div className="flex-1 text-left">
-                        <div className="font-medium">{item.title}</div>
-                        {item.description && <div className="text-xs text-muted-foreground">{item.description}</div>}
-                      </div>
+      {/* Navigation */}
+      <ScrollArea className="flex-1 px-3">
+        <div className="space-y-2 py-4">
+          {navigation.map((item) => {
+            const isActive = pathname === item.href
+            const Icon = item.icon
+
+            return (
+              <Link key={item.href} href={item.href}>
+                <Button
+                  variant={isActive ? "secondary" : "ghost"}
+                  className={cn(
+                    "w-full justify-start h-10",
+                    isOpen ? "px-3" : "px-0 justify-center",
+                    isActive && "bg-orange-100 text-orange-700 hover:bg-orange-100",
+                  )}
+                >
+                  <Icon className={cn("h-5 w-5", isOpen && "mr-3")} />
+                  {isOpen && (
+                    <div className="flex-1 text-left">
+                      <span className="font-medium">{item.title}</span>
                       {item.badge && (
                         <Badge variant="secondary" className="ml-2 text-xs">
                           {item.badge}
                         </Badge>
                       )}
-                    </Button>
-                  </Link>
-                )
-              })}
-            </nav>
-          </ScrollArea>
+                    </div>
+                  )}
+                </Button>
+              </Link>
+            )
+          })}
+        </div>
+      </ScrollArea>
 
-          {/* Footer */}
-          <div className="p-4 border-t">
-            <div className="text-center">
-              <p className="text-xs text-muted-foreground">AppRest v2.0</p>
-              <Badge variant="outline" className="mt-1 text-xs">
-                Licencia: Pro
-              </Badge>
-            </div>
+      {/* Footer */}
+      {isOpen && (
+        <div className="p-4 border-t">
+          <div className="text-xs text-gray-500 space-y-1">
+            <p>Empresa: {user.nombreEmpresa}</p>
+            <p>Licencia: {user.nivelLicencia}</p>
           </div>
         </div>
-      </aside>
-    </>
+      )}
+    </div>
   )
 }
