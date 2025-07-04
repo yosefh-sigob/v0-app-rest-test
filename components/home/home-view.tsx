@@ -1,365 +1,204 @@
 "use client"
 
-import { useState } from "react"
-import Link from "next/link"
+import { AuthenticatedLayout } from "@/components/layout/authenticated-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import {
-  Users,
-  Utensils,
-  Calendar,
-  MessageSquare,
-  BarChart3,
-  Settings,
-  ChefHat,
-  CreditCard,
-  TrendingUp,
-  MapPin,
-  AlertTriangle,
-  CheckCircle,
-  Info,
-} from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { BarChart3, Users, ShoppingCart, TrendingUp, Calendar, Package, DollarSign, Clock } from "lucide-react"
+import { useAuth } from "@/contexts/auth-context"
 
-interface DashboardData {
-  ventasHoy: {
-    total: number
-    ordenes: number
-    promedio: number
-    crecimiento: number
-  }
-  mesasOcupadas: {
-    ocupadas: number
-    total: number
-    porcentaje: number
-  }
-  productosPopulares: Array<{
-    nombre: string
-    ventas: number
-    ingresos: number
-  }>
-  reservacionesHoy: Array<{
-    hora: string
-    cliente: string
-    personas: number
-    mesa: number
-  }>
-  alertas: Array<{
-    tipo: string
-    mensaje: string
-    urgencia: string
-  }>
-}
+const STATS_CARDS = [
+  {
+    title: "Ventas Hoy",
+    value: "$12,450",
+    change: "+12%",
+    icon: DollarSign,
+    color: "text-green-600",
+  },
+  {
+    title: "Órdenes",
+    value: "156",
+    change: "+8%",
+    icon: ShoppingCart,
+    color: "text-blue-600",
+  },
+  {
+    title: "Clientes",
+    value: "89",
+    change: "+15%",
+    icon: Users,
+    color: "text-purple-600",
+  },
+  {
+    title: "Productos",
+    value: "234",
+    change: "+3%",
+    icon: Package,
+    color: "text-orange-600",
+  },
+]
 
-interface HomeViewProps {
-  data: DashboardData
-}
+const RECENT_ACTIVITIES = [
+  {
+    id: 1,
+    action: "Nueva orden #1234",
+    time: "Hace 2 minutos",
+    status: "pending",
+  },
+  {
+    id: 2,
+    action: "Cliente registrado: Juan Pérez",
+    time: "Hace 5 minutos",
+    status: "success",
+  },
+  {
+    id: 3,
+    action: "Producto agotado: Hamburguesa Clásica",
+    time: "Hace 10 minutos",
+    status: "warning",
+  },
+  {
+    id: 4,
+    action: "Reservación confirmada para las 8:00 PM",
+    time: "Hace 15 minutos",
+    status: "info",
+  },
+]
 
-export function HomeView({ data }: HomeViewProps) {
-  const [selectedRole, setSelectedRole] = useState<string | null>(null)
-
-  const roles = [
-    {
-      id: "mesero",
-      title: "Mesero",
-      description: "Tomar órdenes y gestionar mesas",
-      icon: ChefHat,
-      color: "bg-blue-500",
-      href: "/mesero",
-    },
-    {
-      id: "cajero",
-      title: "Cajero",
-      description: "Procesar pagos y cerrar cuentas",
-      icon: CreditCard,
-      color: "bg-green-500",
-      href: "/cajero",
-    },
-    {
-      id: "admin",
-      title: "Administrador",
-      description: "Gestión completa del restaurante",
-      icon: Settings,
-      color: "bg-purple-500",
-      href: "/dashboard",
-    },
-  ]
-
-  const quickStats = [
-    {
-      title: "Ventas Hoy",
-      value: `$${data.ventasHoy.total.toLocaleString()}`,
-      subtitle: `${data.ventasHoy.ordenes} órdenes`,
-      icon: TrendingUp,
-      color: "text-green-600",
-      change: `+${data.ventasHoy.crecimiento}%`,
-    },
-    {
-      title: "Mesas Ocupadas",
-      value: `${data.mesasOcupadas.ocupadas}/${data.mesasOcupadas.total}`,
-      subtitle: `${data.mesasOcupadas.porcentaje}% ocupación`,
-      icon: MapPin,
-      color: "text-orange-600",
-      change: "Normal",
-    },
-    {
-      title: "Promedio por Orden",
-      value: `$${data.ventasHoy.promedio.toFixed(2)}`,
-      subtitle: "Ticket promedio",
-      icon: BarChart3,
-      color: "text-blue-600",
-      change: "Estable",
-    },
-    {
-      title: "Reservaciones Hoy",
-      value: data.reservacionesHoy.length.toString(),
-      subtitle: "Confirmadas",
-      icon: Calendar,
-      color: "text-purple-600",
-      change: "Programadas",
-    },
-  ]
-
-  const modules = [
-    {
-      title: "Productos",
-      description: "Gestionar catálogo de productos",
-      icon: Utensils,
-      href: "/productos",
-      color: "bg-orange-100 text-orange-600",
-    },
-    {
-      title: "Mesas",
-      description: "Administrar mesas y áreas",
-      icon: MapPin,
-      href: "/mesas",
-      color: "bg-blue-100 text-blue-600",
-    },
-    {
-      title: "Clientes",
-      description: "Base de datos de clientes",
-      icon: Users,
-      href: "/clientes",
-      color: "bg-green-100 text-green-600",
-    },
-    {
-      title: "Reservaciones",
-      description: "Gestionar reservas de mesas",
-      icon: Calendar,
-      href: "/reservaciones",
-      color: "bg-purple-100 text-purple-600",
-    },
-    {
-      title: "Encuestas SMS",
-      description: "Campañas de satisfacción",
-      icon: MessageSquare,
-      href: "/encuestas",
-      color: "bg-pink-100 text-pink-600",
-    },
-    {
-      title: "Reportes",
-      description: "Análisis y estadísticas",
-      icon: BarChart3,
-      href: "/reportes",
-      color: "bg-indigo-100 text-indigo-600",
-    },
-  ]
-
-  const getAlertIcon = (urgencia: string) => {
-    switch (urgencia) {
-      case "alta":
-        return <AlertTriangle className="w-4 h-4 text-red-500" />
-      case "media":
-        return <Info className="w-4 h-4 text-yellow-500" />
-      case "baja":
-        return <CheckCircle className="w-4 h-4 text-green-500" />
-      default:
-        return <Info className="w-4 h-4 text-blue-500" />
-    }
-  }
-
-  const getAlertColor = (urgencia: string) => {
-    switch (urgencia) {
-      case "alta":
-        return "border-red-200 bg-red-50"
-      case "media":
-        return "border-yellow-200 bg-yellow-50"
-      case "baja":
-        return "border-green-200 bg-green-50"
-      default:
-        return "border-blue-200 bg-blue-50"
-    }
-  }
-
-  if (selectedRole) {
-    const role = roles.find((r) => r.id === selectedRole)
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className={`mx-auto w-16 h-16 rounded-full ${role?.color} flex items-center justify-center mb-4`}>
-              {role?.icon && <role.icon className="w-8 h-8 text-white" />}
-            </div>
-            <CardTitle className="text-2xl">Acceso como {role?.title}</CardTitle>
-            <CardDescription>Redirigiendo al módulo de {role?.title.toLowerCase()}...</CardDescription>
-          </CardHeader>
-          <CardContent className="text-center space-y-4">
-            <Button asChild className="w-full">
-              <Link href={role?.href || "/"}>Continuar</Link>
-            </Button>
-            <Button variant="outline" onClick={() => setSelectedRole(null)} className="w-full">
-              Volver
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
+export function HomeView() {
+  const { user } = useAuth()
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard Principal</h1>
-        <p className="text-gray-600">Resumen de actividad del restaurante</p>
-      </div>
+    <AuthenticatedLayout>
+      <div className="space-y-6">
+        {/* Welcome Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">
+              ¡Bienvenido, {user?.nombreCompleto?.split(" ")[0] || "Usuario"}!
+            </h1>
+            <p className="text-gray-600 mt-1">Aquí tienes un resumen de tu restaurante hoy</p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Badge variant="outline" className="text-sm">
+              {user?.rol}
+            </Badge>
+            <Badge variant="secondary" className="text-sm">
+              {user?.nivelLicencia}
+            </Badge>
+          </div>
+        </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {quickStats.map((stat, index) => (
-          <Card key={index}>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                  <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                  <p className="text-sm text-gray-500">{stat.subtitle}</p>
-                </div>
-                <div className={`p-3 rounded-full bg-gray-100`}>
-                  <stat.icon className={`w-6 h-6 ${stat.color}`} />
-                </div>
-              </div>
-              <div className="mt-4">
-                <Badge variant="outline" className="text-xs">
-                  {stat.change}
-                </Badge>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {STATS_CARDS.map((stat, index) => {
+            const Icon = stat.icon
+            return (
+              <Card key={index}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-600">{stat.title}</CardTitle>
+                  <Icon className={`h-4 w-4 ${stat.color}`} />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stat.value}</div>
+                  <p className="text-xs text-green-600 flex items-center mt-1">
+                    <TrendingUp className="h-3 w-3 mr-1" />
+                    {stat.change} desde ayer
+                  </p>
+                </CardContent>
+              </Card>
+            )
+          })}
+        </div>
+
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Recent Activity */}
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Clock className="h-5 w-5 mr-2" />
+                Actividad Reciente
+              </CardTitle>
+              <CardDescription>Últimas actividades en tu restaurante</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {RECENT_ACTIVITIES.map((activity) => (
+                  <div key={activity.id} className="flex items-center space-x-3 p-3 rounded-lg bg-gray-50">
+                    <div
+                      className={`w-2 h-2 rounded-full ${
+                        activity.status === "success"
+                          ? "bg-green-500"
+                          : activity.status === "warning"
+                            ? "bg-yellow-500"
+                            : activity.status === "info"
+                              ? "bg-blue-500"
+                              : "bg-gray-500"
+                      }`}
+                    />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">{activity.action}</p>
+                      <p className="text-xs text-gray-500">{activity.time}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
-        ))}
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Productos Populares */}
+          {/* Quick Actions */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Acciones Rápidas</CardTitle>
+              <CardDescription>Accesos directos a funciones principales</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Button className="w-full justify-start bg-transparent" variant="outline">
+                <ShoppingCart className="h-4 w-4 mr-2" />
+                Nueva Venta
+              </Button>
+              <Button className="w-full justify-start bg-transparent" variant="outline">
+                <Calendar className="h-4 w-4 mr-2" />
+                Ver Reservaciones
+              </Button>
+              <Button className="w-full justify-start bg-transparent" variant="outline">
+                <Package className="h-4 w-4 mr-2" />
+                Gestionar Productos
+              </Button>
+              <Button className="w-full justify-start bg-transparent" variant="outline">
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Ver Reportes
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Company Info */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <TrendingUp className="w-5 h-5" />
-              <span>Productos Populares</span>
-            </CardTitle>
-            <CardDescription>Los más vendidos hoy</CardDescription>
+            <CardTitle>Información de la Empresa</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {data.productosPopulares.map((producto, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">{producto.nombre}</p>
-                    <p className="text-sm text-gray-500">{producto.ventas} vendidos</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-semibold">${producto.ingresos.toFixed(2)}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Reservaciones Hoy */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Calendar className="w-5 h-5" />
-              <span>Reservaciones Hoy</span>
-            </CardTitle>
-            <CardDescription>Próximas reservas confirmadas</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {data.reservacionesHoy.map((reservacion, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">{reservacion.cliente}</p>
-                    <p className="text-sm text-gray-500">
-                      {reservacion.personas} personas • Mesa {reservacion.mesa}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <Badge variant="outline">{reservacion.hora}</Badge>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Alertas */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <AlertTriangle className="w-5 h-5" />
-            <span>Alertas del Sistema</span>
-          </CardTitle>
-          <CardDescription>Notificaciones importantes</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {data.alertas.map((alerta, index) => (
-              <div key={index} className={`p-3 rounded-lg border ${getAlertColor(alerta.urgencia)}`}>
-                <div className="flex items-center space-x-3">
-                  {getAlertIcon(alerta.urgencia)}
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{alerta.mensaje}</p>
-                    <p className="text-xs text-gray-500 capitalize">{alerta.tipo}</p>
-                  </div>
-                  <Badge variant="outline" className="text-xs capitalize">
-                    {alerta.urgencia}
-                  </Badge>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Empresa</p>
+                <p className="text-lg font-semibold">{user?.nombreEmpresa}</p>
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Quick Access Modules */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Acceso Rápido a Módulos</CardTitle>
-          <CardDescription>Accede directamente a las funciones principales</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {modules.map((module, index) => (
-              <Link key={index} href={module.href}>
-                <div className="p-4 rounded-lg border hover:shadow-md transition-shadow duration-200 cursor-pointer">
-                  <div className="flex items-center space-x-4">
-                    <div className={`p-3 rounded-lg ${module.color}`}>
-                      <module.icon className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{module.title}</h3>
-                      <p className="text-sm text-gray-600">{module.description}</p>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+              <div>
+                <p className="text-sm font-medium text-gray-600">Plan Actual</p>
+                <Badge variant="secondary" className="mt-1">
+                  {user?.nivelLicencia}
+                </Badge>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-600">Usuario Activo</p>
+                <p className="text-lg font-semibold">{user?.nombreCompleto}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </AuthenticatedLayout>
   )
 }

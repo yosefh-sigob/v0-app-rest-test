@@ -38,7 +38,7 @@ const mockDashboardData = {
 export default async function HomePage() {
   return (
     <AuthenticatedLayout>
-      <HomeView data={mockDashboardData} />
+      <HomeView />
     </AuthenticatedLayout>
   )
 }

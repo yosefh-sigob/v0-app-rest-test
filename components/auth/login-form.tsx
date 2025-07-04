@@ -3,56 +3,60 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Eye, EyeOff, ChefHat, User, Lock, Hash, Loader2 } from "lucide-react"
+import { Eye, EyeOff, Loader2, ChefHat, User, Lock, Hash } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { useAuth } from "@/contexts/auth-context"
 import { loginSchema, type LoginFormData } from "@/schemas/auth.schemas"
 
-const demoUsers = [
+const DEMO_USERS = [
   {
     usuario: "admin",
     contraseña: "admin123",
     pin: "1234",
+    nombre: "Juan Carlos Administrador",
     rol: "Administrador",
-    descripcion: "Acceso completo al sistema",
-    color: "bg-purple-500",
+    badge: "FRANQUICIA",
+    color: "bg-red-500",
   },
   {
     usuario: "gerente",
     contraseña: "gerente123",
     pin: "7890",
+    nombre: "María Elena Gerente",
     rol: "Gerente",
-    descripcion: "Gestión y reportes",
-    color: "bg-indigo-500",
+    badge: "PRO",
+    color: "bg-blue-500",
   },
   {
     usuario: "cajero",
     contraseña: "cajero123",
     pin: "9012",
+    nombre: "Pedro Luis Cajero",
     rol: "Cajero",
-    descripcion: "Punto de venta y cobros",
+    badge: "LITE",
     color: "bg-green-500",
   },
   {
     usuario: "mesero",
     contraseña: "mesero123",
     pin: "5678",
+    nombre: "Ana Sofia Mesero",
     rol: "Mesero",
-    descripcion: "Mesas y órdenes",
-    color: "bg-blue-500",
+    badge: "LITE",
+    color: "bg-purple-500",
   },
   {
     usuario: "cocinero",
     contraseña: "cocina123",
     pin: "3456",
+    nombre: "Roberto Chef Cocinero",
     rol: "Cocinero",
-    descripcion: "Cocina e inventario",
+    badge: "GRATIS",
     color: "bg-orange-500",
   },
 ]
@@ -61,7 +65,6 @@ export function LoginForm() {
   const { login, isLoading } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [showPin, setShowPin] = useState(false)
-  const [activeTab, setActiveTab] = useState("login")
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -73,36 +76,30 @@ export function LoginForm() {
   })
 
   const onSubmit = async (data: LoginFormData) => {
-    const success = await login(data)
-    if (!success) {
-      form.setError("root", {
-        message: "Credenciales inválidas. Verifica usuario, contraseña y PIN.",
-      })
-    }
+    await login(data)
   }
 
-  const fillDemoUser = (user: (typeof demoUsers)[0]) => {
-    form.setValue("usuario", user.usuario)
-    form.setValue("contraseña", user.contraseña)
-    form.setValue("pin", user.pin)
-    setActiveTab("login")
+  const handleDemoLogin = (demoUser: (typeof DEMO_USERS)[0]) => {
+    form.setValue("usuario", demoUser.usuario)
+    form.setValue("contraseña", demoUser.contraseña)
+    form.setValue("pin", demoUser.pin)
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-amber-50 p-4">
-      <Card className="w-full max-w-md shadow-xl">
-        <CardHeader className="text-center space-y-4">
-          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-orange-500 to-amber-600 rounded-full flex items-center justify-center">
-            <ChefHat className="w-8 h-8 text-white" />
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <div className="flex justify-center mb-4">
+            <div className="w-16 h-16 bg-orange-600 rounded-full flex items-center justify-center">
+              <ChefHat className="w-8 h-8 text-white" />
+            </div>
           </div>
-          <div>
-            <CardTitle className="text-2xl font-bold text-gray-900">AppRest</CardTitle>
-            <CardDescription className="text-gray-600">Sistema de Gestión de Restaurantes</CardDescription>
-          </div>
+          <CardTitle className="text-2xl font-bold">AppRest</CardTitle>
+          <CardDescription>Sistema de Gestión de Restaurantes</CardDescription>
         </CardHeader>
 
         <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <Tabs defaultValue="login" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="login">Iniciar Sesión</TabsTrigger>
               <TabsTrigger value="demo">Usuarios Demo</TabsTrigger>
@@ -120,7 +117,7 @@ export function LoginForm() {
                         <FormControl>
                           <div className="relative">
                             <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                            <Input placeholder="Ingresa tu usuario" className="pl-10" {...field} />
+                            <Input {...field} placeholder="Ingresa tu usuario" className="pl-10" disabled={isLoading} />
                           </div>
                         </FormControl>
                         <FormMessage />
@@ -138,10 +135,11 @@ export function LoginForm() {
                           <div className="relative">
                             <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                             <Input
+                              {...field}
                               type={showPassword ? "text" : "password"}
                               placeholder="Ingresa tu contraseña"
                               className="pl-10 pr-10"
-                              {...field}
+                              disabled={isLoading}
                             />
                             <Button
                               type="button"
@@ -149,6 +147,7 @@ export function LoginForm() {
                               size="sm"
                               className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                               onClick={() => setShowPassword(!showPassword)}
+                              disabled={isLoading}
                             >
                               {showPassword ? (
                                 <EyeOff className="h-4 w-4 text-gray-400" />
@@ -173,11 +172,12 @@ export function LoginForm() {
                           <div className="relative">
                             <Hash className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                             <Input
-                              type={showPin ? "text" : "password"}
-                              placeholder="Ingresa tu PIN"
-                              className="pl-10 pr-10"
-                              maxLength={6}
                               {...field}
+                              type={showPin ? "text" : "password"}
+                              placeholder="Ingresa tu PIN de 4 dígitos"
+                              className="pl-10 pr-10"
+                              maxLength={4}
+                              disabled={isLoading}
                             />
                             <Button
                               type="button"
@@ -185,6 +185,7 @@ export function LoginForm() {
                               size="sm"
                               className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                               onClick={() => setShowPin(!showPin)}
+                              disabled={isLoading}
                             >
                               {showPin ? (
                                 <EyeOff className="h-4 w-4 text-gray-400" />
@@ -198,12 +199,6 @@ export function LoginForm() {
                       </FormItem>
                     )}
                   />
-
-                  {form.formState.errors.root && (
-                    <div className="text-sm text-red-600 text-center bg-red-50 p-3 rounded-md">
-                      {form.formState.errors.root.message}
-                    </div>
-                  )}
 
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? (
@@ -220,48 +215,35 @@ export function LoginForm() {
             </TabsContent>
 
             <TabsContent value="demo" className="space-y-4">
-              <div className="text-center text-sm text-gray-600 mb-4">
-                Haz clic en cualquier usuario para auto-completar las credenciales
+              <div className="text-sm text-gray-600 mb-4">
+                Haz clic en cualquier usuario para auto-completar las credenciales:
               </div>
-
-              <div className="space-y-3">
-                {demoUsers.map((user) => (
-                  <Card
+              <div className="space-y-2">
+                {DEMO_USERS.map((user) => (
+                  <Button
                     key={user.usuario}
-                    className="cursor-pointer hover:shadow-md transition-shadow"
-                    onClick={() => fillDemoUser(user)}
+                    variant="outline"
+                    className="w-full justify-start h-auto p-3 bg-transparent"
+                    onClick={() => handleDemoLogin(user)}
+                    disabled={isLoading}
                   >
-                    <CardContent className="p-4">
-                      <div className="flex items-center space-x-3">
-                        <div className={`w-10 h-10 rounded-full ${user.color} flex items-center justify-center`}>
-                          <span className="text-white font-semibold text-sm">
-                            {user.usuario.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-2 mb-1">
-                            <span className="font-medium">{user.usuario}</span>
-                            <Badge variant="secondary" className="text-xs">
-                              {user.rol}
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-gray-600">{user.descripcion}</p>
-                          <Separator className="my-2" />
-                          <div className="text-xs text-gray-500 space-y-1">
-                            <div>Contraseña: {user.contraseña}</div>
-                            <div>PIN: {user.pin}</div>
-                          </div>
-                        </div>
+                    <div className="flex items-center space-x-3 w-full">
+                      <div className={`w-8 h-8 rounded-full ${user.color} flex items-center justify-center`}>
+                        <span className="text-white font-semibold text-sm">
+                          {user.nombre.split(" ")[0].charAt(0)}
+                          {user.nombre.split(" ")[1]?.charAt(0) || ""}
+                        </span>
                       </div>
-                    </CardContent>
-                  </Card>
+                      <div className="flex-1 text-left">
+                        <div className="font-medium">{user.nombre}</div>
+                        <div className="text-sm text-gray-500">{user.rol}</div>
+                      </div>
+                      <Badge variant="secondary" className="text-xs">
+                        {user.badge}
+                      </Badge>
+                    </div>
+                  </Button>
                 ))}
-              </div>
-
-              <div className="text-center">
-                <Button onClick={() => setActiveTab("login")} variant="ghost" size="sm">
-                  Ir al formulario de login →
-                </Button>
               </div>
             </TabsContent>
           </Tabs>
