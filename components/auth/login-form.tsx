@@ -3,304 +3,195 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Eye, EyeOff, Loader2, ChefHat, User, Lock, Hash } from "lucide-react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Separator } from "@/components/ui/separator"
-import { useAuth } from "@/contexts/auth-context"
 import { loginSchema, type LoginFormData } from "@/schemas/auth.schemas"
+import { useAuth } from "@/contexts/auth-context"
+import { Eye, EyeOff, LogIn, User, Lock, Shield, ChefHat } from "lucide-react"
 
 const DEMO_USERS = [
-  {
-    usuario: "admin",
-    contraseña: "admin123",
-    pin: "1234",
-    nombre: "Juan Carlos Administrador",
-    rol: "Administrador",
-    licencia: "FRANQUICIA",
-    color: "bg-red-500",
-    descripcion: "Acceso completo al sistema",
-  },
-  {
-    usuario: "gerente",
-    contraseña: "gerente123",
-    pin: "7890",
-    nombre: "María Elena Gerente",
-    rol: "Gerente",
-    licencia: "PRO",
-    color: "bg-blue-500",
-    descripcion: "Gestión y reportes avanzados",
-  },
-  {
-    usuario: "cajero",
-    contraseña: "cajero123",
-    pin: "9012",
-    nombre: "Pedro Luis Cajero",
-    rol: "Cajero",
-    licencia: "LITE",
-    color: "bg-green-500",
-    descripcion: "Punto de venta y cobros",
-  },
-  {
-    usuario: "mesero",
-    contraseña: "mesero123",
-    pin: "5678",
-    nombre: "Ana Sofia Mesero",
-    rol: "Mesero",
-    licencia: "LITE",
-    color: "bg-purple-500",
-    descripcion: "Gestión de mesas y órdenes",
-  },
+  { usuario: "admin", contraseña: "admin123", pin: "1234", rol: "Administrador", color: "bg-red-100 text-red-800" },
+  { usuario: "gerente", contraseña: "gerente123", pin: "2345", rol: "Gerente", color: "bg-blue-100 text-blue-800" },
+  { usuario: "cajero", contraseña: "cajero123", pin: "3456", rol: "Cajero", color: "bg-green-100 text-green-800" },
+  { usuario: "mesero", contraseña: "mesero123", pin: "4567", rol: "Mesero", color: "bg-purple-100 text-purple-800" },
   {
     usuario: "cocinero",
-    contraseña: "cocina123",
-    pin: "3456",
-    nombre: "Roberto Chef Cocinero",
+    contraseña: "cocinero123",
+    pin: "5678",
     rol: "Cocinero",
-    licencia: "GRATIS",
-    color: "bg-orange-500",
-    descripcion: "Cocina e inventario básico",
+    color: "bg-orange-100 text-orange-800",
   },
 ]
 
 export function LoginForm() {
-  const { login, isLoading } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [showPin, setShowPin] = useState(false)
-  const [activeTab, setActiveTab] = useState("login")
+  const { login, isLoading } = useAuth()
 
-  const form = useForm<LoginFormData>({
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
-    defaultValues: {
-      usuario: "",
-      contraseña: "",
-      pin: "",
-    },
   })
 
   const onSubmit = async (data: LoginFormData) => {
     await login(data)
   }
 
-  const handleDemoLogin = (demoUser: (typeof DEMO_USERS)[0]) => {
-    form.setValue("usuario", demoUser.usuario)
-    form.setValue("contraseña", demoUser.contraseña)
-    form.setValue("pin", demoUser.pin)
-    setActiveTab("login")
-  }
-
-  const getUserInitials = (nombre: string) => {
-    const names = nombre.split(" ")
-    return names.length >= 2 ? names[0][0] + names[1][0] : names[0][0]
+  const fillDemoUser = (demoUser: (typeof DEMO_USERS)[0]) => {
+    setValue("usuario", demoUser.usuario)
+    setValue("contraseña", demoUser.contraseña)
+    setValue("pin", demoUser.pin)
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 p-4">
-      <Card className="w-full max-w-md shadow-2xl border-0">
-        <CardHeader className="text-center space-y-4 pb-8">
-          <div className="flex justify-center">
-            <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-amber-600 rounded-full flex items-center justify-center shadow-lg">
-              <ChefHat className="w-10 h-10 text-white" />
-            </div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-white to-red-50 p-4">
+      <div className="w-full max-w-md space-y-6">
+        {/* Logo y Header */}
+        <div className="text-center space-y-2">
+          <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <ChefHat className="h-8 w-8 text-white" />
           </div>
-          <div>
-            <CardTitle className="text-3xl font-bold text-gray-900">AppRest</CardTitle>
-            <CardDescription className="text-gray-600 mt-2">Sistema de Gestión de Restaurantes</CardDescription>
-          </div>
-        </CardHeader>
+          <h1 className="text-3xl font-bold text-gray-900">AppRest</h1>
+          <p className="text-gray-600">Sistema de Gestión de Restaurantes</p>
+        </div>
 
-        <CardContent className="space-y-6">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="login" className="text-sm">
-                Iniciar Sesión
-              </TabsTrigger>
-              <TabsTrigger value="demo" className="text-sm">
-                Usuarios Demo
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="login" className="space-y-6">
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-                  <FormField
-                    control={form.control}
-                    name="usuario"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm font-medium">Usuario</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                            <Input
-                              {...field}
-                              placeholder="Ingresa tu usuario"
-                              className="pl-10 h-11"
-                              disabled={isLoading}
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+        {/* Formulario de Login */}
+        <Card className="shadow-lg border-0">
+          <CardHeader className="space-y-1 pb-4">
+            <CardTitle className="text-2xl text-center">Iniciar Sesión</CardTitle>
+            <CardDescription className="text-center">Ingresa tus credenciales para acceder al sistema</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              {/* Usuario */}
+              <div className="space-y-2">
+                <Label htmlFor="usuario">Usuario</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    id="usuario"
+                    type="text"
+                    placeholder="Ingresa tu usuario"
+                    className="pl-10"
+                    {...register("usuario")}
                   />
-
-                  <FormField
-                    control={form.control}
-                    name="contraseña"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm font-medium">Contraseña</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                            <Input
-                              {...field}
-                              type={showPassword ? "text" : "password"}
-                              placeholder="Ingresa tu contraseña"
-                              className="pl-10 pr-10 h-11"
-                              disabled={isLoading}
-                            />
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                              onClick={() => setShowPassword(!showPassword)}
-                              disabled={isLoading}
-                            >
-                              {showPassword ? (
-                                <EyeOff className="h-4 w-4 text-gray-400" />
-                              ) : (
-                                <Eye className="h-4 w-4 text-gray-400" />
-                              )}
-                            </Button>
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="pin"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-sm font-medium">PIN</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Hash className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                            <Input
-                              {...field}
-                              type={showPin ? "text" : "password"}
-                              placeholder="PIN de 4 dígitos"
-                              className="pl-10 pr-10 h-11"
-                              maxLength={4}
-                              disabled={isLoading}
-                            />
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                              onClick={() => setShowPin(!showPin)}
-                              disabled={isLoading}
-                            >
-                              {showPin ? (
-                                <EyeOff className="h-4 w-4 text-gray-400" />
-                              ) : (
-                                <Eye className="h-4 w-4 text-gray-400" />
-                              )}
-                            </Button>
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <Button type="submit" className="w-full h-11 text-base" disabled={isLoading}>
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Iniciando sesión...
-                      </>
-                    ) : (
-                      "Iniciar Sesión"
-                    )}
-                  </Button>
-                </form>
-              </Form>
-            </TabsContent>
-
-            <TabsContent value="demo" className="space-y-4">
-              <div className="text-center text-sm text-gray-600 mb-4">
-                Selecciona un usuario para auto-completar las credenciales
+                </div>
+                {errors.usuario && <p className="text-sm text-red-600">{errors.usuario.message}</p>}
               </div>
 
-              <div className="space-y-3">
-                {DEMO_USERS.map((user) => (
-                  <Card
-                    key={user.usuario}
-                    className="cursor-pointer hover:shadow-md transition-all duration-200 border hover:border-orange-200"
-                    onClick={() => handleDemoLogin(user)}
+              {/* Contraseña */}
+              <div className="space-y-2">
+                <Label htmlFor="contraseña">Contraseña</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    id="contraseña"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Ingresa tu contraseña"
+                    className="pl-10 pr-10"
+                    {...register("contraseña")}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
-                    <CardContent className="p-4">
-                      <div className="flex items-center space-x-3">
-                        <div className={`w-12 h-12 rounded-full ${user.color} flex items-center justify-center`}>
-                          <span className="text-white font-bold text-sm">{getUserInitials(user.nombre)}</span>
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-2 mb-1">
-                            <span className="font-semibold text-gray-900">{user.nombre}</span>
-                          </div>
-                          <div className="flex items-center space-x-2 mb-2">
-                            <Badge variant="secondary" className="text-xs">
-                              {user.rol}
-                            </Badge>
-                            <Badge variant="outline" className="text-xs">
-                              {user.licencia}
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-gray-600">{user.descripcion}</p>
-                          <Separator className="my-2" />
-                          <div className="text-xs text-gray-500 space-y-1">
-                            <div>
-                              Usuario: <span className="font-mono">{user.usuario}</span>
-                            </div>
-                            <div>
-                              Contraseña: <span className="font-mono">{user.contraseña}</span>
-                            </div>
-                            <div>
-                              PIN: <span className="font-mono">{user.pin}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                {errors.contraseña && <p className="text-sm text-red-600">{errors.contraseña.message}</p>}
               </div>
 
-              <div className="text-center pt-4">
-                <Button
-                  onClick={() => setActiveTab("login")}
-                  variant="ghost"
-                  size="sm"
-                  className="text-orange-600 hover:text-orange-700"
-                >
-                  ← Volver al formulario de login
-                </Button>
+              {/* PIN */}
+              <div className="space-y-2">
+                <Label htmlFor="pin">PIN de Seguridad</Label>
+                <div className="relative">
+                  <Shield className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    id="pin"
+                    type={showPin ? "text" : "password"}
+                    placeholder="PIN de 4 dígitos"
+                    maxLength={4}
+                    className="pl-10 pr-10"
+                    {...register("pin")}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPin(!showPin)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showPin ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                {errors.pin && <p className="text-sm text-red-600">{errors.pin.message}</p>}
               </div>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+
+              {/* Botón de Login */}
+              <Button
+                type="submit"
+                className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <div className="flex items-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Iniciando sesión...
+                  </div>
+                ) : (
+                  <div className="flex items-center">
+                    <LogIn className="h-4 w-4 mr-2" />
+                    Iniciar Sesión
+                  </div>
+                )}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        {/* Usuarios Demo */}
+        <Card className="shadow-lg border-0">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg">Usuarios de Demostración</CardTitle>
+            <CardDescription>Haz clic en cualquier usuario para llenar automáticamente el formulario</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {DEMO_USERS.map((demoUser) => (
+              <div key={demoUser.usuario}>
+                <button
+                  type="button"
+                  onClick={() => fillDemoUser(demoUser)}
+                  className="w-full text-left p-3 rounded-lg border hover:bg-gray-50 transition-colors"
+                  disabled={isLoading}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">{demoUser.usuario}</p>
+                      <p className="text-sm text-gray-500">
+                        Contraseña: {demoUser.contraseña} • PIN: {demoUser.pin}
+                      </p>
+                    </div>
+                    <Badge className={demoUser.color}>{demoUser.rol}</Badge>
+                  </div>
+                </button>
+                {demoUser.usuario !== DEMO_USERS[DEMO_USERS.length - 1].usuario && <Separator className="mt-3" />}
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        {/* Footer */}
+        <div className="text-center text-sm text-gray-500">
+          <p>© 2024 AppRest. Sistema de Gestión de Restaurantes</p>
+        </div>
+      </div>
     </div>
   )
 }

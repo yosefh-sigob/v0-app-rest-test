@@ -1,90 +1,78 @@
 "use client"
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
-import { useRouter } from "next/navigation"
-import type { User, AuthContextType, LoginCredentials } from "@/interfaces/auth"
-import { authenticateUser, validateToken } from "@/actions/auth.actions"
+import type React from "react"
+import { createContext, useContext, useState, useEffect } from "react"
+import type { User, LoginCredentials, AuthContextType } from "@/interfaces/auth"
+import { authenticateUser, generateToken, validateToken } from "@/actions/auth.actions"
 import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-export function useAuth() {
-  const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider")
-  }
-  return context
-}
+const TOKEN_KEY = "restaurant_auth_token"
+const USER_KEY = "restaurant_user_data"
 
-interface AuthProviderProps {
-  children: ReactNode
-}
-
-export function AuthProvider({ children }: AuthProviderProps) {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
-  const [token, setToken] = useState<string | null>(null)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
 
+  // Verificar token al cargar la aplicación
   useEffect(() => {
-    checkAuth()
-  }, [])
+    const initAuth = async () => {
+      try {
+        const token = localStorage.getItem(TOKEN_KEY)
+        const userData = localStorage.getItem(USER_KEY)
 
-  const checkAuth = async () => {
-    try {
-      const storedToken = localStorage.getItem("auth_token")
-      const storedUser = localStorage.getItem("auth_user")
-
-      if (storedToken && storedUser) {
-        // Validar token con el servidor
-        const validUser = await validateToken(storedToken)
-
-        if (validUser) {
-          setToken(storedToken)
-          setUser(validUser)
-          setIsAuthenticated(true)
-        } else {
-          // Token inválido, limpiar storage
-          localStorage.removeItem("auth_token")
-          localStorage.removeItem("auth_user")
+        if (token && userData) {
+          const validUser = await validateToken(token)
+          if (validUser) {
+            setUser(validUser)
+          } else {
+            // Token inválido, limpiar storage
+            localStorage.removeItem(TOKEN_KEY)
+            localStorage.removeItem(USER_KEY)
+          }
         }
+      } catch (error) {
+        console.error("Error al inicializar autenticación:", error)
+        localStorage.removeItem(TOKEN_KEY)
+        localStorage.removeItem(USER_KEY)
+      } finally {
+        setIsLoading(false)
       }
-    } catch (error) {
-      console.error("Error checking auth:", error)
-      logout()
-    } finally {
-      setIsLoading(false)
     }
-  }
+
+    initAuth()
+  }, [])
 
   const login = async (credentials: LoginCredentials): Promise<boolean> => {
     try {
       setIsLoading(true)
-      const result = await authenticateUser(credentials)
+      const authenticatedUser = await authenticateUser(credentials)
 
-      if (result.success && result.user && result.token) {
-        setUser(result.user)
-        setToken(result.token)
-        setIsAuthenticated(true)
+      if (authenticatedUser) {
+        const token = await generateToken(authenticatedUser)
 
         // Guardar en localStorage
-        localStorage.setItem("auth_token", result.token)
-        localStorage.setItem("auth_user", JSON.stringify(result.user))
+        localStorage.setItem(TOKEN_KEY, token)
+        localStorage.setItem(USER_KEY, JSON.stringify(authenticatedUser))
 
-        toast.success(`¡Bienvenido ${result.user.nombreCompleto}!`)
+        setUser(authenticatedUser)
 
-        // Redirigir al dashboard
+        toast.success(`¡Bienvenido, ${authenticatedUser.nombreCompleto}!`)
+
+        // Redireccionar al dashboard
         router.push("/dashboard")
 
         return true
       } else {
-        toast.error(result.error || "Credenciales inválidas")
+        toast.error("Credenciales incorrectas. Verifica usuario, contraseña y PIN.")
         return false
       }
     } catch (error) {
-      console.error("Login error:", error)
-      toast.error("Error de conexión")
+      console.error("Error en login:", error)
+      toast.error("Error al iniciar sesión. Intenta nuevamente.")
       return false
     } finally {
       setIsLoading(false)
@@ -92,29 +80,34 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }
 
   const logout = () => {
-    setUser(null)
-    setToken(null)
-    setIsAuthenticated(false)
+    // Limpiar storage
+    localStorage.removeItem(TOKEN_KEY)
+    localStorage.removeItem(USER_KEY)
 
-    // Limpiar localStorage
-    localStorage.removeItem("auth_token")
-    localStorage.removeItem("auth_user")
+    // Limpiar estado
+    setUser(null)
 
     toast.success("Sesión cerrada correctamente")
 
-    // Redirigir al login
+    // Redireccionar al login
     router.push("/")
   }
 
   const value: AuthContextType = {
     user,
-    token,
-    isAuthenticated,
-    isLoading,
     login,
     logout,
-    checkAuth,
+    isLoading,
+    isAuthenticated: !!user,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext)
+  if (context === undefined) {
+    throw new Error("useAuth debe ser usado dentro de un AuthProvider")
+  }
+  return context
 }

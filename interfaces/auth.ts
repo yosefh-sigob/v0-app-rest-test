@@ -1,31 +1,13 @@
-export enum RolUsuario {
-  ADMINISTRADOR = "Administrador",
-  GERENTE = "Gerente",
-  CAJERO = "Cajero",
-  MESERO = "Mesero",
-  COCINERO = "Cocinero",
-}
-
-export enum NivelLicencia {
-  GRATIS = "Gratis",
-  LITE = "Lite",
-  PRO = "Pro",
-  FRANQUICIA = "Franquicia",
-}
-
 export interface User {
   id: string
   usuario: string
   nombreCompleto: string
   correo: string
-  rol: RolUsuario
-  esAdministrador: boolean
-  nivelLicencia: NivelLicencia
-  empresaId: string
+  rol: "Administrador" | "Gerente" | "Cajero" | "Mesero" | "Cocinero"
+  nivelLicencia: "Gratis" | "Lite" | "Pro" | "Franquicia"
   nombreEmpresa: string
+  ultimoLogin?: string
   activo: boolean
-  avatar?: string
-  ultimoLogin?: Date
 }
 
 export interface LoginCredentials {
@@ -34,19 +16,10 @@ export interface LoginCredentials {
   pin: string
 }
 
-export interface AuthResponse {
-  success: boolean
-  user?: User
-  token?: string
-  error?: string
-}
-
 export interface AuthContextType {
   user: User | null
-  token: string | null
-  isAuthenticated: boolean
-  isLoading: boolean
   login: (credentials: LoginCredentials) => Promise<boolean>
   logout: () => void
-  checkAuth: () => void
+  isLoading: boolean
+  isAuthenticated: boolean
 }

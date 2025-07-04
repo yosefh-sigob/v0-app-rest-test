@@ -1,9 +1,9 @@
 "use client"
 
 import { useEffect } from "react"
-import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
 import { LoginForm } from "@/components/auth/login-form"
+import { useRouter } from "next/navigation"
 import { Skeleton } from "@/components/ui/skeleton"
 
 export default function HomePage() {
@@ -11,25 +11,23 @@ export default function HomePage() {
   const router = useRouter()
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !isLoading) {
       router.push("/dashboard")
     }
-  }, [isAuthenticated, router])
+  }, [isAuthenticated, isLoading, router])
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
-        <div className="w-full max-w-md space-y-4">
-          <div className="flex justify-center">
-            <Skeleton className="w-20 h-20 rounded-full" />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-white to-red-50">
+        <div className="w-full max-w-md space-y-6">
+          <div className="text-center space-y-4">
+            <Skeleton className="w-16 h-16 rounded-full mx-auto" />
+            <Skeleton className="h-8 w-32 mx-auto" />
+            <Skeleton className="h-4 w-48 mx-auto" />
           </div>
-          <Skeleton className="h-8 w-48 mx-auto" />
-          <Skeleton className="h-4 w-64 mx-auto" />
-          <div className="space-y-4 p-6">
-            <Skeleton className="h-11 w-full" />
-            <Skeleton className="h-11 w-full" />
-            <Skeleton className="h-11 w-full" />
-            <Skeleton className="h-11 w-full" />
+          <div className="space-y-4">
+            <Skeleton className="h-64 w-full rounded-lg" />
+            <Skeleton className="h-48 w-full rounded-lg" />
           </div>
         </div>
       </div>
@@ -37,7 +35,7 @@ export default function HomePage() {
   }
 
   if (isAuthenticated) {
-    return null // Will redirect to dashboard
+    return null // Se redirigirá automáticamente
   }
 
   return <LoginForm />
