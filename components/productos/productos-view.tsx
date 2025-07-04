@@ -28,13 +28,9 @@ import { ProductoDetail } from "./producto-detail"
 import { getProductos, deleteProducto, toggleFavoriteProducto } from "@/actions/productos.actions"
 import type { Producto } from "@/schemas/productos.schemas"
 
-interface ProductosViewProps {
-  initialProductos: Producto[]
-}
-
-export function ProductosView({ initialProductos = [] }: ProductosViewProps) {
-  const [productos, setProductos] = useState<Producto[]>(initialProductos)
-  const [filteredProductos, setFilteredProductos] = useState<Producto[]>(initialProductos)
+export function ProductosView() {
+  const [productos, setProductos] = useState<Producto[]>([])
+  const [filteredProductos, setFilteredProductos] = useState<Producto[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedTipo, setSelectedTipo] = useState<string>("all")
   const [showFavoritos, setShowFavoritos] = useState(false)
@@ -45,7 +41,12 @@ export function ProductosView({ initialProductos = [] }: ProductosViewProps) {
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [isDetailOpen, setIsDetailOpen] = useState(false)
   const [selectedProducto, setSelectedProducto] = useState<Producto | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Cargar productos iniciales
+  useEffect(() => {
+    loadProductos()
+  }, [])
 
   // Filtrar y ordenar productos
   useEffect(() => {
@@ -97,7 +98,7 @@ export function ProductosView({ initialProductos = [] }: ProductosViewProps) {
     setFilteredProductos(filtered)
   }, [productos, searchTerm, selectedTipo, showFavoritos, showSuspendidos, sortBy])
 
-  const handleRefresh = async () => {
+  const loadProductos = async () => {
     setIsLoading(true)
     try {
       const result = await getProductos({ page: 1, limit: 100 })

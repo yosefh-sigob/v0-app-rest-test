@@ -1,400 +1,128 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
-import {
-  createProductoSchema,
-  updateProductoSchema,
-  type CreateProductoInput,
-  type UpdateProductoInput,
-  type Producto,
-} from "@/schemas/productos.schemas"
-import { generateULID } from "@/utils/ulid"
+import { ProductosService } from "@/lib/services/productos.service"
+import { searchProductosInputSchema, type SearchProductosInput, type Producto } from "@/schemas/productos.schemas"
 
-// Mock data para simular base de datos
-const mockProductos: Producto[] = [
-  {
-    ProductoULID: generateULID(),
-    ClaveProducto: "HAM001",
-    TipoProducto: "Platillo",
-    Nombredelproducto: "Hamburguesa Clásica",
-    Descripcion: "Hamburguesa con carne, lechuga, tomate y queso",
-    Favorito: true,
-    ExentoImpuesto: false,
-    PrecioAbierto: false,
-    ControlStock: true,
-    PrecioxUtilidad: false,
-    Facturable: true,
-    Suspendido: false,
-    Comedor: true,
-    ADomicilio: true,
-    Mostrador: false,
-    Enlinea: true,
-    EnAPP: false,
-    EnMenuQR: true,
-    Fecha_UltimoCambio: new Date().toISOString(),
-  },
-  {
-    ProductoULID: generateULID(),
-    ClaveProducto: "REF001",
-    TipoProducto: "Botella",
-    Nombredelproducto: "Coca Cola 600ml",
-    Descripcion: "Refresco de cola en botella de vidrio",
-    Favorito: false,
-    ExentoImpuesto: false,
-    PrecioAbierto: false,
-    ControlStock: true,
-    PrecioxUtilidad: true,
-    Facturable: true,
-    Suspendido: false,
-    Comedor: true,
-    ADomicilio: true,
-    Mostrador: true,
-    Enlinea: false,
-    EnAPP: false,
-    EnMenuQR: false,
-    Fecha_UltimoCambio: new Date().toISOString(),
-  },
-  {
-    ProductoULID: generateULID(),
-    ClaveProducto: "HAM002",
-    TipoProducto: "Platillo",
-    Nombredelproducto: "Hamburguesa BBQ",
-    Descripcion: "Con tocino, queso cheddar y salsa BBQ",
-    Favorito: true,
-    ExentoImpuesto: false,
-    PrecioAbierto: false,
-    ControlStock: true,
-    PrecioxUtilidad: false,
-    Facturable: true,
-    Suspendido: false,
-    Comedor: true,
-    ADomicilio: true,
-    Mostrador: true,
-    Enlinea: true,
-    EnAPP: true,
-    EnMenuQR: true,
-    Fecha_UltimoCambio: new Date().toISOString(),
-  },
-  {
-    ProductoULID: generateULID(),
-    ClaveProducto: "PIZ001",
-    TipoProducto: "Platillo",
-    Nombredelproducto: "Pizza Margarita",
-    Descripcion: "Con queso mozzarella, jitomate y albahaca fresca",
-    Favorito: true,
-    ExentoImpuesto: false,
-    PrecioAbierto: false,
-    ControlStock: true,
-    PrecioxUtilidad: false,
-    Facturable: true,
-    Suspendido: false,
-    Comedor: true,
-    ADomicilio: true,
-    Mostrador: false,
-    Enlinea: true,
-    EnAPP: false,
-    EnMenuQR: true,
-    Fecha_UltimoCambio: new Date().toISOString(),
-  },
-  {
-    ProductoULID: generateULID(),
-    ClaveProducto: "BEB002",
-    TipoProducto: "Botella",
-    Nombredelproducto: "Agua Mineral 500ml",
-    Descripcion: "Agua con gas embotellada",
-    Favorito: false,
-    ExentoImpuesto: false,
-    PrecioAbierto: false,
-    ControlStock: false,
-    PrecioxUtilidad: false,
-    Facturable: true,
-    Suspendido: false,
-    Comedor: true,
-    ADomicilio: true,
-    Mostrador: true,
-    Enlinea: false,
-    EnAPP: false,
-    EnMenuQR: false,
-    Fecha_UltimoCambio: new Date().toISOString(),
-  },
-  {
-    ProductoULID: generateULID(),
-    ClaveProducto: "TAC001",
-    TipoProducto: "Platillo",
-    Nombredelproducto: "Tacos al Pastor",
-    Descripcion: "Con piña, cebolla y cilantro",
-    Favorito: true,
-    ExentoImpuesto: false,
-    PrecioAbierto: true,
-    ControlStock: false,
-    PrecioxUtilidad: false,
-    Facturable: true,
-    Suspendido: false,
-    Comedor: true,
-    ADomicilio: true,
-    Mostrador: true,
-    Enlinea: false,
-    EnAPP: true,
-    EnMenuQR: true,
-    Fecha_UltimoCambio: new Date().toISOString(),
-  },
-  {
-    ProductoULID: generateULID(),
-    ClaveProducto: "PST001",
-    TipoProducto: "Producto",
-    Nombredelproducto: "Pasta Alfredo",
-    Descripcion: "Con salsa cremosa y parmesano",
-    Favorito: false,
-    ExentoImpuesto: false,
-    PrecioAbierto: false,
-    ControlStock: true,
-    PrecioxUtilidad: true,
-    Facturable: true,
-    Suspendido: false,
-    Comedor: true,
-    ADomicilio: false,
-    Mostrador: false,
-    Enlinea: false,
-    EnAPP: false,
-    EnMenuQR: true,
-    Fecha_UltimoCambio: new Date().toISOString(),
-  },
-  {
-    ProductoULID: generateULID(),
-    ClaveProducto: "ENS001",
-    TipoProducto: "Platillo",
-    Nombredelproducto: "Ensalada César",
-    Descripcion: "Con aderezo, crutones y parmesano",
-    Favorito: false,
-    ExentoImpuesto: false,
-    PrecioAbierto: false,
-    ControlStock: false,
-    PrecioxUtilidad: false,
-    Facturable: true,
-    Suspendido: false,
-    Comedor: true,
-    ADomicilio: false,
-    Mostrador: false,
-    Enlinea: true,
-    EnAPP: true,
-    EnMenuQR: true,
-    Fecha_UltimoCambio: new Date().toISOString(),
-  },
-  {
-    ProductoULID: generateULID(),
-    ClaveProducto: "DES001",
-    TipoProducto: "Producto",
-    Nombredelproducto: "Pastel de Chocolate",
-    Descripcion: "Rebanada de pastel húmedo con betún",
-    Favorito: true,
-    ExentoImpuesto: false,
-    PrecioAbierto: false,
-    ControlStock: true,
-    PrecioxUtilidad: true,
-    Facturable: true,
-    Suspendido: false,
-    Comedor: false,
-    ADomicilio: true,
-    Mostrador: true,
-    Enlinea: false,
-    EnAPP: false,
-    EnMenuQR: true,
-    Fecha_UltimoCambio: new Date().toISOString(),
-  },
-  {
-    ProductoULID: generateULID(),
-    ClaveProducto: "CAF001",
-    TipoProducto: "Botella",
-    Nombredelproducto: "Café Americano",
-    Descripcion: "Taza de café filtrado",
-    Favorito: false,
-    ExentoImpuesto: false,
-    PrecioAbierto: true,
-    ControlStock: false,
-    PrecioxUtilidad: false,
-    Facturable: true,
-    Suspendido: false,
-    Comedor: true,
-    ADomicilio: false,
-    Mostrador: true,
-    Enlinea: false,
-    EnAPP: true,
-    EnMenuQR: false,
-    Fecha_UltimoCambio: new Date().toISOString(),
-  },
-]
-
-export async function getProductos(params: { page?: number; limit?: number } = {}) {
+export async function getProductos(filters: SearchProductosInput = { page: 1, limit: 10 }) {
   try {
-    const { page = 1, limit = 10 } = params
-
-    // Simular delay de red
-    await new Promise((resolve) => setTimeout(resolve, 100))
-
-    const startIndex = (page - 1) * limit
-    const endIndex = startIndex + limit
-    const productos = mockProductos.slice(startIndex, endIndex)
+    const validatedFilters = searchProductosInputSchema.parse(filters)
+    const result = await ProductosService.search(validatedFilters)
 
     return {
       success: true,
-      data: {
-        productos,
-        total: mockProductos.length,
-        page,
-        limit,
-      },
+      data: result,
     }
   } catch (error) {
+    console.error("Error al obtener productos:", error)
     return {
       success: false,
       message: "Error al obtener productos",
+      data: null,
     }
   }
 }
 
-export async function createProducto(data: CreateProductoInput) {
+export async function getProductoById(id: string) {
   try {
-    // Validar datos
-    const validatedData = createProductoSchema.parse(data)
+    const producto = await ProductosService.getById(id)
 
-    // Verificar que no exista la clave
-    const existingProducto = mockProductos.find((p) => p.ClaveProducto === validatedData.ClaveProducto)
-    if (existingProducto) {
-      return {
-        success: false,
-        message: "Ya existe un producto con esta clave",
-      }
-    }
-
-    // Crear nuevo producto
-    const newProducto: Producto = {
-      ...validatedData,
-      ProductoULID: generateULID(),
-      Fecha_UltimoCambio: new Date().toISOString(),
-      Fecha_Sync: new Date().toISOString(),
-    }
-
-    mockProductos.unshift(newProducto)
-
-    revalidatePath("/productos")
-
-    return {
-      success: true,
-      message: "Producto creado exitosamente",
-      data: newProducto,
-    }
-  } catch (error) {
-    return {
-      success: false,
-      message: "Error al crear el producto",
-    }
-  }
-}
-
-export async function updateProducto(id: string, data: UpdateProductoInput) {
-  try {
-    // Validar datos
-    const validatedData = updateProductoSchema.parse(data)
-
-    // Buscar producto
-    const index = mockProductos.findIndex((p) => p.ProductoULID === id)
-    if (index === -1) {
+    if (!producto) {
       return {
         success: false,
         message: "Producto no encontrado",
+        data: null,
       }
     }
-
-    // Verificar clave única si se está actualizando
-    if (validatedData.ClaveProducto) {
-      const existingProducto = mockProductos.find(
-        (p) => p.ClaveProducto === validatedData.ClaveProducto && p.ProductoULID !== id,
-      )
-      if (existingProducto) {
-        return {
-          success: false,
-          message: "Ya existe un producto con esta clave",
-        }
-      }
-    }
-
-    // Actualizar producto
-    const updatedProducto: Producto = {
-      ...mockProductos[index],
-      ...validatedData,
-      Fecha_UltimoCambio: new Date().toISOString(),
-    }
-
-    mockProductos[index] = updatedProducto
-
-    revalidatePath("/productos")
 
     return {
       success: true,
-      message: "Producto actualizado exitosamente",
-      data: updatedProducto,
+      data: producto,
     }
   } catch (error) {
+    console.error("Error al obtener producto:", error)
     return {
       success: false,
-      message: "Error al actualizar el producto",
+      message: "Error al obtener producto",
+      data: null,
+    }
+  }
+}
+
+export async function createProducto(data: Partial<Producto>) {
+  try {
+    const producto = await ProductosService.create(data)
+
+    return {
+      success: true,
+      data: producto,
+    }
+  } catch (error) {
+    console.error("Error al crear producto:", error)
+    return {
+      success: false,
+      message: "Error al crear producto",
+      data: null,
+    }
+  }
+}
+
+export async function updateProducto(id: string, data: Partial<Producto>) {
+  try {
+    const producto = await ProductosService.update(id, data)
+
+    return {
+      success: true,
+      data: producto,
+    }
+  } catch (error) {
+    console.error("Error al actualizar producto:", error)
+    return {
+      success: false,
+      message: "Error al actualizar producto",
+      data: null,
     }
   }
 }
 
 export async function deleteProducto(id: string) {
   try {
-    const index = mockProductos.findIndex((p) => p.ProductoULID === id)
-    if (index === -1) {
-      return {
-        success: false,
-        message: "Producto no encontrado",
-      }
-    }
-
-    mockProductos.splice(index, 1)
-
-    revalidatePath("/productos")
+    const success = await ProductosService.delete(id)
 
     return {
-      success: true,
-      message: "Producto eliminado exitosamente",
+      success,
+      message: success ? "Producto eliminado correctamente" : "Error al eliminar producto",
     }
   } catch (error) {
+    console.error("Error al eliminar producto:", error)
     return {
       success: false,
-      message: "Error al eliminar el producto",
+      message: "Error al eliminar producto",
     }
   }
 }
 
 export async function toggleFavoriteProducto(id: string) {
   try {
-    const index = mockProductos.findIndex((p) => p.ProductoULID === id)
-    if (index === -1) {
+    const producto = await ProductosService.toggleFavorite(id)
+
+    if (!producto) {
       return {
         success: false,
         message: "Producto no encontrado",
+        data: null,
       }
     }
 
-    mockProductos[index] = {
-      ...mockProductos[index],
-      Favorito: !mockProductos[index].Favorito,
-      Fecha_UltimoCambio: new Date().toISOString(),
-    }
-
-    revalidatePath("/productos")
-
     return {
       success: true,
-      message: "Estado de favorito actualizado",
-      data: mockProductos[index],
+      data: producto,
     }
   } catch (error) {
+    console.error("Error al actualizar favorito:", error)
     return {
       success: false,
       message: "Error al actualizar favorito",
+      data: null,
     }
   }
 }

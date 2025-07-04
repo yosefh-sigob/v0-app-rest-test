@@ -1,5 +1,18 @@
 import { z } from "zod"
 
+// Esquema para filtros de búsqueda
+export const searchProductosInputSchema = z.object({
+  search: z.string().optional(),
+  tipo: z.enum(["Platillo", "Producto", "Botella"]).optional(),
+  favorito: z.boolean().optional(),
+  suspendido: z.boolean().optional(),
+  grupoId: z.string().optional(),
+  page: z.number().min(1).default(1),
+  limit: z.number().min(1).max(100).default(10),
+})
+
+export type SearchProductosInput = z.infer<typeof searchProductosInputSchema>
+
 // Esquema base para producto
 export const productoBaseSchema = z.object({
   ClaveProducto: z.string().min(1, "La clave del producto es requerida").max(10, "Máximo 10 caracteres"),
@@ -59,6 +72,7 @@ export const getProductosResponseSchema = z.object({
   total: z.number(),
   page: z.number(),
   limit: z.number(),
+  totalPages: z.number(),
 })
 
 export type GetProductosResponse = z.infer<typeof getProductosResponseSchema>
