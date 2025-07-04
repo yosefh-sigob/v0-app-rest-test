@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-import type { Produto } from "@/schemas/produtos.schemas" // Import Produto type
 
 import { useState } from "react"
 import { useForm } from "react-hook-form"
@@ -23,12 +22,13 @@ import {
   updateProductoSchema,
   type CreateProductoInput,
   type UpdateProductoInput,
-} from "@/schemas/produtos.schemas"
+  type Producto,
+} from "@/schemas/productos.schemas"
 import { toast } from "@/hooks/use-toast"
 
 interface ProductoFormProps {
-  producto?: Produto
-  onSuccess: (producto: Produto) => void
+  producto?: Producto
+  onSuccess: (producto: Producto) => void
   onCancel: () => void
 }
 
@@ -43,7 +43,7 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
     resolver: zodResolver(isEditing ? updateProductoSchema : createProductoSchema),
     defaultValues: {
       ClaveProducto: producto?.ClaveProducto || "",
-      TipoProducto: producto?.TipoProducto || "Produto",
+      TipoProducto: producto?.TipoProducto || "Producto",
       Nombredelproducto: producto?.Nombredelproducto || "",
       Descripcion: producto?.Descripcion || "",
       Favorito: producto?.Favorito || false,
@@ -107,14 +107,14 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
       } else {
         toast({
           title: "Error",
-          description: result.message || "Error al procesar el produto",
+          description: result.message || "Error al procesar el producto",
           variant: "destructive",
         })
       }
     } catch (error) {
       toast({
         title: "Error",
-        description: "Error inesperado al procesar el produto",
+        description: "Error inesperado al procesar el producto",
         variant: "destructive",
       })
     } finally {
@@ -124,7 +124,7 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
 
   const tipoProductoOptions = [
     { value: "Platillo", label: "🍽️ Platillo", description: "Comida preparada con receta" },
-    { value: "Produto", label: "📦 Produto", description: "Artículo que se vende tal como se compra" },
+    { value: "Producto", label: "📦 Producto", description: "Artículo que se vende tal como se compra" },
     { value: "Botella", label: "🍷 Botella", description: "Bebidas alcohólicas y no alcohólicas" },
   ]
 
@@ -170,7 +170,7 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="ClaveProducto">Clave del Produto *</Label>
+                  <Label htmlFor="ClaveProducto">Clave del Producto *</Label>
                   <Input
                     id="ClaveProducto"
                     placeholder="Ej: PROD001"
@@ -183,7 +183,7 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="TipoProducto">Tipo de Produto *</Label>
+                  <Label htmlFor="TipoProducto">Tipo de Producto *</Label>
                   <Select
                     value={form.watch("TipoProducto")}
                     onValueChange={(value) => form.setValue("TipoProducto", value as any)}
@@ -209,7 +209,7 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="Nombredelproducto">Nombre del Produto *</Label>
+                <Label htmlFor="Nombredelproducto">Nombre del Producto *</Label>
                 <Input
                   id="Nombredelproducto"
                   placeholder="Ej: Hamburguesa Clásica"
@@ -224,7 +224,7 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
                 <Label htmlFor="Descripcion">Descripción</Label>
                 <Textarea
                   id="Descripcion"
-                  placeholder="Describe el produto, ingredientes, características..."
+                  placeholder="Describe el producto, ingredientes, características..."
                   rows={3}
                   {...form.register("Descripcion")}
                 />
@@ -248,7 +248,7 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <ImageIcon className="h-5 w-5 text-blue-600" />
-                Imagen del Produto
+                Imagen del Producto
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -305,7 +305,7 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Settings className="h-5 w-5 text-purple-600" />
-                Configuración del Produto
+                Configuración del Producto
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -316,9 +316,9 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
                     <div className="flex items-center justify-between">
                       <div>
                         <Label htmlFor="Favorito" className="font-medium">
-                          ⭐ Produto Favorito
+                          ⭐ Producto Favorito
                         </Label>
-                        <p className="text-sm text-gray-500">Marcar como produto destacado</p>
+                        <p className="text-sm text-gray-500">Marcar como producto destacado</p>
                       </div>
                       <Switch
                         id="Favorito"
@@ -330,7 +330,7 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
                     <div className="flex items-center justify-between">
                       <div>
                         <Label htmlFor="Suspendido" className="font-medium">
-                          🚫 Produto Suspendido
+                          🚫 Producto Suspendido
                         </Label>
                         <p className="text-sm text-gray-500">Ocultar del menú temporalmente</p>
                       </div>
@@ -432,7 +432,7 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <p className="text-gray-600">Selecciona en qué canales estará disponible este produto:</p>
+                <p className="text-gray-600">Selecciona en qué canales estará disponible este producto:</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {canalesVenta.map((canal) => (
                     <div key={canal.key} className="border rounded-lg p-4">
@@ -484,7 +484,7 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
         </Button>
         <Button type="submit" disabled={isSubmitting} className="bg-orange-600 hover:bg-orange-700">
           <Save className="h-4 w-4 mr-2" />
-          {isSubmitting ? "Guardando..." : isEditing ? "Actualizar Produto" : "Crear Produto"}
+          {isSubmitting ? "Guardando..." : isEditing ? "Actualizar Producto" : "Crear Producto"}
         </Button>
       </div>
     </form>

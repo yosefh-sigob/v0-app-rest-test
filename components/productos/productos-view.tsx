@@ -26,7 +26,7 @@ import { toast } from "@/hooks/use-toast"
 import { ProductoForm } from "./producto-form"
 import { ProductoDetail } from "./producto-detail"
 import { getProductos, deleteProducto, toggleFavoriteProducto } from "@/actions/productos.actions"
-import type { Producto } from "@/schemas/produtos.schemas"
+import type { Producto } from "@/schemas/productos.schemas"
 
 interface ProductosViewProps {
   initialProductos: Producto[]
