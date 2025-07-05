@@ -90,6 +90,19 @@ export interface AreaProduccion {
   EmpresaULID: string
 }
 
+export interface Almacen {
+  AlmacenULID: string
+  ClaveAlmacen: string
+  Nombre: string
+  Descripcion: string
+  Direccion?: string
+  Activo: boolean
+  Fecha_UltimoCambio: string
+  Fecha_Sync: string
+  UsuarioULID: string
+  EmpresaULID: string
+}
+
 // Mock data inicial
 const mockProductos: Producto[] = [
   {
@@ -290,6 +303,18 @@ const mockSubgruposProductos: SubgrupoProducto[] = [
     UsuarioULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3I",
     EmpresaULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3J",
   },
+  {
+    SubgrupoProductoULID: "01HKQM5X8P9R2T4V6W8Y0Z1A5D",
+    ClaveGrupo: "01HKQM5X8P9R2T4V6W8Y0Z1A5C",
+    ClaveSubGrupo: "REFRESCOS",
+    Descripcion: "Refrescos y Bebidas Gaseosas",
+    AplicarComentarios: false,
+    Suspendido: false,
+    Fecha_UltimoCambio: new Date().toISOString(),
+    Fecha_Sync: new Date().toISOString(),
+    UsuarioULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3I",
+    EmpresaULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3J",
+  },
 ]
 
 const mockUnidades: Unidad[] = [
@@ -308,6 +333,26 @@ const mockUnidades: Unidad[] = [
     ClaveUnidad: "BOT",
     Descripcion: "Botella",
     Abreviacion: "bot",
+    Fecha_UltimoCambio: new Date().toISOString(),
+    Fecha_Sync: new Date().toISOString(),
+    UsuarioULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3I",
+    EmpresaULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3J",
+  },
+  {
+    UnidadULID: "01HKQM5X8P9R2T4V6W8Y0Z1A7E",
+    ClaveUnidad: "KG",
+    Descripcion: "Kilogramo",
+    Abreviacion: "kg",
+    Fecha_UltimoCambio: new Date().toISOString(),
+    Fecha_Sync: new Date().toISOString(),
+    UsuarioULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3I",
+    EmpresaULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3J",
+  },
+  {
+    UnidadULID: "01HKQM5X8P9R2T4V6W8Y0Z1A8E",
+    ClaveUnidad: "LT",
+    Descripcion: "Litro",
+    Abreviacion: "lt",
     Fecha_UltimoCambio: new Date().toISOString(),
     Fecha_Sync: new Date().toISOString(),
     UsuarioULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3I",
@@ -333,6 +378,68 @@ const mockAreasProduccion: AreaProduccion[] = [
     Descripcion: "Barra de Bebidas",
     Impresora: "EPSON-TM-T88",
     Activa: true,
+    Fecha_UltimoCambio: new Date().toISOString(),
+    Fecha_Sync: new Date().toISOString(),
+    UsuarioULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3I",
+    EmpresaULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3J",
+  },
+  {
+    AreaProduccionULID: "01HKQM5X8P9R2T4V6W8Y0Z1A6F",
+    ClaveArea: "PARRILLA",
+    Descripcion: "Parrilla y Asados",
+    Impresora: "EPSON-TM-T82",
+    Activa: true,
+    Fecha_UltimoCambio: new Date().toISOString(),
+    Fecha_Sync: new Date().toISOString(),
+    UsuarioULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3I",
+    EmpresaULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3J",
+  },
+]
+
+const mockAlmacenes: Almacen[] = [
+  {
+    AlmacenULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3G",
+    ClaveAlmacen: "ALM001",
+    Nombre: "Almacén General",
+    Descripcion: "Almacén principal de ingredientes",
+    Direccion: "Bodega Principal - Planta Baja",
+    Activo: true,
+    Fecha_UltimoCambio: new Date().toISOString(),
+    Fecha_Sync: new Date().toISOString(),
+    UsuarioULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3I",
+    EmpresaULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3J",
+  },
+  {
+    AlmacenULID: "01HKQM5X8P9R2T4V6W8Y0Z1A4G",
+    ClaveAlmacen: "ALM002",
+    Nombre: "Refrigerador",
+    Descripcion: "Almacén refrigerado para productos perecederos",
+    Direccion: "Cámara de Refrigeración",
+    Activo: true,
+    Fecha_UltimoCambio: new Date().toISOString(),
+    Fecha_Sync: new Date().toISOString(),
+    UsuarioULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3I",
+    EmpresaULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3J",
+  },
+  {
+    AlmacenULID: "01HKQM5X8P9R2T4V6W8Y0Z1A5G",
+    ClaveAlmacen: "ALM003",
+    Nombre: "Congelador",
+    Descripcion: "Almacén congelado para carnes y productos congelados",
+    Direccion: "Cámara de Congelación",
+    Activo: true,
+    Fecha_UltimoCambio: new Date().toISOString(),
+    Fecha_Sync: new Date().toISOString(),
+    UsuarioULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3I",
+    EmpresaULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3J",
+  },
+  {
+    AlmacenULID: "01HKQM5X8P9R2T4V6W8Y0Z1A6G",
+    ClaveAlmacen: "ALM004",
+    Nombre: "Barra",
+    Descripcion: "Almacén de bebidas y licores",
+    Direccion: "Área de Barra",
+    Activo: true,
     Fecha_UltimoCambio: new Date().toISOString(),
     Fecha_Sync: new Date().toISOString(),
     UsuarioULID: "01HKQM5X8P9R2T4V6W8Y0Z1A3I",
@@ -464,6 +571,37 @@ export const getAreasProduccion = async (): Promise<AreaProduccion[]> => {
   return [...mockAreasProduccion]
 }
 
+export const getAlmacenes = async (): Promise<Almacen[]> => {
+  await new Promise((resolve) => setTimeout(resolve, 50))
+  return [...mockAlmacenes]
+}
+
+// Funciones auxiliares para obtener por ID
+export const getGrupoById = async (id: string): Promise<GrupoProducto | null> => {
+  await new Promise((resolve) => setTimeout(resolve, 25))
+  return mockGruposProductos.find((g) => g.GrupoProductoULID === id) || null
+}
+
+export const getSubgrupoById = async (id: string): Promise<SubgrupoProducto | null> => {
+  await new Promise((resolve) => setTimeout(resolve, 25))
+  return mockSubgruposProductos.find((s) => s.SubgrupoProductoULID === id) || null
+}
+
+export const getUnidadById = async (id: string): Promise<Unidad | null> => {
+  await new Promise((resolve) => setTimeout(resolve, 25))
+  return mockUnidades.find((u) => u.UnidadULID === id) || null
+}
+
+export const getAreaProduccionById = async (id: string): Promise<AreaProduccion | null> => {
+  await new Promise((resolve) => setTimeout(resolve, 25))
+  return mockAreasProduccion.find((a) => a.AreaProduccionULID === id) || null
+}
+
+export const getAlmacenById = async (id: string): Promise<Almacen | null> => {
+  await new Promise((resolve) => setTimeout(resolve, 25))
+  return mockAlmacenes.find((a) => a.AlmacenULID === id) || null
+}
+
 // Función para verificar si una clave existe
 export const existeClaveProducto = async (clave: string, excludeId?: string): Promise<boolean> => {
   await new Promise((resolve) => setTimeout(resolve, 50))
@@ -495,3 +633,84 @@ export const getEstadisticasProductos = async () => {
     porTipo,
   }
 }
+
+// Funciones de búsqueda y filtrado
+export const buscarProductos = async (termino: string): Promise<Producto[]> => {
+  await new Promise((resolve) => setTimeout(resolve, 100))
+
+  if (!termino.trim()) {
+    return [...mockProductos]
+  }
+
+  const terminoLower = termino.toLowerCase()
+  return mockProductos.filter(
+    (producto) =>
+      producto.Nombredelproducto.toLowerCase().includes(terminoLower) ||
+      producto.ClaveProducto.toLowerCase().includes(terminoLower) ||
+      producto.Descripcion.toLowerCase().includes(terminoLower),
+  )
+}
+
+export const filtrarProductosPorTipo = async (tipo: string): Promise<Producto[]> => {
+  await new Promise((resolve) => setTimeout(resolve, 50))
+
+  if (tipo === "todos" || !tipo) {
+    return [...mockProductos]
+  }
+
+  return mockProductos.filter((producto) => producto.TipoProducto === tipo)
+}
+
+export const filtrarProductosPorGrupo = async (grupoId: string): Promise<Producto[]> => {
+  await new Promise((resolve) => setTimeout(resolve, 50))
+
+  if (grupoId === "todos" || !grupoId) {
+    return [...mockProductos]
+  }
+
+  return mockProductos.filter((producto) => producto.GrupoProductoULID === grupoId)
+}
+
+export const obtenerProductosFavoritos = async (): Promise<Producto[]> => {
+  await new Promise((resolve) => setTimeout(resolve, 50))
+  return mockProductos.filter((producto) => producto.Favorito)
+}
+
+export const obtenerProductosSuspendidos = async (): Promise<Producto[]> => {
+  await new Promise((resolve) => setTimeout(resolve, 50))
+  return mockProductos.filter((producto) => producto.Suspendido)
+}
+
+export const obtenerProductosActivos = async (): Promise<Producto[]> => {
+  await new Promise((resolve) => setTimeout(resolve, 50))
+  return mockProductos.filter((producto) => !producto.Suspendido)
+}
+
+// Funciones para validaciones
+export const validarClaveUnica = async (clave: string, excludeId?: string): Promise<boolean> => {
+  await new Promise((resolve) => setTimeout(resolve, 100))
+  return !mockProductos.some((p) => p.ClaveProducto === clave && p.ProductoULID !== excludeId)
+}
+
+// Función para resetear datos (útil para testing)
+export const resetearDatos = async (): Promise<void> => {
+  await new Promise((resolve) => setTimeout(resolve, 100))
+  // En una implementación real, esto recargaría los datos desde la fuente original
+  console.log("Datos reseteados")
+}
+
+// Exportar constantes útiles
+export const TIPOS_PRODUCTO_OPCIONES = [
+  { value: "Platillo", label: "Platillo", description: "Producto que requiere preparación" },
+  { value: "Producto", label: "Producto", description: "Producto que se vende tal como se compra" },
+  { value: "Botella", label: "Botella", description: "Bebidas alcohólicas y no alcohólicas" },
+]
+
+export const CANALES_VENTA_OPCIONES = [
+  { key: "Comedor", label: "Comedor", description: "Disponible para servicio en mesas" },
+  { key: "ADomicilio", label: "A Domicilio", description: "Disponible para entrega a domicilio" },
+  { key: "Mostrador", label: "Mostrador", description: "Disponible para venta en mostrador" },
+  { key: "Enlinea", label: "En Línea", description: "Disponible en plataforma web" },
+  { key: "EnAPP", label: "En APP", description: "Disponible en aplicación móvil" },
+  { key: "EnMenuQR", label: "Menú QR", description: "Disponible en menú con código QR" },
+]
