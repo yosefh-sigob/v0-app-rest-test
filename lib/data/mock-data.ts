@@ -1,5 +1,248 @@
 import { generateULID } from "@/lib/utils/ulid"
-import type { Cliente } from "@/lib/types"
+
+// Interfaces para los datos mock
+export interface HistorialVisita {
+  fecha: string
+  mesa: string
+  consumo: number
+  platillos: string[]
+}
+
+export interface Direccion {
+  calle: string
+  colonia: string
+  ciudad: string
+  codigoPostal: string
+  estado: string
+}
+
+export interface Preferencias {
+  tipoComida: string[]
+  alergias: string[]
+  ocasionesEspeciales: string[]
+}
+
+export interface Cliente {
+  id: string
+  nombre: string
+  apellidos: string
+  telefono: string
+  email: string
+  fechaNacimiento: string
+  direccion: Direccion
+  preferencias: Preferencias
+  historialVisitas: HistorialVisita[]
+  puntos: number
+  nivelFidelidad: "Bronce" | "Plata" | "Oro" | "Platino"
+  fechaRegistro: string
+  activo: boolean
+  notas: string
+}
+
+export interface Producto {
+  id: string
+  clave: string
+  nombre: string
+  descripcion: string
+  precio: number
+  categoria: string
+  subcategoria?: string
+  disponible: boolean
+  favorito: boolean
+  suspendido: boolean
+  imagen?: string
+  tipoProducto: "Platillo" | "Producto" | "Botilla"
+  unidad: string
+  stock?: number
+  stockMinimo?: number
+  ingredientes?: string[]
+  tiempoPreparacion?: number
+  calorias?: number
+  tags?: string[]
+}
+
+export interface Mesa {
+  id: string
+  numero: string
+  capacidad: number
+  area: string
+  estado: "Disponible" | "Ocupada" | "Reservada" | "Limpieza"
+  ubicacion: string
+  tipo: "Regular" | "VIP" | "Terraza" | "Barra"
+}
+
+export interface ProductoVenta {
+  id: string
+  producto: Producto
+  cantidad: number
+  precio: number
+  total: number
+  modificaciones?: string[]
+  notas?: string
+}
+
+// Mock data para productos
+export const mockProductos: Producto[] = [
+  {
+    id: generateULID(),
+    clave: "TAC001",
+    nombre: "Tacos al Pastor",
+    descripcion: "Deliciosos tacos al pastor con piña, cebolla y cilantro",
+    precio: 85.0,
+    categoria: "Tacos",
+    subcategoria: "Tacos de Carne",
+    disponible: true,
+    favorito: true,
+    suspendido: false,
+    imagen: "/placeholder.svg?height=200&width=200",
+    tipoProducto: "Platillo",
+    unidad: "Orden",
+    stock: 50,
+    stockMinimo: 10,
+    ingredientes: ["Carne de cerdo", "Piña", "Cebolla", "Cilantro", "Tortilla"],
+    tiempoPreparacion: 8,
+    calorias: 320,
+    tags: ["Mexicano", "Picante", "Popular"],
+  },
+  {
+    id: generateULID(),
+    clave: "HAM001",
+    nombre: "Hamburguesa Clásica",
+    descripcion: "Hamburguesa con carne de res, lechuga, tomate, cebolla y queso",
+    precio: 125.0,
+    categoria: "Hamburguesas",
+    disponible: true,
+    favorito: false,
+    suspendido: false,
+    imagen: "/placeholder.svg?height=200&width=200",
+    tipoProducto: "Platillo",
+    unidad: "Pieza",
+    stock: 30,
+    stockMinimo: 5,
+    ingredientes: ["Carne de res", "Pan", "Lechuga", "Tomate", "Cebolla", "Queso"],
+    tiempoPreparacion: 12,
+    calorias: 580,
+    tags: ["Americano", "Carne"],
+  },
+  {
+    id: generateULID(),
+    clave: "PIZ001",
+    nombre: "Pizza Margherita",
+    descripcion: "Pizza tradicional con salsa de tomate, mozzarella y albahaca",
+    precio: 180.0,
+    categoria: "Pizzas",
+    disponible: true,
+    favorito: true,
+    suspendido: false,
+    imagen: "/placeholder.svg?height=200&width=200",
+    tipoProducto: "Platillo",
+    unidad: "Pieza",
+    stock: 25,
+    stockMinimo: 5,
+    ingredientes: ["Masa", "Salsa de tomate", "Mozzarella", "Albahaca"],
+    tiempoPreparacion: 15,
+    calorias: 450,
+    tags: ["Italiano", "Vegetariano"],
+  },
+  {
+    id: generateULID(),
+    clave: "ENS001",
+    nombre: "Ensalada César",
+    descripcion: "Ensalada fresca con lechuga romana, crutones, parmesano y aderezo césar",
+    precio: 95.0,
+    categoria: "Ensaladas",
+    disponible: true,
+    favorito: false,
+    suspendido: false,
+    imagen: "/placeholder.svg?height=200&width=200",
+    tipoProducto: "Platillo",
+    unidad: "Porción",
+    stock: 40,
+    stockMinimo: 8,
+    ingredientes: ["Lechuga romana", "Crutones", "Queso parmesano", "Aderezo césar"],
+    tiempoPreparacion: 5,
+    calorias: 280,
+    tags: ["Saludable", "Vegetariano", "Fresco"],
+  },
+  {
+    id: generateULID(),
+    clave: "PAS001",
+    nombre: "Pasta Alfredo",
+    descripción: "Pasta fettuccine con salsa alfredo cremosa",
+    precio: 140.0,
+    categoria: "Pastas",
+    disponible: true,
+    favorito: false,
+    suspendido: false,
+    imagen: "/placeholder.svg?height=200&width=200",
+    tipoProducto: "Platillo",
+    unidad: "Porción",
+    stock: 35,
+    stockMinimo: 7,
+    ingredientes: ["Pasta fettuccine", "Crema", "Mantequilla", "Queso parmesano"],
+    tiempoPreparacion: 10,
+    calorias: 520,
+    tags: ["Italiano", "Cremoso"],
+  },
+  {
+    id: generateULID(),
+    clave: "BEB001",
+    nombre: "Coca Cola",
+    descripcion: "Refresco de cola 355ml",
+    precio: 35.0,
+    categoria: "Bebidas",
+    subcategoria: "Refrescos",
+    disponible: true,
+    favorito: false,
+    suspendido: false,
+    imagen: "/placeholder.svg?height=200&width=200",
+    tipoProducto: "Producto",
+    unidad: "Botella",
+    stock: 100,
+    stockMinimo: 20,
+    calorias: 140,
+    tags: ["Refresco", "Frio"],
+  },
+  {
+    id: generateULID(),
+    clave: "BEB002",
+    nombre: "Agua Natural",
+    descripcion: "Agua natural 500ml",
+    precio: 25.0,
+    categoria: "Bebidas",
+    subcategoria: "Agua",
+    disponible: true,
+    favorito: false,
+    suspendido: false,
+    imagen: "/placeholder.svg?height=200&width=200",
+    tipoProducto: "Producto",
+    unidad: "Botella",
+    stock: 80,
+    stockMinimo: 15,
+    calorias: 0,
+    tags: ["Natural", "Saludable"],
+  },
+  {
+    id: generateULID(),
+    clave: "QUE001",
+    nombre: "Quesadilla",
+    descripcion: "Quesadilla de queso con tortilla de harina",
+    precio: 65.0,
+    categoria: "Antojitos",
+    disponible: true,
+    favorito: true,
+    suspendido: false,
+    imagen: "/placeholder.svg?height=200&width=200",
+    tipoProducto: "Platillo",
+    unidad: "Pieza",
+    stock: 45,
+    stockMinimo: 10,
+    ingredientes: ["Tortilla de harina", "Queso Oaxaca"],
+    tiempoPreparacion: 6,
+    calorias: 380,
+    tags: ["Mexicano", "Queso"],
+  },
+]
 
 // Mock data para clientes
 export const mockClientes: Cliente[] = [
@@ -194,24 +437,78 @@ export const mockClientes: Cliente[] = [
   },
 ]
 
-// Tipos para el historial de visitas y otros datos
-export interface HistorialVisita {
-  fecha: string
-  mesa: string
-  consumo: number
-  platillos: string[]
-}
-
-export interface Direccion {
-  calle: string
-  colonia: string
-  ciudad: string
-  codigoPostal: string
-  estado: string
-}
-
-export interface Preferencias {
-  tipoComida: string[]
-  alergias: string[]
-  ocasionesEspeciales: string[]
-}
+// Mock data para mesas
+export const mockMesas: Mesa[] = [
+  {
+    id: generateULID(),
+    numero: "1",
+    capacidad: 2,
+    area: "Terraza",
+    estado: "Disponible",
+    ubicacion: "Terraza - Esquina",
+    tipo: "Terraza",
+  },
+  {
+    id: generateULID(),
+    numero: "2",
+    capacidad: 4,
+    area: "Salón Principal",
+    estado: "Ocupada",
+    ubicacion: "Salón - Centro",
+    tipo: "Regular",
+  },
+  {
+    id: generateULID(),
+    numero: "3",
+    capacidad: 2,
+    area: "Salón Principal",
+    estado: "Disponible",
+    ubicacion: "Salón - Ventana",
+    tipo: "Regular",
+  },
+  {
+    id: generateULID(),
+    numero: "4",
+    capacidad: 6,
+    area: "Salón Principal",
+    estado: "Reservada",
+    ubicacion: "Salón - Lateral",
+    tipo: "Regular",
+  },
+  {
+    id: generateULID(),
+    numero: "5",
+    capacidad: 8,
+    area: "Salón VIP",
+    estado: "Disponible",
+    ubicacion: "VIP - Privado",
+    tipo: "VIP",
+  },
+  {
+    id: generateULID(),
+    numero: "B1",
+    capacidad: 2,
+    area: "Barra",
+    estado: "Ocupada",
+    ubicacion: "Barra - Izquierda",
+    tipo: "Barra",
+  },
+  {
+    id: generateULID(),
+    numero: "B2",
+    capacidad: 2,
+    area: "Barra",
+    estado: "Disponible",
+    ubicacion: "Barra - Centro",
+    tipo: "Barra",
+  },
+  {
+    id: generateULID(),
+    numero: "B3",
+    capacidad: 2,
+    area: "Barra",
+    estado: "Disponible",
+    ubicacion: "Barra - Derecha",
+    tipo: "Barra",
+  },
+]

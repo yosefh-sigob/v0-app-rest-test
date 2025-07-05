@@ -1,94 +1,42 @@
-export interface User {
+// Interfaces principales del sistema
+export interface Usuario {
   id: string
+  nombre: string
   email: string
-  name: string
-  role: "admin" | "restaurante" | "mesero" | "cajero" | "cliente"
-  licenseType?: "gratis" | "lite" | "pro" | "franquicia"
-  empresaId?: string
-  avatar?: string
-  isActive: boolean
-  createdAt: string
-  updatedAt: string
+  rol: "Admin" | "Gerente" | "Mesero" | "Cajero" | "Cocinero"
+  activo: boolean
+  fechaCreacion: string
+  ultimoAcceso?: string
 }
 
 export interface Empresa {
   id: string
   nombre: string
+  rfc: string
   direccion: string
   telefono: string
   email: string
   logo?: string
-  licenseType: "gratis" | "lite" | "pro" | "franquicia"
-  isActive: boolean
-  createdAt: string
-  updatedAt: string
+  licencia: "Gratis" | "Lite" | "Pro" | "Franquicia"
+  fechaCreacion: string
+  activa: boolean
 }
 
-export interface Mesa {
+export interface Cliente {
   id: string
-  numero: string
-  capacidad: number
-  area: string
-  estado: "disponible" | "ocupada" | "reservada" | "limpieza"
-  tipoMesa: string
-  posicionX?: number
-  posicionY?: number
-  empresaId: string
-  isActive: boolean
-  createdAt: string
-  updatedAt: string
-}
-
-export interface Reservacion {
-  id: string
-  clienteNombre: string
-  clienteTelefono: string
-  clienteEmail?: string
-  fecha: string
-  hora: string
-  numeroPersonas: number
-  mesaId?: string
-  estado: "confirmada" | "pendiente" | "cancelada" | "completada"
-  notas?: string
-  empresaId: string
-  createdAt: string
-  updatedAt: string
-}
-
-export interface Venta {
-  id: string
-  folio: string
-  mesaId?: string
-  clienteId?: string
-  meseroId: string
-  productos: ProductoVenta[]
-  subtotal: number
-  impuestos: number
-  descuentos: number
-  total: number
-  metodoPago: "efectivo" | "tarjeta" | "transferencia" | "mixto"
-  estado: "pendiente" | "pagada" | "cancelada"
-  tipo: "comedor" | "mostrador" | "domicilio"
-  empresaId: string
-  createdAt: string
-  updatedAt: string
-}
-
-export interface ProductoVenta {
-  productoId: string
   nombre: string
-  cantidad: number
-  precio: number
-  subtotal: number
-  notas?: string
-}
-
-// Interfaces para clientes
-export interface HistorialVisita {
-  fecha: string
-  mesa: string
-  consumo: number
-  platillos: string[]
+  apellidos: string
+  telefono: string
+  email: string
+  fechaNacimiento: string
+  direccion: Direccion
+  preferencias: Preferencias
+  historialVisitas: HistorialVisita[]
+  puntos: number
+  nivelFidelidad: "Bronce" | "Plata" | "Oro" | "Platino"
+  fechaRegistro: string
+  activo: boolean
+  notas: string
 }
 
 export interface Direccion {
@@ -105,109 +53,159 @@ export interface Preferencias {
   ocasionesEspeciales: string[]
 }
 
-export interface Cliente {
+export interface HistorialVisita {
+  fecha: string
+  mesa: string
+  consumo: number
+  platillos: string[]
+}
+
+export interface Producto {
   id: string
+  clave: string
   nombre: string
-  apellidos: string
-  telefono: string
-  email?: string
-  fechaNacimiento?: string
-  direccion?: Direccion
-  preferencias?: Preferencias
-  historialVisitas: HistorialVisita[]
-  puntos: number
-  nivelFidelidad: "Bronce" | "Plata" | "Oro" | "Platino"
-  fechaRegistro: string
-  activo: boolean
+  descripcion: string
+  precio: number
+  categoria: string
+  subcategoria?: string
+  disponible: boolean
+  favorito: boolean
+  suspendido: boolean
+  imagen?: string
+  tipoProducto: "Platillo" | "Producto" | "Botilla"
+  unidad: string
+  stock?: number
+  stockMinimo?: number
+  ingredientes?: string[]
+  tiempoPreparacion?: number
+  calorias?: number
+  tags?: string[]
+}
+
+export interface Mesa {
+  id: string
+  numero: string
+  capacidad: number
+  area: string
+  estado: "Disponible" | "Ocupada" | "Reservada" | "Limpieza"
+  ubicacion: string
+  tipo: "Regular" | "VIP" | "Terraza" | "Barra"
+}
+
+export interface ProductoVenta {
+  id: string
+  producto: Producto
+  cantidad: number
+  precio: number
+  total: number
+  modificaciones?: string[]
   notas?: string
 }
 
-// Interfaces para productos (ya existentes)
-export interface Producto {
+export interface Venta {
   id: string
-  claveProducto: string
+  fecha: string
+  mesa?: string
+  cliente?: string
+  productos: ProductoVenta[]
+  subtotal: number
+  impuestos: number
+  total: number
+  estado: "Pendiente" | "Pagada" | "Cancelada"
+  metodoPago?: string
+  notas?: string
+}
+
+export interface Reservacion {
+  id: string
+  cliente: string
+  fecha: string
+  hora: string
+  personas: number
+  mesa?: string
+  estado: "Confirmada" | "Pendiente" | "Cancelada" | "Completada"
+  notas?: string
+  telefono: string
+  ocasionEspecial?: string
+}
+
+// Tipos para autenticación
+export interface AuthUser {
+  id: string
+  email: string
   nombre: string
-  descripcion?: string
-  tipoProducto: "Platillo" | "Producto" | "Botella"
-  grupoProductoId: string
-  subgrupoProductoId?: string
-  precio: number
-  costo?: number
-  unidadId: string
-  areaProduccionId: string
-  almacenId: string
-  favorito: boolean
-  suspendido: boolean
-  controlStock: boolean
-  facturable: boolean
-  comedor: boolean
-  aDomicilio: boolean
-  mostrador: boolean
-  enLinea: boolean
-  enApp: boolean
-  enMenuQR: boolean
-  imagen?: string
-  empresaId: string
-  fechaCreacion: string
-  fechaActualizacion: string
+  rol: Usuario["rol"]
+  empresa: string
+  licencia: Empresa["licencia"]
 }
 
-export interface GrupoProducto {
+export interface LoginCredentials {
+  email: string
+  password: string
+}
+
+export interface RegisterData {
+  nombre: string
+  email: string
+  password: string
+  confirmPassword: string
+  empresa: string
+  telefono: string
+}
+
+// Tipos para formularios
+export interface FormErrors {
+  [key: string]: string | undefined
+}
+
+export interface ApiResponse<T = any> {
+  success: boolean
+  data?: T
+  error?: string
+  message?: string
+}
+
+// Tipos para estadísticas
+export interface EstadisticasVentas {
+  ventasHoy: number
+  ventasSemana: number
+  ventasMes: number
+  clientesAtendidos: number
+  mesasOcupadas: number
+  productoMasVendido: string
+}
+
+export interface EstadisticasProductos {
+  totalProductos: number
+  productosActivos: number
+  productosSuspendidos: number
+  productosFavoritos: number
+  categorias: string[]
+  stockBajo: number
+}
+
+// Tipos para configuración
+export interface ConfiguracionRestaurante {
   id: string
-  clave: string
-  descripcion: string
-  orden: number
-  activo: boolean
-  imagen?: string
-  empresaId: string
-}
-
-export interface SubgrupoProducto {
-  id: string
-  grupoProductoId: string
-  clave: string
-  descripcion: string
-  activo: boolean
-  empresaId: string
-}
-
-export interface Unidad {
-  id: string
-  clave: string
-  descripcion: string
-  abreviacion: string
-  empresaId: string
-}
-
-export interface AreaProduccion {
-  id: string
-  clave: string
-  descripcion: string
-  activa: boolean
-  empresaId: string
-}
-
-export interface Almacen {
-  id: string
-  clave: string
-  descripcion: string
-  tipo: "General" | "Refrigerador" | "Congelador" | "Barra" | "Bodega"
-  activo: boolean
-  empresaId: string
-}
-
-// Tipos para licencias
-export type LicenseType = "gratis" | "lite" | "pro" | "franquicia"
-
-export interface LicenseFeatures {
-  maxMesas: number
-  maxUsuarios: number
-  reportesAvanzados: boolean
-  integracionesTerceros: boolean
-  soportePrioritario: boolean
-  menuDigital: boolean
-  reservaciones: boolean
-  delivery: boolean
-  inventario: boolean
-  contabilidad: boolean
+  nombre: string
+  direccion: string
+  telefono: string
+  email: string
+  horarios: {
+    [dia: string]: {
+      abierto: boolean
+      apertura: string
+      cierre: string
+    }
+  }
+  configuracionPOS: {
+    impuestos: number
+    propina: number
+    metodosPago: string[]
+  }
+  notificaciones: {
+    email: boolean
+    sms: boolean
+    push: boolean
+  }
 }
