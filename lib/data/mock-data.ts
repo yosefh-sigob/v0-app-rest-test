@@ -1,514 +1,658 @@
-import { generateULID } from "@/lib/utils/ulid"
-
 // Interfaces para los datos mock
-export interface HistorialVisita {
-  fecha: string
-  mesa: string
-  consumo: number
-  platillos: string[]
-}
-
-export interface Direccion {
-  calle: string
-  colonia: string
-  ciudad: string
-  codigoPostal: string
-  estado: string
-}
-
-export interface Preferencias {
-  tipoComida: string[]
-  alergias: string[]
-  ocasionesEspeciales: string[]
-}
-
 export interface Cliente {
   id: string
   nombre: string
   apellidos: string
   telefono: string
   email: string
-  fechaNacimiento: string
+  fechaNacimiento?: string
   direccion: Direccion
   preferencias: Preferencias
   historialVisitas: HistorialVisita[]
-  puntos: number
+  puntosAcumulados: number
   nivelFidelidad: "Bronce" | "Plata" | "Oro" | "Platino"
+  notasEspeciales?: string
   fechaRegistro: string
+  ultimaVisita?: string
   activo: boolean
-  notas: string
 }
 
-export interface Producto {
+export interface Direccion {
+  calle: string
+  numero: string
+  colonia: string
+  ciudad: string
+  estado: string
+  codigoPostal: string
+  referencias?: string
+}
+
+export interface Preferencias {
+  tiposComidaFavorita: string[]
+  alergias: string[]
+  restriccionesDieteticas: string[]
+  ocasionesEspeciales: string[]
+  platillosFavoritos: string[]
+}
+
+export interface HistorialVisita {
+  fecha: string
+  mesa: string
+  numeroPersonas: number
+  consumoTotal: number
+  platillosOrdenados: string[]
+  tiempoEstancia: number
+  satisfaccion: number
+}
+
+export interface ProductoMock {
   id: string
   clave: string
   nombre: string
   descripcion: string
   precio: number
   categoria: string
-  subcategoria?: string
+  subcategoria: string
+  tipo: "Platillo" | "Bebida" | "Postre" | "Entrada"
   disponible: boolean
+  stock: number
+  stockMinimo: number
+  unidad: string
+  ingredientes: string[]
+  calorias?: number
+  tiempoPreparacion: number
+  imagen: string
+  etiquetas: string[]
   favorito: boolean
   suspendido: boolean
-  imagen?: string
-  tipoProducto: "Platillo" | "Producto" | "Botilla"
-  unidad: string
-  stock?: number
-  stockMinimo?: number
-  ingredientes?: string[]
-  tiempoPreparacion?: number
-  calorias?: number
-  tags?: string[]
+  fechaCreacion: string
 }
 
 export interface Mesa {
   id: string
   numero: string
   capacidad: number
-  area: string
+  tipo: "Regular" | "VIP" | "Terraza" | "Barra"
   estado: "Disponible" | "Ocupada" | "Reservada" | "Limpieza"
   ubicacion: string
-  tipo: "Regular" | "VIP" | "Terraza" | "Barra"
+  area: string
+  fechaUltimaLimpieza?: string
+  clienteActual?: string
+  horaOcupacion?: string
 }
-
-export interface ProductoVenta {
-  id: string
-  producto: Producto
-  cantidad: number
-  precio: number
-  total: number
-  modificaciones?: string[]
-  notas?: string
-}
-
-// Mock data para productos
-export const mockProductos: Producto[] = [
-  {
-    id: generateULID(),
-    clave: "TAC001",
-    nombre: "Tacos al Pastor",
-    descripcion: "Deliciosos tacos al pastor con piña, cebolla y cilantro",
-    precio: 85.0,
-    categoria: "Tacos",
-    subcategoria: "Tacos de Carne",
-    disponible: true,
-    favorito: true,
-    suspendido: false,
-    imagen: "/placeholder.svg?height=200&width=200",
-    tipoProducto: "Platillo",
-    unidad: "Orden",
-    stock: 50,
-    stockMinimo: 10,
-    ingredientes: ["Carne de cerdo", "Piña", "Cebolla", "Cilantro", "Tortilla"],
-    tiempoPreparacion: 8,
-    calorias: 320,
-    tags: ["Mexicano", "Picante", "Popular"],
-  },
-  {
-    id: generateULID(),
-    clave: "HAM001",
-    nombre: "Hamburguesa Clásica",
-    descripcion: "Hamburguesa con carne de res, lechuga, tomate, cebolla y queso",
-    precio: 125.0,
-    categoria: "Hamburguesas",
-    disponible: true,
-    favorito: false,
-    suspendido: false,
-    imagen: "/placeholder.svg?height=200&width=200",
-    tipoProducto: "Platillo",
-    unidad: "Pieza",
-    stock: 30,
-    stockMinimo: 5,
-    ingredientes: ["Carne de res", "Pan", "Lechuga", "Tomate", "Cebolla", "Queso"],
-    tiempoPreparacion: 12,
-    calorias: 580,
-    tags: ["Americano", "Carne"],
-  },
-  {
-    id: generateULID(),
-    clave: "PIZ001",
-    nombre: "Pizza Margherita",
-    descripcion: "Pizza tradicional con salsa de tomate, mozzarella y albahaca",
-    precio: 180.0,
-    categoria: "Pizzas",
-    disponible: true,
-    favorito: true,
-    suspendido: false,
-    imagen: "/placeholder.svg?height=200&width=200",
-    tipoProducto: "Platillo",
-    unidad: "Pieza",
-    stock: 25,
-    stockMinimo: 5,
-    ingredientes: ["Masa", "Salsa de tomate", "Mozzarella", "Albahaca"],
-    tiempoPreparacion: 15,
-    calorias: 450,
-    tags: ["Italiano", "Vegetariano"],
-  },
-  {
-    id: generateULID(),
-    clave: "ENS001",
-    nombre: "Ensalada César",
-    descripcion: "Ensalada fresca con lechuga romana, crutones, parmesano y aderezo césar",
-    precio: 95.0,
-    categoria: "Ensaladas",
-    disponible: true,
-    favorito: false,
-    suspendido: false,
-    imagen: "/placeholder.svg?height=200&width=200",
-    tipoProducto: "Platillo",
-    unidad: "Porción",
-    stock: 40,
-    stockMinimo: 8,
-    ingredientes: ["Lechuga romana", "Crutones", "Queso parmesano", "Aderezo césar"],
-    tiempoPreparacion: 5,
-    calorias: 280,
-    tags: ["Saludable", "Vegetariano", "Fresco"],
-  },
-  {
-    id: generateULID(),
-    clave: "PAS001",
-    nombre: "Pasta Alfredo",
-    descripción: "Pasta fettuccine con salsa alfredo cremosa",
-    precio: 140.0,
-    categoria: "Pastas",
-    disponible: true,
-    favorito: false,
-    suspendido: false,
-    imagen: "/placeholder.svg?height=200&width=200",
-    tipoProducto: "Platillo",
-    unidad: "Porción",
-    stock: 35,
-    stockMinimo: 7,
-    ingredientes: ["Pasta fettuccine", "Crema", "Mantequilla", "Queso parmesano"],
-    tiempoPreparacion: 10,
-    calorias: 520,
-    tags: ["Italiano", "Cremoso"],
-  },
-  {
-    id: generateULID(),
-    clave: "BEB001",
-    nombre: "Coca Cola",
-    descripcion: "Refresco de cola 355ml",
-    precio: 35.0,
-    categoria: "Bebidas",
-    subcategoria: "Refrescos",
-    disponible: true,
-    favorito: false,
-    suspendido: false,
-    imagen: "/placeholder.svg?height=200&width=200",
-    tipoProducto: "Producto",
-    unidad: "Botella",
-    stock: 100,
-    stockMinimo: 20,
-    calorias: 140,
-    tags: ["Refresco", "Frio"],
-  },
-  {
-    id: generateULID(),
-    clave: "BEB002",
-    nombre: "Agua Natural",
-    descripcion: "Agua natural 500ml",
-    precio: 25.0,
-    categoria: "Bebidas",
-    subcategoria: "Agua",
-    disponible: true,
-    favorito: false,
-    suspendido: false,
-    imagen: "/placeholder.svg?height=200&width=200",
-    tipoProducto: "Producto",
-    unidad: "Botella",
-    stock: 80,
-    stockMinimo: 15,
-    calorias: 0,
-    tags: ["Natural", "Saludable"],
-  },
-  {
-    id: generateULID(),
-    clave: "QUE001",
-    nombre: "Quesadilla",
-    descripcion: "Quesadilla de queso con tortilla de harina",
-    precio: 65.0,
-    categoria: "Antojitos",
-    disponible: true,
-    favorito: true,
-    suspendido: false,
-    imagen: "/placeholder.svg?height=200&width=200",
-    tipoProducto: "Platillo",
-    unidad: "Pieza",
-    stock: 45,
-    stockMinimo: 10,
-    ingredientes: ["Tortilla de harina", "Queso Oaxaca"],
-    tiempoPreparacion: 6,
-    calorias: 380,
-    tags: ["Mexicano", "Queso"],
-  },
-]
 
 // Mock data para clientes
 export const mockClientes: Cliente[] = [
   {
-    id: generateULID(),
+    id: "01HKQM5X8P9R2T4V6W8Y0Z1A1C",
     nombre: "Juan Carlos",
-    apellidos: "García López",
-    telefono: "5551234567",
+    apellidos: "García Martínez",
+    telefono: "+52 55 1234 5678",
     email: "juan.garcia@email.com",
     fechaNacimiento: "1985-03-15",
     direccion: {
-      calle: "Av. Reforma 123",
-      colonia: "Centro",
+      calle: "Av. Insurgentes Sur",
+      numero: "1234",
+      colonia: "Del Valle",
       ciudad: "Ciudad de México",
-      codigoPostal: "06000",
       estado: "CDMX",
+      codigoPostal: "03100",
+      referencias: "Entre Eje 7 y Eje 8, edificio azul",
     },
     preferencias: {
-      tipoComida: ["Mexicana", "Italiana"],
+      tiposComidaFavorita: ["Mexicana", "Italiana"],
       alergias: [],
-      ocasionesEspeciales: ["Cumpleaños"],
+      restriccionesDieteticas: [],
+      ocasionesEspeciales: ["Cumpleaños", "Aniversarios"],
+      platillosFavoritos: ["Tacos al Pastor", "Pizza Margherita"],
     },
     historialVisitas: [
       {
         fecha: "2024-01-15",
-        mesa: "Mesa 5",
-        consumo: 850.0,
-        platillos: ["Tacos al Pastor", "Agua de Horchata"],
+        mesa: "5",
+        numeroPersonas: 2,
+        consumoTotal: 450.0,
+        platillosOrdenados: ["Tacos al Pastor", "Quesadilla", "Coca Cola"],
+        tiempoEstancia: 90,
+        satisfaccion: 5,
       },
       {
         fecha: "2024-01-08",
-        mesa: "Mesa 2",
-        consumo: 650.0,
-        platillos: ["Quesadillas", "Refresco"],
+        mesa: "3",
+        numeroPersonas: 4,
+        consumoTotal: 890.0,
+        platillosOrdenados: ["Pizza Margherita", "Ensalada César", "Pasta Alfredo"],
+        tiempoEstancia: 120,
+        satisfaccion: 4,
       },
     ],
-    puntos: 125,
-    nivelFidelidad: "Bronce",
-    fechaRegistro: "2023-12-01",
+    puntosAcumulados: 1340,
+    nivelFidelidad: "Oro",
+    notasEspeciales: "Cliente frecuente, prefiere mesa cerca de la ventana",
+    fechaRegistro: "2023-06-15",
+    ultimaVisita: "2024-01-15",
     activo: true,
-    notas: "Cliente frecuente, prefiere mesa cerca de la ventana",
   },
   {
-    id: generateULID(),
+    id: "01HKQM5X8P9R2T4V6W8Y0Z1A2C",
     nombre: "María Elena",
-    apellidos: "Rodríguez Martínez",
-    telefono: "5559876543",
+    apellidos: "Rodríguez López",
+    telefono: "+52 55 9876 5432",
     email: "maria.rodriguez@email.com",
     fechaNacimiento: "1990-07-22",
     direccion: {
-      calle: "Calle Madero 456",
-      colonia: "Roma Norte",
+      calle: "Calle Revolución",
+      numero: "567",
+      colonia: "San Ángel",
       ciudad: "Ciudad de México",
-      codigoPostal: "06700",
       estado: "CDMX",
+      codigoPostal: "01000",
+      referencias: "Casa blanca con portón negro",
     },
     preferencias: {
-      tipoComida: ["Vegetariana", "Saludable"],
-      alergias: ["Mariscos"],
-      ocasionesEspeciales: ["Aniversario"],
+      tiposComidaFavorita: ["Vegetariana", "Mediterránea"],
+      alergias: ["Mariscos", "Nueces"],
+      restriccionesDieteticas: ["Vegetariana"],
+      ocasionesEspeciales: ["Cenas románticas"],
+      platillosFavoritos: ["Ensalada César", "Pasta Alfredo"],
     },
     historialVisitas: [
       {
         fecha: "2024-01-12",
-        mesa: "Mesa 8",
-        consumo: 720.0,
-        platillos: ["Ensalada César", "Agua Natural"],
+        mesa: "VIP-1",
+        numeroPersonas: 2,
+        consumoTotal: 650.0,
+        platillosOrdenados: ["Ensalada César", "Pasta Alfredo", "Agua Natural"],
+        tiempoEstancia: 105,
+        satisfaccion: 5,
       },
     ],
-    puntos: 89,
-    nivelFidelidad: "Bronce",
-    fechaRegistro: "2024-01-05",
+    puntosAcumulados: 650,
+    nivelFidelidad: "Plata",
+    notasEspeciales: "Alérgica a mariscos y nueces. Vegetariana estricta.",
+    fechaRegistro: "2023-09-10",
+    ultimaVisita: "2024-01-12",
     activo: true,
-    notas: "Vegetariana estricta, alérgica a mariscos",
   },
   {
-    id: generateULID(),
+    id: "01HKQM5X8P9R2T4V6W8Y0Z1A3C",
     nombre: "Carlos Alberto",
     apellidos: "Hernández Silva",
-    telefono: "5556547890",
+    telefono: "+52 55 5555 1234",
     email: "carlos.hernandez@email.com",
     fechaNacimiento: "1978-11-30",
     direccion: {
-      calle: "Insurgentes Sur 789",
-      colonia: "Del Valle",
+      calle: "Paseo de la Reforma",
+      numero: "890",
+      colonia: "Juárez",
       ciudad: "Ciudad de México",
-      codigoPostal: "03100",
       estado: "CDMX",
+      codigoPostal: "06600",
+      referencias: "Torre corporativa, piso 15",
     },
     preferencias: {
-      tipoComida: ["Mexicana", "Mariscos"],
+      tiposComidaFavorita: ["Mexicana", "Internacional"],
       alergias: [],
-      ocasionesEspeciales: ["Reuniones de trabajo"],
+      restriccionesDieteticas: [],
+      ocasionesEspeciales: ["Comidas de negocios", "Celebraciones familiares"],
+      platillosFavoritos: ["Hamburguesa Clásica", "Tacos al Pastor"],
     },
     historialVisitas: [
       {
         fecha: "2024-01-10",
-        mesa: "Mesa 12",
-        consumo: 1250.0,
-        platillos: ["Parrillada Mixta", "Cerveza", "Flan"],
-      },
-      {
-        fecha: "2024-01-03",
-        mesa: "Mesa 15",
-        consumo: 980.0,
-        platillos: ["Ceviche", "Tacos de Pescado", "Margarita"],
-      },
-      {
-        fecha: "2023-12-28",
-        mesa: "Mesa 10",
-        consumo: 1100.0,
-        platillos: ["Molcajete", "Michelada"],
+        mesa: "VIP-2",
+        numeroPersonas: 6,
+        consumoTotal: 1200.0,
+        platillosOrdenados: ["Hamburguesa Clásica", "Pizza Margherita", "Tacos al Pastor"],
+        tiempoEstancia: 150,
+        satisfaccion: 5,
       },
     ],
-    puntos: 245,
-    nivelFidelidad: "Plata",
-    fechaRegistro: "2023-11-15",
+    puntosAcumulados: 2400,
+    nivelFidelidad: "Platino",
+    notasEspeciales: "Cliente VIP, ejecutivo, prefiere mesas privadas para reuniones",
+    fechaRegistro: "2023-03-20",
+    ultimaVisita: "2024-01-10",
     activo: true,
-    notas: "Cliente VIP, suele venir con clientes de trabajo",
   },
   {
-    id: generateULID(),
+    id: "01HKQM5X8P9R2T4V6W8Y0Z1A4C",
     nombre: "Ana Patricia",
-    apellidos: "López Fernández",
-    telefono: "5553216549",
+    apellidos: "López Morales",
+    telefono: "+52 55 7777 8888",
     email: "ana.lopez@email.com",
-    fechaNacimiento: "1995-04-18",
+    fechaNacimiento: "1995-05-18",
     direccion: {
-      calle: "Polanco 321",
-      colonia: "Polanco",
+      calle: "Av. Universidad",
+      numero: "1500",
+      colonia: "Copilco",
       ciudad: "Ciudad de México",
-      codigoPostal: "11560",
       estado: "CDMX",
+      codigoPostal: "04360",
+      referencias: "Conjunto habitacional Las Flores, edificio C",
     },
     preferencias: {
-      tipoComida: ["Internacional", "Postres"],
-      alergias: ["Nueces"],
-      ocasionesEspeciales: ["Citas románticas"],
+      tiposComidaFavorita: ["Saludable", "Asiática"],
+      alergias: ["Gluten"],
+      restriccionesDieteticas: ["Sin gluten", "Baja en sodio"],
+      ocasionesEspeciales: ["Cumpleaños"],
+      platillosFavoritos: ["Ensalada César"],
     },
     historialVisitas: [
       {
-        fecha: "2024-01-14",
-        mesa: "Mesa 3",
-        consumo: 450.0,
-        platillos: ["Pasta Alfredo", "Vino Tinto"],
+        fecha: "2024-01-05",
+        mesa: "2",
+        numeroPersonas: 1,
+        consumoTotal: 180.0,
+        platillosOrdenados: ["Ensalada César", "Agua Natural"],
+        tiempoEstancia: 45,
+        satisfaccion: 4,
       },
     ],
-    puntos: 67,
+    puntosAcumulados: 180,
     nivelFidelidad: "Bronce",
-    fechaRegistro: "2024-01-10",
+    notasEspeciales: "Intolerante al gluten, prefiere opciones saludables",
+    fechaRegistro: "2024-01-05",
+    ultimaVisita: "2024-01-05",
     activo: true,
-    notas: "Alérgica a nueces, prefiere ambiente romántico",
   },
   {
-    id: generateULID(),
+    id: "01HKQM5X8P9R2T4V6W8Y0Z1A5C",
     nombre: "Roberto",
-    apellidos: "Sánchez Morales",
-    telefono: "5557894561",
+    apellidos: "Sánchez Pérez",
+    telefono: "+52 55 3333 4444",
     email: "roberto.sanchez@email.com",
-    fechaNacimiento: "1982-09-05",
+    fechaNacimiento: "1982-09-12",
     direccion: {
-      calle: "Av. Universidad 654",
-      colonia: "Coyoacán",
+      calle: "Calle Madero",
+      numero: "234",
+      colonia: "Centro Histórico",
       ciudad: "Ciudad de México",
-      codigoPostal: "04000",
       estado: "CDMX",
+      codigoPostal: "06000",
+      referencias: "Edificio colonial, segundo piso",
     },
     preferencias: {
-      tipoComida: ["Mexicana", "Picante"],
+      tiposComidaFavorita: ["Mexicana", "Comida rápida"],
       alergias: [],
-      ocasionesEspeciales: ["Fútbol", "Reuniones familiares"],
+      restriccionesDieteticas: [],
+      ocasionesEspeciales: ["Ver fútbol", "Reuniones familiares"],
+      platillosFavoritos: ["Hamburguesa Clásica", "Tacos al Pastor"],
     },
     historialVisitas: [
       {
-        fecha: "2024-01-13",
-        mesa: "Mesa 20",
-        consumo: 890.0,
-        platillos: ["Alitas Búfalo", "Cerveza", "Nachos"],
-      },
-      {
-        fecha: "2024-01-06",
-        mesa: "Mesa 18",
-        consumo: 1050.0,
-        platillos: ["Parrillada Familiar", "Refrescos"],
+        fecha: "2024-01-07",
+        mesa: "B-1",
+        numeroPersonas: 3,
+        consumoTotal: 520.0,
+        platillosOrdenados: ["Hamburguesa Clásica", "Tacos al Pastor", "Coca Cola"],
+        tiempoEstancia: 80,
+        satisfaccion: 4,
       },
     ],
-    puntos: 156,
+    puntosAcumulados: 520,
     nivelFidelidad: "Bronce",
-    fechaRegistro: "2023-12-20",
+    notasEspeciales: "Le gusta ver los partidos de fútbol, prefiere la barra",
+    fechaRegistro: "2023-11-15",
+    ultimaVisita: "2024-01-07",
     activo: true,
-    notas: "Viene a ver partidos de fútbol, le gusta la comida picante",
+  },
+]
+
+// Mock data para productos
+export const mockProductos: ProductoMock[] = [
+  {
+    id: "01HKQM5X8P9R2T4V6W8Y0Z1A1P",
+    clave: "TACO001",
+    nombre: "Tacos al Pastor",
+    descripcion: "Deliciosos tacos al pastor con piña, cebolla y cilantro, servidos en tortilla de maíz",
+    precio: 85.0,
+    categoria: "Platillos Principales",
+    subcategoria: "Tacos",
+    tipo: "Platillo",
+    disponible: true,
+    stock: 50,
+    stockMinimo: 10,
+    unidad: "orden",
+    ingredientes: ["Carne de cerdo", "Piña", "Cebolla", "Cilantro", "Tortilla de maíz", "Salsa verde", "Salsa roja"],
+    calorias: 320,
+    tiempoPreparacion: 8,
+    imagen: "/placeholder.svg?height=200&width=200&text=Tacos+al+Pastor",
+    etiquetas: ["Mexicano", "Picante", "Popular"],
+    favorito: true,
+    suspendido: false,
+    fechaCreacion: "2023-01-15",
+  },
+  {
+    id: "01HKQM5X8P9R2T4V6W8Y0Z1A2P",
+    clave: "QUES001",
+    nombre: "Quesadilla",
+    descripcion: "Quesadilla de queso Oaxaca con opción de agregar pollo, champiñones o flor de calabaza",
+    precio: 65.0,
+    categoria: "Antojitos",
+    subcategoria: "Quesadillas",
+    tipo: "Platillo",
+    disponible: true,
+    stock: 30,
+    stockMinimo: 8,
+    unidad: "pieza",
+    ingredientes: ["Tortilla de harina", "Queso Oaxaca", "Cebolla", "Epazote"],
+    calorias: 280,
+    tiempoPreparacion: 6,
+    imagen: "/placeholder.svg?height=200&width=200&text=Quesadilla",
+    etiquetas: ["Mexicano", "Vegetariano", "Queso"],
+    favorito: false,
+    suspendido: false,
+    fechaCreacion: "2023-01-15",
+  },
+  {
+    id: "01HKQM5X8P9R2T4V6W8Y0Z1A3P",
+    clave: "HAMB001",
+    nombre: "Hamburguesa Clásica",
+    descripcion: "Hamburguesa de carne de res con lechuga, tomate, cebolla, pepinillos y papas fritas",
+    precio: 120.0,
+    categoria: "Platillos Principales",
+    subcategoria: "Hamburguesas",
+    tipo: "Platillo",
+    disponible: true,
+    stock: 25,
+    stockMinimo: 5,
+    unidad: "pieza",
+    ingredientes: ["Carne de res", "Pan para hamburguesa", "Lechuga", "Tomate", "Cebolla", "Pepinillos", "Papas"],
+    calorias: 650,
+    tiempoPreparacion: 12,
+    imagen: "/placeholder.svg?height=200&width=200&text=Hamburguesa",
+    etiquetas: ["Internacional", "Carne", "Papas"],
+    favorito: true,
+    suspendido: false,
+    fechaCreacion: "2023-02-01",
+  },
+  {
+    id: "01HKQM5X8P9R2T4V6W8Y0Z1A4P",
+    clave: "PIZZ001",
+    nombre: "Pizza Margherita",
+    descripcion: "Pizza italiana tradicional con salsa de tomate, mozzarella fresca y albahaca",
+    precio: 180.0,
+    categoria: "Platillos Principales",
+    subcategoria: "Pizzas",
+    tipo: "Platillo",
+    disponible: true,
+    stock: 15,
+    stockMinimo: 3,
+    unidad: "pieza",
+    ingredientes: ["Masa de pizza", "Salsa de tomate", "Mozzarella", "Albahaca", "Aceite de oliva"],
+    calorias: 890,
+    tiempoPreparacion: 15,
+    imagen: "/placeholder.svg?height=200&width=200&text=Pizza+Margherita",
+    etiquetas: ["Italiano", "Vegetariano", "Queso"],
+    favorito: true,
+    suspendido: false,
+    fechaCreacion: "2023-02-15",
+  },
+  {
+    id: "01HKQM5X8P9R2T4V6W8Y0Z1A5P",
+    clave: "PAST001",
+    nombre: "Pasta Alfredo",
+    descripcion: "Fettuccine en salsa cremosa de mantequilla, parmesano y crema, con pollo opcional",
+    precio: 145.0,
+    categoria: "Platillos Principales",
+    subcategoria: "Pastas",
+    tipo: "Platillo",
+    disponible: true,
+    stock: 20,
+    stockMinimo: 5,
+    unidad: "plato",
+    ingredientes: ["Fettuccine", "Mantequilla", "Crema", "Queso parmesano", "Ajo", "Perejil"],
+    calorias: 720,
+    tiempoPreparacion: 10,
+    imagen: "/placeholder.svg?height=200&width=200&text=Pasta+Alfredo",
+    etiquetas: ["Italiano", "Cremoso", "Pasta"],
+    favorito: false,
+    suspendido: false,
+    fechaCreacion: "2023-03-01",
+  },
+  {
+    id: "01HKQM5X8P9R2T4V6W8Y0Z1A6P",
+    clave: "ENSA001",
+    nombre: "Ensalada César",
+    descripcion: "Ensalada fresca con lechuga romana, crutones, parmesano y aderezo césar",
+    precio: 95.0,
+    categoria: "Ensaladas",
+    subcategoria: "Ensaladas Verdes",
+    tipo: "Entrada",
+    disponible: true,
+    stock: 35,
+    stockMinimo: 10,
+    unidad: "plato",
+    ingredientes: ["Lechuga romana", "Crutones", "Queso parmesano", "Aderezo césar", "Limón"],
+    calorias: 180,
+    tiempoPreparacion: 5,
+    imagen: "/placeholder.svg?height=200&width=200&text=Ensalada+César",
+    etiquetas: ["Saludable", "Vegetariano", "Fresco"],
+    favorito: false,
+    suspendido: false,
+    fechaCreacion: "2023-01-20",
+  },
+  {
+    id: "01HKQM5X8P9R2T4V6W8Y0Z1A7P",
+    clave: "COCA001",
+    nombre: "Coca Cola",
+    descripcion: "Refresco de cola 355ml, servido bien frío",
+    precio: 25.0,
+    categoria: "Bebidas",
+    subcategoria: "Refrescos",
+    tipo: "Bebida",
+    disponible: true,
+    stock: 100,
+    stockMinimo: 20,
+    unidad: "lata",
+    ingredientes: ["Agua carbonatada", "Jarabe de maíz", "Cafeína", "Ácido fosfórico"],
+    calorias: 140,
+    tiempoPreparacion: 1,
+    imagen: "/placeholder.svg?height=200&width=200&text=Coca+Cola",
+    etiquetas: ["Bebida", "Refrescante", "Gaseosa"],
+    favorito: true,
+    suspendido: false,
+    fechaCreacion: "2023-01-10",
+  },
+  {
+    id: "01HKQM5X8P9R2T4V6W8Y0Z1A8P",
+    clave: "AGUA001",
+    nombre: "Agua Natural",
+    descripcion: "Agua purificada 500ml, ideal para acompañar cualquier platillo",
+    precio: 15.0,
+    categoria: "Bebidas",
+    subcategoria: "Aguas",
+    tipo: "Bebida",
+    disponible: true,
+    stock: 150,
+    stockMinimo: 30,
+    unidad: "botella",
+    ingredientes: ["Agua purificada"],
+    calorias: 0,
+    tiempoPreparacion: 1,
+    imagen: "/placeholder.svg?height=200&width=200&text=Agua+Natural",
+    etiquetas: ["Saludable", "Natural", "Sin calorías"],
+    favorito: false,
+    suspendido: false,
+    fechaCreacion: "2023-01-10",
   },
 ]
 
 // Mock data para mesas
 export const mockMesas: Mesa[] = [
   {
-    id: generateULID(),
+    id: "01HKQM5X8P9R2T4V6W8Y0Z1A1M",
     numero: "1",
-    capacidad: 2,
-    area: "Terraza",
-    estado: "Disponible",
-    ubicacion: "Terraza - Esquina",
-    tipo: "Terraza",
-  },
-  {
-    id: generateULID(),
-    numero: "2",
     capacidad: 4,
-    area: "Salón Principal",
-    estado: "Ocupada",
-    ubicacion: "Salón - Centro",
     tipo: "Regular",
-  },
-  {
-    id: generateULID(),
-    numero: "3",
-    capacidad: 2,
-    area: "Salón Principal",
     estado: "Disponible",
-    ubicacion: "Salón - Ventana",
-    tipo: "Regular",
+    ubicacion: "Ventana izquierda",
+    area: "Comedor Principal",
+    fechaUltimaLimpieza: "2024-01-15T10:30:00Z",
   },
   {
-    id: generateULID(),
-    numero: "4",
+    id: "01HKQM5X8P9R2T4V6W8Y0Z1A2M",
+    numero: "2",
+    capacidad: 2,
+    tipo: "Regular",
+    estado: "Ocupada",
+    ubicacion: "Centro del comedor",
+    area: "Comedor Principal",
+    fechaUltimaLimpieza: "2024-01-15T09:15:00Z",
+    clienteActual: "Ana Patricia López",
+    horaOcupacion: "2024-01-15T12:00:00Z",
+  },
+  {
+    id: "01HKQM5X8P9R2T4V6W8Y0Z1A3M",
+    numero: "3",
     capacidad: 6,
-    area: "Salón Principal",
-    estado: "Reservada",
-    ubicacion: "Salón - Lateral",
     tipo: "Regular",
+    estado: "Reservada",
+    ubicacion: "Esquina derecha",
+    area: "Comedor Principal",
+    fechaUltimaLimpieza: "2024-01-15T11:00:00Z",
+    clienteActual: "Carlos Alberto Hernández",
+    horaOcupacion: "2024-01-15T14:00:00Z",
   },
   {
-    id: generateULID(),
+    id: "01HKQM5X8P9R2T4V6W8Y0Z1A4M",
+    numero: "4",
+    capacidad: 4,
+    tipo: "Terraza",
+    estado: "Disponible",
+    ubicacion: "Terraza exterior",
+    area: "Terraza",
+    fechaUltimaLimpieza: "2024-01-15T10:45:00Z",
+  },
+  {
+    id: "01HKQM5X8P9R2T4V6W8Y0Z1A5M",
     numero: "5",
     capacidad: 8,
-    area: "Salón VIP",
-    estado: "Disponible",
-    ubicacion: "VIP - Privado",
+    tipo: "Regular",
+    estado: "Limpieza",
+    ubicacion: "Fondo del comedor",
+    area: "Comedor Principal",
+    fechaUltimaLimpieza: "2024-01-15T13:00:00Z",
+  },
+  {
+    id: "01HKQM5X8P9R2T4V6W8Y0Z1AVP1",
+    numero: "VIP-1",
+    capacidad: 4,
     tipo: "VIP",
+    estado: "Disponible",
+    ubicacion: "Área privada",
+    area: "Salón VIP",
+    fechaUltimaLimpieza: "2024-01-15T11:30:00Z",
   },
   {
-    id: generateULID(),
-    numero: "B1",
-    capacidad: 2,
-    area: "Barra",
+    id: "01HKQM5X8P9R2T4V6W8Y0Z1AVP2",
+    numero: "VIP-2",
+    capacidad: 6,
+    tipo: "VIP",
     estado: "Ocupada",
-    ubicacion: "Barra - Izquierda",
-    tipo: "Barra",
+    ubicacion: "Área privada con vista",
+    area: "Salón VIP",
+    fechaUltimaLimpieza: "2024-01-15T10:00:00Z",
+    clienteActual: "Juan Carlos García",
+    horaOcupacion: "2024-01-15T13:30:00Z",
   },
   {
-    id: generateULID(),
-    numero: "B2",
+    id: "01HKQM5X8P9R2T4V6W8Y0Z1AB1",
+    numero: "B-1",
     capacidad: 2,
-    area: "Barra",
-    estado: "Disponible",
-    ubicacion: "Barra - Centro",
     tipo: "Barra",
-  },
-  {
-    id: generateULID(),
-    numero: "B3",
-    capacidad: 2,
+    estado: "Ocupada",
+    ubicacion: "Barra principal",
     area: "Barra",
-    estado: "Disponible",
-    ubicacion: "Barra - Derecha",
-    tipo: "Barra",
+    fechaUltimaLimpieza: "2024-01-15T09:00:00Z",
+    clienteActual: "Roberto Sánchez",
+    horaOcupacion: "2024-01-15T12:30:00Z",
   },
 ]
+
+// Funciones auxiliares para obtener datos
+export const obtenerClientePorId = (id: string): Cliente | undefined => {
+  return mockClientes.find((cliente) => cliente.id === id)
+}
+
+export const obtenerProductoPorId = (id: string): ProductoMock | undefined => {
+  return mockProductos.find((producto) => producto.id === id)
+}
+
+export const obtenerMesaPorId = (id: string): Mesa | undefined => {
+  return mockMesas.find((mesa) => mesa.id === id)
+}
+
+export const obtenerProductosPorCategoria = (categoria: string): ProductoMock[] => {
+  return mockProductos.filter((producto) => producto.categoria === categoria)
+}
+
+export const obtenerMesasDisponibles = (): Mesa[] => {
+  return mockMesas.filter((mesa) => mesa.estado === "Disponible")
+}
+
+export const obtenerClientesActivos = (): Cliente[] => {
+  return mockClientes.filter((cliente) => cliente.activo)
+}
+
+// Estadísticas
+export const obtenerEstadisticasClientes = () => {
+  const total = mockClientes.length
+  const activos = mockClientes.filter((c) => c.activo).length
+  const porNivel = mockClientes.reduce(
+    (acc, cliente) => {
+      acc[cliente.nivelFidelidad] = (acc[cliente.nivelFidelidad] || 0) + 1
+      return acc
+    },
+    {} as Record<string, number>,
+  )
+
+  return {
+    total,
+    activos,
+    porNivel,
+  }
+}
+
+export const obtenerEstadisticasProductos = () => {
+  const total = mockProductos.length
+  const disponibles = mockProductos.filter((p) => p.disponible).length
+  const favoritos = mockProductos.filter((p) => p.favorito).length
+  const porCategoria = mockProductos.reduce(
+    (acc, producto) => {
+      acc[producto.categoria] = (acc[producto.categoria] || 0) + 1
+      return acc
+    },
+    {} as Record<string, number>,
+  )
+
+  return {
+    total,
+    disponibles,
+    favoritos,
+    porCategoria,
+  }
+}
+
+export const obtenerEstadisticasMesas = () => {
+  const total = mockMesas.length
+  const disponibles = mockMesas.filter((m) => m.estado === "Disponible").length
+  const ocupadas = mockMesas.filter((m) => m.estado === "Ocupada").length
+  const reservadas = mockMesas.filter((m) => m.estado === "Reservada").length
+  const porTipo = mockMesas.reduce(
+    (acc, mesa) => {
+      acc[mesa.tipo] = (acc[mesa.tipo] || 0) + 1
+      return acc
+    },
+    {} as Record<string, number>,
+  )
+
+  return {
+    total,
+    disponibles,
+    ocupadas,
+    reservadas,
+    porTipo,
+  }
+}

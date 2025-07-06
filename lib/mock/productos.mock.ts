@@ -577,35 +577,30 @@ export const getAlmacenes = async (): Promise<Almacen[]> => {
 }
 
 // Funciones auxiliares para obtener por ID
-export const getGrupoById = async (id: string): Promise<GrupoProducto | null> => {
-  await new Promise((resolve) => setTimeout(resolve, 25))
+export const getGrupoById = (id: string): GrupoProducto | null => {
   return mockGruposProductos.find((g) => g.GrupoProductoULID === id) || null
 }
 
-export const getSubgrupoById = async (id: string): Promise<SubgrupoProducto | null> => {
-  await new Promise((resolve) => setTimeout(resolve, 25))
+export const getSubgrupoById = (id: string): SubgrupoProducto | null => {
   return mockSubgruposProductos.find((s) => s.SubgrupoProductoULID === id) || null
 }
 
-export const getUnidadById = async (id: string): Promise<Unidad | null> => {
-  await new Promise((resolve) => setTimeout(resolve, 25))
+export const getUnidadById = (id: string): Unidad | null => {
   return mockUnidades.find((u) => u.UnidadULID === id) || null
 }
 
-export const getAreaProduccionById = async (id: string): Promise<AreaProduccion | null> => {
-  await new Promise((resolve) => setTimeout(resolve, 25))
+export const getAreaProduccionById = (id: string): AreaProduccion | null => {
   return mockAreasProduccion.find((a) => a.AreaProduccionULID === id) || null
 }
 
-export const getAlmacenById = async (id: string): Promise<Almacen | null> => {
-  await new Promise((resolve) => setTimeout(resolve, 25))
+export const getAlmacenById = (id: string): Almacen | null => {
   return mockAlmacenes.find((a) => a.AlmacenULID === id) || null
 }
 
 // Función para verificar si una clave existe
 export const existeClaveProducto = async (clave: string, excludeId?: string): Promise<boolean> => {
   await new Promise((resolve) => setTimeout(resolve, 50))
-  return mockProductos.some((p) => p.ClaveProducto === clave && p.ProductoULID !== excludeId)
+  return !mockProductos.some((p) => p.ClaveProducto === clave && p.ProductoULID !== excludeId)
 }
 
 // Función para obtener estadísticas
